@@ -29,6 +29,39 @@
      voter, et le SILENCE VAUT ACCORD. Qui dort laisse decider les autres.
    ============================================================ */
 
+/* ---------- Garde-fou : configuration Firebase non renseignee ----------
+   Sans ca, Firebase renvoie « Permission denied on resource project
+   A_REMPLACER », ce qui n'aide personne. On le dit en clair. */
+(function(){
+  const c = window.firebaseConfig || {};
+  if (!String(c.projectId || '').includes('A_REMPLACER')) return;
+  const show = () => {
+    document.body.innerHTML =
+      '<div class="wrap" style="max-width:640px;padding-top:8vh">' +
+        '<div class="pnl"><div class="pnl-h"><span class="ic">&#9881;</span> ' +
+          'Configuration Firebase manquante</div><div class="pnl-b">' +
+        '<p>Le site tourne, mais il n’est relié à aucune base. ' +
+          'Les identifiants de ton projet Firebase ne sont pas renseignés.</p>' +
+        '<h3>Ce qu’il faut faire</h3>' +
+        '<ol style="color:var(--td);padding-left:20px;line-height:1.7">' +
+          '<li>Console Firebase → <strong>⚙ Paramètres du projet</strong> ' +
+            '→ <strong>Vos applications</strong> → ton application Web.</li>' +
+          '<li>Copie l’objet <span class="mono">firebaseConfig</span> affiché.</li>' +
+          '<li>Colle ses six valeurs dans <span class="mono">common/config.js</span>, ' +
+            'à la place des <span class="mono">A_REMPLACER</span>.</li>' +
+          '<li>Pense aussi à <strong>publier</strong> ' +
+            '<span class="mono">firestore.rules</span> dans la console ' +
+            '(Firestore Database → Règles), sinon tout sera refusé.</li>' +
+        '</ol>' +
+        '<p class="mini">Change aussi <span class="mono">GPC_ADMIN_CODE</span> ' +
+          'dans le même fichier : c’est le code d’accès à la console orga.</p>' +
+        '</div></div>' +      '</div>';
+  };
+  if (document.body) show();
+  else document.addEventListener('DOMContentLoaded', show);
+  throw new Error('firebaseConfig non renseigne — voir common/config.js');
+})();
+
 firebase.initializeApp(window.firebaseConfig);
 const db = firebase.firestore();
 
