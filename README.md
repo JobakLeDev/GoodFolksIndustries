@@ -109,7 +109,7 @@ Console Firebase → **Firestore Database → Règles** → coller `firestore.ru
 ### 4. Activer GitHub Pages
 
 Repo → **Settings → Pages** → Source `Deploy from a branch`, branche `main`, dossier `/ (root)`.
-Site en ligne sur `https://jobakledev.github.io/GoodFolksCompany/`.
+Site en ligne sur `https://jobakledev.github.io/GoodFolksIndustries/`.
 
 ### 5. Créer les équipes, puis les joueurs
 
