@@ -818,7 +818,7 @@ async function signUpActivity(playerId, playerName, activityId, slotId){
       if (!ps.exists)  throw new Error('Compte introuvable.');
       const a = as_.data();
       if (ps.data().team === a.teamId) throw new Error('C\u2019est l\u2019activit\u00e9 de ton \u00e9quipe.');
-      if (ss.exists && ss.data().status === 'waiting')
+      if (ss.exists && effStatus(ss.data(), as_.data()) === 'waiting')
         throw new Error(slotId ? 'Tu as d\u00e9j\u00e0 r\u00e9serv\u00e9 ce cr\u00e9neau.'
                                : 'Tu es d\u00e9j\u00e0 dans la file.');
 
@@ -933,6 +933,26 @@ function signupDeadline(s, act){
   return Number(s.readyAt) ? Number(s.readyAt) + g : null;
 }
 
+/**
+ * Le statut tel qu'il DOIT etre lu, sans attendre l'ecriture du balayage.
+ *
+ * Le balayage ne tourne que dans les navigateurs ouverts, toutes les 15-20 s :
+ * entre l'echeance et son passage, la base dit encore « waiting ». On ne s'y
+ * fie donc pas pour afficher — on recalcule. L'ecriture n'est plus qu'un
+ * rattrapage, et l'ecran est juste tout de suite.
+ */
+function effStatus(s, act){
+  if (!s || s.status !== 'waiting') return s ? s.status : null;
+  const dl = signupDeadline(s, act);
+  return (dl && Date.now() > dl) ? 'expired' : 'waiting';
+}
+
+/** Une inscription compte-t-elle encore ? (en attente valable, ou en cours) */
+function signupLive(s, act){
+  const st = effStatus(s, act);
+  return st === 'waiting' || st === 'playing';
+}
+
 /** Le tour de ce joueur est-il venu ? (creneau a l'heure, ou tete de file) */
 function signupIsUp(s, act, rank){
   if (s.slotId) return Date.now() >= (Number(s.startsAt) || Infinity);
@@ -953,6 +973,12 @@ async function startSignup(id, actorId, actorTeam){
     if (s.status !== 'waiting') return { ok:false, error:'Cette place n\u2019est plus valable.' };
     if (s.playerId !== actorId && s.teamId !== actorTeam)
       return { ok:false, error:'Ni ta place, ni ton activit\u00e9.' };
+    // le balayage n'est peut-etre pas encore passe : on tranche ici aussi
+    const act = await db.collection(COL.activities).doc(s.activityId).get();
+    if (act.exists && effStatus(s, act.data()) === 'expired'){
+      await ref.update({ status:'expired', closedAt: Date.now() });
+      return { ok:false, error:'Trop tard : ta place a saut\u00e9.' };
+    }
     await ref.update({ status:'playing', startedAt: Date.now() });
     return { ok:true };
   }catch(e){ return { ok:false, error:e.message }; }

@@ -253,7 +253,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="common/config.js?v=a4393781"></script>
-<script src="common/app.js?v=869ba1ee"></script>
+<script src="common/app.js?v=a74c2736"></script>
 <script>
 /* ============================================================
    perso.html — le hub du week-end. Tout est en temps réel.
@@ -664,14 +664,15 @@ document.getElementById('tm-motion').addEventListener('click', async ev => {
 /* ---------- Inscriptions : files et créneaux ---------- */
 
 /** Les inscrits encore en attente sur une activité, dans l'ordre d'arrivée. */
+const actById = id => ACTS.find(a => a.id === id) || null;
+
 const waitingOn = (actId, slotId) => SIGNUPS.filter(s =>
-  s.activityId === actId && (s.status === 'waiting' || s.status === 'playing') &&
+  s.activityId === actId && signupLive(s, actById(actId)) &&
   (slotId === undefined || (s.slotId || null) === (slotId || null)));
 
 /** Mon inscription en cours sur une activité, s'il y en a une. */
 const mySignup = actId => SIGNUPS.find(s =>
-  s.activityId === actId && s.playerId === SESS.id &&
-  (s.status === 'waiting' || s.status === 'playing'));
+  s.activityId === actId && s.playerId === SESS.id && signupLive(s, actById(actId)));
 
 /** Places restantes sur un créneau. */
 function slotLeft(a, slot){
@@ -1182,7 +1183,7 @@ function calendarEntries(){
     legacy: !s.startsAt ? [s.day, s.time].filter(Boolean).join(' ') : ''
   }));
   // mes places réservées : elles me concernent, elles sont dans mon fil
-  SIGNUPS.filter(s => s.playerId === SESS.id && s.status === 'waiting' && s.startsAt)
+  SIGNUPS.filter(s => s.playerId === SESS.id && s.startsAt && signupLive(s, actById(s.activityId)))
     .forEach(s => out.push({
       kind:'mine', id:s.id, title:s.activityName, teamId:s.teamId,
       desc:'Ta place est réservée', startsAt:Number(s.startsAt), endsAt:null
@@ -1552,6 +1553,9 @@ function tickCountdowns(){
   renderGoalBar();
   // le calendrier se réévalue en continu : « dans 20 min » devient « en cours »
   if (document.getElementById('sec-fil').classList.contains('on')) renderProgramme();
+  // les files aussi : une place qui expire doit disparaître sans attendre le balayage
+  if (document.getElementById('sec-equipe').classList.contains('on')) renderTeamActs();
+  if (document.getElementById('sec-shop').classList.contains('on')) renderTolls();
   document.querySelectorAll('[data-until]').forEach(el => {
     el.textContent = countdown(Number(el.dataset.until));
   });
