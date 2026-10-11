@@ -297,37 +297,37 @@ document.getElementById('h-out').addEventListener('click', () => {
   document.getElementById('w-unit').textContent = GAME.units || 'parts';
   document.title = 'Mon compte — ' + (GAME.gameName || '');
 
-  db.collection(COL.players).doc(SESS.id).onSnapshot(snap => {
+  watch(db.collection(COL.players).doc(SESS.id), 'joueurs', snap => {
     if (!snap.exists){ clearSession(); location.replace('index.html'); return; }
     ME = Object.assign({ id: snap.id }, snap.data());
     renderMe();
   }, e => say('t-msg', 'Connexion perdue : ' + e.message, 'err'));
 
-  db.collection(COL.players).onSnapshot(qs => {
+  watch(db.collection(COL.players), 'joueurs', qs => {
     PLAYERS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()));
     renderRecipients(); renderTeam(); renderTops(); renderVote();
   });
 
-  db.collection(COL.teams).onSnapshot(qs => {
+  watch(db.collection(COL.teams), 'équipes', qs => {
     TEAMS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()))
       .sort((a,b) => (a.order||0) - (b.order||0) ||
                      String(a.name||'').localeCompare(String(b.name||''),'fr'));
     renderMe(); renderTeam(); renderShop(); renderVote();
   });
 
-  db.collection(COL.config).doc('treasury').onSnapshot(s => {
+  watch(db.collection(COL.config).doc('treasury'), 'réglages', s => {
     const d = s.exists ? s.data() : {};
     TRES = { issued:Number(d.issued)||0, circulating:Number(d.circulating)||0,
              company:Number(d.company)||0 };
     renderMe(); renderTops();
   });
 
-  db.collection(COL.activities).onSnapshot(qs => {
+  watch(db.collection(COL.activities), 'activités', qs => {
     ACTS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()));
     renderTeamActs(); renderTolls();
   });
 
-  db.collection(COL.motions).where('status','==','open').onSnapshot(qs => {
+  watch(db.collection(COL.motions).where('status','==','open'), 'motions', qs => {
     MOTIONS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()));
     renderMotion();
   });
@@ -336,36 +336,36 @@ document.getElementById('h-out').addEventListener('click', () => {
   // → aucun index composite à créer dans Firestore.
   let sent = [], recv = [];
   const merge = () => renderHist(sent.concat(recv).sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,80));
-  db.collection(COL.ledger).where('from','==',SESS.id).onSnapshot(qs => {
+  watch(db.collection(COL.ledger).where('from','==',SESS.id), 'grand livre', qs => {
     sent = qs.docs.map(d => Object.assign({ dir:'out' }, d.data())); merge();
   });
-  db.collection(COL.ledger).where('to','==',SESS.id).onSnapshot(qs => {
+  watch(db.collection(COL.ledger).where('to','==',SESS.id), 'grand livre', qs => {
     recv = qs.docs.map(d => Object.assign({ dir:'in' }, d.data())); merge();
   });
 
-  db.collection(COL.requests).where('playerId','==',SESS.id)
-    .where('status','==','pending').onSnapshot(qs => renderPending(qs.docs.map(d => d.data())));
+  watch(db.collection(COL.requests).where('playerId','==',SESS.id)
+    .where('status','==','pending'), 'guichet', qs => renderPending(qs.docs.map(d => d.data())));
 
-  db.collection(COL.vote).doc('current').onSnapshot(s => {
+  watch(db.collection(COL.vote).doc('current'), 'scrutin', s => {
     VOTE = s.exists ? s.data() : null; renderVote();
   });
-  db.collection(COL.ballots).doc(SESS.id).onSnapshot(s => {
+  watch(db.collection(COL.ballots).doc(SESS.id), 'bulletins', s => {
     MYBALLOT = s.exists ? s.data() : null; renderVote();
   });
 
-  db.collection(COL.shop).doc('catalog').onSnapshot(s => {
+  watch(db.collection(COL.shop).doc('catalog'), 'catalogue', s => {
     SHOP = s.exists ? (s.data().items || []) : []; renderShop();
   });
-  db.collection(COL.orders).where('playerId','==',SESS.id).onSnapshot(qs => {
+  watch(db.collection(COL.orders).where('playerId','==',SESS.id), 'commandes', qs => {
     renderOrders(qs.docs.map(d => d.data()).sort((a,b)=>(b.ts||0)-(a.ts||0)));
   });
-  db.collection(COL.journal).doc('public').onSnapshot(s => {
+  watch(db.collection(COL.journal).doc('public'), 'journal', s => {
     renderJournal(s.exists ? (s.data().entries || []) : []);
   });
-  db.collection(COL.schedule).doc('data').onSnapshot(s => {
+  watch(db.collection(COL.schedule).doc('data'), 'programme', s => {
     SCHEDULE = s.exists ? (s.data().items || []) : []; renderProgramme();
   });
-  db.collection(COL.map).doc('data').onSnapshot(s => {
+  watch(db.collection(COL.map).doc('data'), 'carte', s => {
     POIS = s.exists ? (s.data().pois || []) : []; renderPois();
   });
 

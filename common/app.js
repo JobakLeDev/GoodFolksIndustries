@@ -246,6 +246,43 @@ function miniMd(src){
   return out;
 }
 
+/* ============================================================
+   Panne visible
+
+   Un onSnapshot sans gestionnaire d'erreur echoue EN SILENCE : regles pas
+   publiees, collection absente, reseau coupe — l'ecran reste simplement
+   vide, et on cherche pendant une heure. On l'affiche.
+   ============================================================ */
+function fpFail(label, err){
+  const msg = (err && err.message) || String(err || 'erreur inconnue');
+  console.error('[' + label + ']', err);
+  let bar = document.getElementById('fp-fail');
+  if (!bar){
+    bar = document.createElement('div');
+    bar.id = 'fp-fail';
+    bar.className = 'fp-fail';
+    document.body.appendChild(bar);
+  }
+  const line = document.createElement('div');
+  line.innerHTML = '<strong>' + esc(label) + '</strong> : ' + esc(msg);
+  // une seule ligne par source d'erreur
+  if (![...bar.children].some(c => c.textContent === line.textContent))
+    bar.appendChild(line);
+}
+
+/**
+ * onSnapshot avec un gestionnaire d'erreur par defaut.
+ * Le callback est le DERNIER argument, pour que les sites d'appel gardent
+ * exactement la meme forme : watch(ref, 'libelle', cb) se ferme comme
+ * ref.onSnapshot(cb).
+ */
+function watch(ref, label, cb, onErr){
+  return ref.onSnapshot(cb, err => {
+    fpFail(label, err);
+    if (onErr) onErr(err);
+  });
+}
+
 /* ---------- Session ---------- */
 const SESSION_KEY = 'gpc_session';
 

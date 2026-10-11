@@ -426,3 +426,15 @@ textarea{min-height:92px;resize:vertical}
 
 /* segment « cagnottes » dans la barre du capital */
 .split .s-pot{background:var(--sage)}
+
+/* ---- panne visible : bandeau d'erreur des listeners ---- */
+.fp-fail{
+  position:fixed;left:0;right:0;bottom:0;z-index:9000;
+  background:#7d2d20;color:#ffe6e1;font-size:12.5px;line-height:1.45;
+  padding:10px 14px;box-shadow:0 -2px 14px rgba(0,0,0,.3);
+  max-height:38vh;overflow:auto;
+}
+.fp-fail strong{color:#fff}
+.fp-fail div + div{margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,.18)}
+/* la barre d'onglets ne doit pas passer par-dessus le message */
+body.has-tabbar .fp-fail{bottom:calc(68px + env(safe-area-inset-bottom))}
