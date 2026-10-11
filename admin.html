@@ -167,7 +167,8 @@
           <textarea id="bulk-txt" style="min-height:160px" placeholder="Camille Dubreuil;Les Continuateurs&#10;Ana&iuml;s Berger;Les Continuateurs;4821&#10;Victor Pann;Les Bâtisseurs;;18"></textarea>
         </div>
         <button class="btn btn-pri" id="bulk-go">Cr&eacute;er tous les comptes</button>
-        <p class="mini">&Eacute;quipe reconnue par son nom (sans tenir compte de la casse).
+        <div id="bulk-teams"></div>
+        <p class="mini">&Eacute;quipe reconnue par son nom (casse, accents et espaces sans importance).
           Code vide = tir&eacute; au hasard. Parts vides = dotation par d&eacute;faut
           (<span id="bulk-def"></span>).</p>
         <div id="bulk-out"></div>
@@ -675,6 +676,14 @@ document.getElementById('nt-go').addEventListener('click', async () => {
 });
 
 function renderTeams(){
+  // rappel dans l'onglet Joueurs : les noms exacts que l'import reconnaît
+  const hint = document.getElementById('bulk-teams');
+  if (hint) hint.innerHTML = TEAMS.length
+    ? '<p class="mini" style="margin:0 0 10px">Équipes reconnues : ' +
+      TEAMS.map(t => '<span class="tdot" style="background:' + esc(t.color||'#888') +
+        '"></span><strong>' + esc(t.name) + '</strong>').join(' &nbsp; ') + '</p>'
+    : '<div class="msg msg-err">Aucune équipe créée. Va d’abord dans l’onglet ' +
+      '<strong>Équipes</strong> : l’import a besoin qu’elles existent.</div>';
   const box = document.getElementById('tm-list');
   if (!TEAMS.length){ box.innerHTML = '<div class="empty">Aucune équipe.</div>'; return; }
   box.innerHTML = TEAMS.map(t => {
@@ -828,9 +837,14 @@ document.getElementById('bulk-go').addEventListener('click', async () => {
     try{
       let teamId = null;
       if (teamRaw){
-        const t = TEAMS.find(x => x.id === slugify(teamRaw) ||
-          String(x.name||'').toLowerCase() === teamRaw.toLowerCase());
-        if (!t) throw new Error('équipe « ' + teamRaw + ' » inconnue');
+        // slugify des deux côtés : insensible à la casse, aux accents,
+        // aux espaces en trop et aux traits d'union.
+        const key = slugify(teamRaw);
+        const t = TEAMS.find(x => x.id === key || slugify(x.name) === key);
+        if (!t) throw new Error(TEAMS.length
+          ? 'équipe « ' + teamRaw + ' » inconnue — connues : ' +
+            TEAMS.map(x => x.name).join(', ')
+          : 'aucune équipe n’existe encore : crée-les d’abord dans l’onglet Équipes');
         teamId = t.id;
       }
       const c = code || randCode();
