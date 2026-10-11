@@ -1,17 +1,19 @@
 /* ============================================================
    Goodfolks Industries — configuration
-   REMPLACE firebaseConfig par les valeurs de TON projet :
-   console.firebase.google.com -> Parametres du projet
-   -> « Vos applications » -> Application Web -> Configuration du SDK
+
+   firebaseConfig identifie le projet ; ce ne sont pas des secrets, ces
+   valeurs partent de toute facon dans le navigateur de chaque joueur.
+   Ce qui protege la base, ce sont les regles Firestore — et elles sont
+   ouvertes pour le week-end. Voir la section Securite du README.
    ============================================================ */
 
 window.firebaseConfig = {
-  apiKey:            "A_REMPLACER",
-  authDomain:        "A_REMPLACER.firebaseapp.com",
-  projectId:         "A_REMPLACER",
-  storageBucket:     "A_REMPLACER.appspot.com",
-  messagingSenderId: "A_REMPLACER",
-  appId:             "A_REMPLACER"
+  apiKey:            "AIzaSyBTW3oLATagP80u1HLPgLon_z1wC7BTsoI",
+  authDomain:        "goodfolks-industries.firebaseapp.com",
+  projectId:         "goodfolks-industries",
+  storageBucket:     "goodfolks-industries.firebasestorage.app",
+  messagingSenderId: "1079348547652",
+  appId:             "1:1079348547652:web:d3167eece7302468faac11"
 };
 
 /* Code d'acces du guichet / console organisation (admin.html) */
