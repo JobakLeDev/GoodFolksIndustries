@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="icon" href="img/favicon.png?v=8d9ee157" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png?v=daf01749">
-<link rel="stylesheet" href="common/style.css?v=d81f069e">
+<link rel="stylesheet" href="common/style.css?v=19190eb9">
 </head>
 <body>
 
@@ -273,12 +273,17 @@
           <input id="v-q" placeholder="Quelle vision pour l&rsquo;avenir de Goodfolks&nbsp;?"></div>
         <div class="field"><label>Pr&eacute;cisions (optionnel)</label>
           <textarea id="v-d" placeholder="Rappel des r&egrave;gles du d&eacute;p&ocirc;t, heure de fermeture des urnes&hellip;"></textarea></div>
-        <p class="mini" style="margin:0 0 12px">Les options du vote sont <strong>les &eacute;quipes</strong>&nbsp;:
-          une urne chacune. Leur objectif secret sera r&eacute;v&eacute;l&eacute; au d&eacute;pouillement.</p>
+        <div class="tok-note" style="margin:0 0 13px"><span class="ic">&#127891;</span><div>
+          Les options du vote sont <strong>les &eacute;quipes</strong>&nbsp;: une urne chacune,
+          <strong>ouverte depuis le d&eacute;but du week-end</strong>. Les joueurs y d&eacute;posent
+          leurs jetons quand ils veulent, et c&rsquo;est d&eacute;finitif &mdash; l&rsquo;app n&rsquo;en sait rien
+          jusqu&rsquo;à ton comptage. Ce qui suit ne pilote que le <strong>vote num&eacute;rique</strong>.
+          Les objectifs secrets sont r&eacute;v&eacute;l&eacute;s au d&eacute;pouillement.
+        </div></div>
         <div class="row">
-          <div class="field"><label>Ouverture (dimanche matin)</label>
+          <div class="field"><label>Ouverture du vote dans l&rsquo;app (dimanche 00:00)</label>
             <input id="v-open-at" type="datetime-local"></div>
-          <div class="field"><label>Fermeture des urnes</label>
+          <div class="field"><label>D&eacute;pouillement (dimanche 12:00)</label>
             <input id="v-close" type="datetime-local"></div>
         </div>
         <div class="row">
@@ -294,8 +299,10 @@
       <div class="pnl-h"><span class="ic">&#127891;</span> Comptage des urnes</div>
       <div class="pnl-b">
         <div id="urn-msg"></div>
-        <p class="mini" style="margin:0 0 12px">Compte les jetons de chaque urne et saisis-les ici
-          <strong>avant</strong> de d&eacute;pouiller. Ils s&rsquo;ajoutent aux voix de l&rsquo;app.</p>
+        <p class="mini" style="margin:0 0 12px">Les urnes tournent tout le week-end&nbsp;: tu ne les
+          ouvres qu&rsquo;au bout. Compte les jetons de chacune et saisis-les ici
+          <strong>avant</strong> de cliquer sur &laquo;&nbsp;Clore et d&eacute;pouiller&nbsp;&raquo;.
+          Ils s&rsquo;ajoutent aux voix de l&rsquo;app.</p>
         <div id="urn-list"><div class="empty">Cr&eacute;e d&rsquo;abord les &eacute;quipes.</div></div>
       </div>
     </div>
@@ -1205,15 +1212,17 @@ document.getElementById('v-save').addEventListener('click',
 document.getElementById('v-announce').addEventListener('click',
   () => saveVote(VOTE_STATUS.announced,
     'Annoncer le vote à tous ?\n\nIls verront la question et les équipes en lice, ' +
-    'mais ne pourront pas encore voter.'));
+    'mais ne pourront pas encore voter dans l’app.\n\n' +
+    'Les urnes physiques, elles, sont ouvertes depuis le début du week-end.'));
 document.getElementById('v-go').addEventListener('click', () => {
   if (VOTE && VOTE.status === VOTE_STATUS.closed){
     say('v-msg','Déjà dépouillé et parts rendues. Utilise la remise à zéro pour rejouer.','err');
     return;
   }
   saveVote(VOTE_STATUS.open,
-    'Ouvrir le vote ?\n\nLes ' + actifs().length + ' joueurs pourront convertir leurs parts ' +
-    'en banque en voix. Un seul passage chacun.');
+    'Ouvrir le vote numérique ?\n\nLes ' + actifs().length + ' joueurs pourront ' +
+    'convertir leurs parts en banque en voix, dimanche de minuit à midi.\nUn seul passage chacun.\n\n' +
+    'Les urnes physiques restent ouvertes jusqu’au dépouillement.');
 });
 
 document.getElementById('v-tally').addEventListener('click', async () => {

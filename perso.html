@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="icon" href="img/favicon.png?v=8d9ee157" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png?v=daf01749">
-<link rel="stylesheet" href="common/style.css?v=d81f069e">
+<link rel="stylesheet" href="common/style.css?v=19190eb9">
 </head>
 <body class="has-tabbar">
 
@@ -834,31 +834,57 @@ function renderVote(){
 function buildVoteBody(){
   const body = document.getElementById('v-body');
   const status = document.getElementById('v-status');
-  const st = VOTE && VOTE.status;
+  const st = (VOTE && VOTE.status) || 'draft';
 
-  if (!VOTE || !st || st === 'draft'){
-    status.textContent = 'à venir'; status.className = 'bdg';
-    body.innerHTML = '<div class="empty">Le vote n’est pas encore ouvert.<br>' +
-      'Rendez-vous dimanche matin.</div>';
+  /* ---- Les urnes, elles, sont ouvertes en permanence ----
+     Le vote physique ne dépend pas de l'état du scrutin dans l'app : on peut
+     aller sceller une alliance dans une urne dès le vendredi soir. C'est
+     irréversible, et c'est précisément ce qui en fait une preuve. */
+  const urnes =
+    '<div class="urnes"><div class="u-h"><span class="u-ic">&#127891;</span>' +
+      '<div><div class="u-t">Les urnes sont ouvertes</div>' +
+      '<div class="u-s">Depuis le début du week-end, et jusqu’au dépouillement</div></div></div>' +
+    '<p>Dépose tes <strong>jetons physiques</strong> dans l’urne de l’équipe que tu ' +
+      'soutiens, <strong>quand tu veux</strong>. C’est <strong>définitif</strong> : ' +
+      'un jeton déposé ne ressort pas.</p>' +
+    '<p>C’est ce qui permet de prouver une alliance sur-le-champ — ' +
+      '« mets-les dans notre urne, maintenant ». Mais un jeton dans une urne ' +
+      'n’est plus un jeton pour parier.</p>' +
+    (TEAMS.length
+      ? '<div class="u-teams">' + TEAMS.map(t =>
+          '<span class="u-team" style="--tc:' + esc(t.color||'#888') + '">' +
+          esc(t.name) + '</span>').join('') + '</div>'
+      : '') +
+    '</div>';
+
+  const appNote =
+    '<div class="tok-note"><span class="ic">&#128241;</span><div>' +
+      '<strong>Tes parts en banque</strong> se convertissent en voix <strong>ici</strong>, ' +
+      'dimanche à partir de minuit. Répartition libre entre les équipes, ' +
+      '<strong>un seul passage</strong>. Dépouillement dimanche midi.<br>' +
+      'Les deux décomptes — urnes et app — <strong>s’additionnent</strong>.' +
+    '</div></div>';
+
+  /* ---- pas encore publié : les urnes tournent quand même ---- */
+  if (st === 'draft'){
+    status.textContent = 'urnes ouvertes'; status.className = 'bdg bdg-warn';
+    body.innerHTML = urnes + appNote +
+      '<div class="empty">Le vote dans l’app ouvrira <strong>dimanche à partir de ' +
+      'minuit</strong>. D’ici là, seules les urnes comptent.</div>';
     return;
   }
 
   let h = '<div class="vote-q">' + esc(VOTE.question || 'L’avenir de l’entreprise') + '</div>';
   if (VOTE.detail) h += '<div class="vote-d">' + esc(VOTE.detail) + '</div>';
-
-  const urnNote = '<div class="tok-note"><span class="ic">&#127891;</span><div>' +
-    '<strong>Deux façons de peser, elles s’additionnent.</strong><br>' +
-    '&#127920; Tes <strong>jetons physiques</strong> : tu les déposes dans l’urne de l’équipe ' +
-    'que tu soutiens.<br>' +
-    '&#128241; Tes <strong>parts en banque</strong> : tu les convertis ici en voix, ' +
-    'réparties comme tu veux.</div></div>';
+  h += urnes;
 
   /* ---- annoncé ---- */
   if (st === 'announced'){
     status.textContent = 'annoncé'; status.className = 'bdg bdg-warn';
     h += '<div class="deadline"><span>&#128276;</span><div class="dl-t">' +
-         'Ouverture' + (VOTE.opensAt ? ' <b>' + esc(whenLong(VOTE.opensAt)) + '</b>' : ' bientôt') +
-         (VOTE.opensAt ? '<br><span id="v-dl"></span>' : '') + '</div></div>' + urnNote;
+         'Ouverture du vote dans l’app' +
+         (VOTE.opensAt ? ' <b>' + esc(whenLong(VOTE.opensAt)) + '</b>' : ' dimanche à minuit') +
+         (VOTE.opensAt ? '<br><span id="v-dl"></span>' : '') + '</div></div>' + appNote;
     h += '<hr class="hr"><h3 style="margin:0 0 9px">Les équipes en lice</h3>' + teamOptionsHtml(false);
     body.innerHTML = h;
     return;
@@ -866,7 +892,7 @@ function buildVoteBody(){
 
   /* ---- clos : résultats + visions révélées ---- */
   if (st === 'closed'){
-    status.textContent = 'clos'; status.className = 'bdg bdg-dng';
+    status.textContent = 'dépouillé'; status.className = 'bdg bdg-dng';
     const R = VOTE.results;
     if (!R){ body.innerHTML = h + '<div class="empty">Dépouillement en cours…</div>'; return; }
     const max = Math.max(1, ...(R.ranked||[]).map(o => o.total));
@@ -891,18 +917,19 @@ function buildVoteBody(){
     return;
   }
 
-  /* ---- ouvert ---- */
+  /* ---- ouvert : dimanche, de minuit à midi ---- */
   status.textContent = 'ouvert'; status.className = 'bdg bdg-ok';
   if (VOTE.closesAt){
     h += '<div class="deadline"><span>&#9201;</span><div class="dl-t">' +
-         'Fermeture des urnes<br><span id="v-dl"></span></div></div>';
+         'Dépouillement, urnes comprises<br><span id="v-dl"></span></div></div>';
   }
-  h += urnNote;
+  h += appNote;
 
   if (MYBALLOT){
     h += myBallotHtml();
     h += '<div class="msg msg-ok">Ton vote dans l’app est <strong>définitif</strong> : ' +
-         'un seul passage. Il te reste tes jetons physiques pour l’urne.</div>';
+         'un seul passage. Il te reste tes jetons physiques pour les urnes, ' +
+         'jusqu’au dépouillement.</div>';
     body.innerHTML = h;
     return;
   }
@@ -911,7 +938,7 @@ function buildVoteBody(){
        '<div class="alloc-sum" id="v-sum"></div><div id="v-msg"></div>' +
        '<button class="btn btn-pri btn-blk" id="v-cast">Voter définitivement</button>' +
        '<p class="mini">Tu peux n’engager qu’une partie, ou rien du tout si tu préfères ' +
-       'tout mettre dans les urnes en jetons.</p>';
+       'tout jouer en jetons dans les urnes.</p>';
   body.innerHTML = h;
 }
 

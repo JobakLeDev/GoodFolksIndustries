@@ -63,25 +63,34 @@ Le tarif affiché est le **prix officiel** ; rien n'empêche un arrangement en
 jetons à côté. C'est voulu : la trace quand on la veut, la roublardise quand on
 la préfère.
 
-### Le vote du dimanche : hybride
+### Le vote : deux canaux, deux calendriers
 
-Deux façons de peser, **elles s'additionnent** :
+Il y a **une urne physique par équipe**, et un vote numérique. Les deux
+comptent pareil, mais ils ne s'ouvrent pas au même moment.
 
-- **Les jetons physiques** vont dans l'**urne** de l'équipe soutenue. L'orga
-  compte et saisit le total par urne dans la console.
-- **Les parts en banque** se convertissent en **voix dans l'app**, réparties
-  librement entre plusieurs équipes si le joueur veut couvrir ses paris.
+| | Quand | Ce qu'on y met |
+|---|---|---|
+| **Les urnes** | **tout le week-end**, jusqu'au dépouillement | les jetons physiques |
+| **L'app** | **dimanche, de 00:00 à 12:00** | les parts en banque |
 
-Dans l'app : **un seul passage, définitif**. Les parts converties sont
-**bloquées** (champ `engaged`) puis **rendues** au dépouillement — voter ne
-coûte rien.
+Les urnes ouvertes en permanence sont le cœur du jeu social : elles
+permettent de **prouver une alliance sur-le-champ** — « mets-les dans notre
+urne, maintenant ». Une promesse se renie, un jeton déposé non. Le prix à
+payer est réel : un jeton dans une urne n'est plus un jeton pour parier.
+
+Côté app, la conversion est **un seul passage, définitif**, avec répartition
+libre entre plusieurs équipes. Les parts converties sont **bloquées**
+(champ `engaged`) puis **rendues** au dépouillement — voter ne coûte rien.
 
 > **Pourquoi bloquer ?** Sans blocage, on voterait avec 10 parts puis on les
-> céderait à quelqu'un qui revoterait avec les mêmes. Le verrou est ce qui rend
-> le décompte exact.
+> céderait à quelqu'un qui revoterait avec les mêmes. Le verrou est ce qui
+> rend le décompte exact.
 
-Personne n'est lésé selon la forme où il a laissé ses parts, et la scène des
-urnes garde son enjeu.
+**Dimanche midi**, l'orga ferme les urnes, compte chaque tas et le saisit
+dans la console. Urnes + app s'additionnent, le résultat tombe, et les cinq
+objectifs secrets sont révélés.
+
+---
 
 ---
 
@@ -105,26 +114,6 @@ Console Firebase → **Firestore Database → Règles** → coller `firestore.ru
 
 > ⚠️ **À republier chaque fois qu'une collection est ajoutée** : la règle
 > fourre-tout en fin de fichier refuse tout ce qui n'est pas listé.
-
-### Déployer une correction (cache)
-
-Les pages référencent leurs assets avec une empreinte de contenu
-(`common/app.js?v=0d36190c`). **Avant chaque commit qui touche un .js, un
-.css ou une image** :
-
-```
-node bump-cache.js
-```
-
-Le script recalcule les empreintes et réécrit les `.html`. Un fichier
-inchangé garde son URL — donc le cache continue de servir, et c'est tant
-mieux. Un fichier modifié change d'URL, et le navigateur le redemande.
-
-Sans ça, un joueur peut rester bloqué tout le week-end sur une version
-périmée, sans aucun moyen de forcer le rechargement depuis son téléphone.
-
-`node bump-cache.js --check` ne modifie rien et sort en code 1 s'il reste
-des versions périmées — pratique en hook de pré-commit.
 
 ### 4. Activer GitHub Pages
 
@@ -151,6 +140,26 @@ dotation par défaut.
 
 La page affiche le **tableau des codes à distribuer**, et le bouton **🖨 Codes**
 en ouvre une version imprimable pour les badges.
+
+### Déployer une correction (cache)
+
+Les pages référencent leurs assets avec une empreinte de contenu
+(`common/app.js?v=0d36190c`). **Avant chaque commit qui touche un .js, un
+.css ou une image** :
+
+```
+node bump-cache.js
+```
+
+Le script recalcule les empreintes et réécrit les `.html`. Un fichier
+inchangé garde son URL — donc le cache continue de servir, et c'est tant
+mieux. Un fichier modifié change d'URL, et le navigateur le redemande.
+
+Sans ça, un joueur peut rester bloqué tout le week-end sur une version
+périmée, sans aucun moyen de forcer le rechargement depuis son téléphone.
+
+`node bump-cache.js --check` ne modifie rien et sort en code 1 s'il reste
+des versions périmées — pratique en hook de pré-commit.
 
 ---
 
@@ -208,26 +217,35 @@ bonne réserve avant le début du week-end.
 
 ## Le dimanche, côté console
 
+Les urnes n'ont besoin de personne : elles tournent depuis le premier soir.
+Ce qui suit ne pilote que le **vote numérique** et le dépouillement.
+
 Onglet **Vote** :
 
 1. Rédiger la **question** et les précisions. **Les options sont les équipes** —
    inutile de les saisir, elles sont reprises automatiquement, une urne chacune.
-2. Fixer l'**ouverture** (dimanche matin) et la **fermeture des urnes**.
-3. **📢 Annoncer** la veille : la question et les équipes en lice deviennent
-   visibles, le vote reste fermé. C'est le carburant des tractations du samedi soir.
-4. **▶ Ouvrir** le dimanche matin.
-5. Compter les urnes et **saisir chaque total** dans « Comptage des urnes ».
+2. Fixer l'**ouverture** (dimanche 00:00) et le **dépouillement** (dimanche 12:00).
+3. **📢 Annoncer** quand tu veux : la question et les équipes en lice deviennent
+   visibles. Plus tu annonces tôt, plus les urnes se remplissent tôt.
+4. **▶ Ouvrir** le vote numérique à minuit.
+5. Dimanche midi : ouvrir les urnes, compter, et **saisir chaque total** dans
+   « Comptage des urnes ».
 6. **◻ Clore et dépouiller** : additionne urnes + voix de l'app, publie le
    résultat, **révèle les objectifs secrets** des 5 équipes, et rend les parts
    engagées.
 
-Pendant le vote, la console affiche le **décompte provisoire** (vue orga
-uniquement) et la **liste de ceux qui ne sont pas encore passés par l'app**,
-triés par parts en banque.
+Pendant la nuit de vote, la console affiche le **décompte provisoire de la
+part numérique** (vue orga uniquement) et la **liste de ceux qui ne sont pas
+encore passés par l'app**, triés par parts en banque. Les urnes, elles, ne
+disent rien avant que tu les ouvres.
 
 Si tu dépouilles sans avoir saisi toutes les urnes, l'app te prévient et compte
 les manquantes à zéro. Un scrutin clos **ne se réouvre pas** (les parts ont été
 rendues) : passer par la remise à zéro.
+
+Pense à rappeler aux joueurs que pour convertir en voix des parts qui dorment
+**en jetons**, il faut passer au guichet **avant minuit** — ou les mettre
+directement dans une urne.
 
 ---
 
