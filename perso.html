@@ -41,22 +41,17 @@
   <div id="w-engaged"></div>
 
   <div class="tok-note">
-    <span class="ic">&#9888;</span>
-    <div><strong>Seules les parts en banque peuvent devenir des voix.</strong>
-    Un jeton dans ta poche ne vaut rien au scrutin&nbsp;: il faut l&rsquo;avoir
-    d&eacute;pos&eacute; au guichet avant la cl&ocirc;ture.</div>
+    <span class="ic">&#127920;</span>
+    <div><strong>Jetons en main</strong> pour les paris, le beer pong et le casino&nbsp;:
+      ça circule sans trace. <strong>Parts en banque</strong> pour payer dans l&rsquo;app&nbsp;:
+      shop, péages, cagnotte. Le guichet convertit dans les deux sens.</div>
   </div>
 
-  <!-- Guichet -->
   <div class="pnl">
-    <div class="pnl-h"><span class="ic">&#127974;</span> Guichet &mdash; jetons physiques</div>
+    <div class="pnl-h"><span class="ic">&#127974;</span> Guichet</div>
     <div class="pnl-b">
       <div id="g-msg"></div>
       <div id="g-pending"></div>
-      <p style="margin:0 0 12px;font-size:12.5px;color:var(--td)">
-        Le guichet convertit dans les deux sens. Pose ta demande ici pour gagner
-        du temps&nbsp;: l&rsquo;organisation n&rsquo;a plus qu&rsquo;&agrave; compter les jetons.
-      </p>
       <div class="row">
         <div class="field">
           <label for="g-qty">Nombre de jetons</label>
@@ -67,31 +62,31 @@
         <button class="btn btn-gold" id="g-wd">&#11014; Retirer en jetons</button>
         <button class="btn btn-pri" id="g-dp">&#11015; D&eacute;poser des jetons</button>
       </div>
-      <p class="mini">Retirer sort les parts de ton compte&nbsp;; d&eacute;poser les y ram&egrave;ne.</p>
+      <p class="mini">Pose ta demande ici, pr&eacute;sente-toi au guichet&nbsp;: l&rsquo;orga n&rsquo;a plus
+        qu&rsquo;&agrave; compter les jetons.</p>
     </div>
   </div>
 
-  <!-- Cession -->
   <div class="pnl">
-    <div class="pnl-h"><span class="ic">&#128232;</span> C&eacute;der des parts (en banque)</div>
+    <div class="pnl-h"><span class="ic">&#128232;</span> C&eacute;der des parts</div>
     <div class="pnl-b">
       <div id="t-msg"></div>
       <div class="field">
-        <label for="t-to">Destinataire</label>
+        <label for="t-to">&Agrave; qui</label>
         <select id="t-to"><option value="">Chargement&hellip;</option></select>
       </div>
       <div class="row">
         <div class="field">
-          <label for="t-qty">Nombre de parts</label>
+          <label for="t-qty">Combien</label>
           <input id="t-qty" type="number" min="1" step="1" inputmode="numeric" placeholder="0">
         </div>
         <div class="field">
           <label for="t-lb">Motif (visible des deux)</label>
-          <input id="t-lb" type="text" maxlength="60" placeholder="Accord du samedi soir&hellip;">
+          <input id="t-lb" type="text" maxlength="60" placeholder="Pari perdu&hellip;">
         </div>
       </div>
-      <button class="btn btn-pri btn-blk" id="t-go">C&eacute;der les parts</button>
-      <p class="mini">Imm&eacute;diat et d&eacute;finitif. L&rsquo;organisation n&rsquo;annule pas une erreur de destinataire.</p>
+      <button class="btn btn-pri btn-blk" id="t-go">C&eacute;der</button>
+      <p class="mini">Imm&eacute;diat et d&eacute;finitif. L&rsquo;orga n&rsquo;annule pas une erreur de destinataire.</p>
     </div>
   </div>
 
@@ -101,69 +96,120 @@
   </div>
 </section>
 
-<!-- ======================= 2. VOTE ======================= -->
-<section class="sec" id="sec-vote">
-  <div class="pnl">
-    <div class="pnl-h"><span class="ic">&#128499;</span> Le scrutin <span class="sp"></span>
-      <span class="bdg" id="v-status">&mdash;</span></div>
-    <div class="pnl-b" id="v-body"><div class="empty">Chargement&hellip;</div></div>
+<!-- ======================= 2. ÉQUIPE ======================= -->
+<section class="sec" id="sec-equipe">
+  <div id="tm-head"></div>
+  <div id="tm-secret"></div>
+
+  <div class="pnl" id="tm-pot-pnl">
+    <div class="pnl-h"><span class="ic">&#128176;</span> Cagnotte <span class="sp"></span>
+      <span class="bdg bdg-ok" id="tm-pot">&mdash;</span></div>
+    <div class="pnl-b">
+      <div id="pot-msg"></div>
+      <div class="row">
+        <div class="field">
+          <label for="pot-qty">Verser des parts &agrave; l&rsquo;&eacute;quipe</label>
+          <input id="pot-qty" type="number" min="1" step="1" inputmode="numeric" placeholder="0">
+        </div>
+        <div style="flex:0 0 auto;display:flex;align-items:flex-end">
+          <button class="btn btn-sec" id="pot-go">Verser</button>
+        </div>
+      </div>
+      <p class="mini">Ce que tu verses quitte ton compte&nbsp;: c&rsquo;est du poids perso en moins
+        au vote, et de la force collective en plus. &Agrave; toi de voir.</p>
+    </div>
   </div>
-  <div class="pnl" id="v-part-pnl" style="display:none">
-    <div class="pnl-h"><span class="ic">&#128101;</span> Participation</div>
-    <div class="pnl-b" id="v-part"></div>
+
+  <div id="tm-motion"></div>
+
+  <div class="pnl">
+    <div class="pnl-h"><span class="ic">&#128499;</span> Proposer une d&eacute;pense</div>
+    <div class="pnl-b">
+      <div id="pr-msg"></div>
+      <div class="row">
+        <div class="field"><label for="pr-label">&Agrave; quoi &ccedil;a sert</label>
+          <input id="pr-label" maxlength="90" placeholder="Soudoyer l&rsquo;arbitre du beer pong"></div>
+        <div class="field"><label for="pr-amount">Combien</label>
+          <input id="pr-amount" type="number" min="1" step="1" inputmode="numeric" placeholder="0"></div>
+      </div>
+      <button class="btn btn-pri btn-blk" id="pr-go">Soumettre &agrave; l&rsquo;&eacute;quipe</button>
+      <p class="mini">Tes co&eacute;quipiers ont <strong>5 minutes</strong> pour s&rsquo;y opposer.
+        Pass&eacute; ce d&eacute;lai, le silence vaut accord et la d&eacute;pense part.</p>
+    </div>
+  </div>
+
+  <div class="pnl">
+    <div class="pnl-h"><span class="ic">&#127918;</span> Nos activit&eacute;s</div>
+    <div class="pnl-b" id="tm-acts"><div class="empty">Votre &eacute;quipe ne poss&egrave;de rien encore.</div></div>
+  </div>
+
+  <div class="pnl">
+    <div class="pnl-h"><span class="ic">&#128101;</span> L&rsquo;&eacute;quipe</div>
+    <div class="pnl-b"><ul class="lst" id="tm-members"><li class="empty">Chargement&hellip;</li></ul></div>
+  </div>
+
+  <div class="pnl">
+    <div class="pnl-h"><span class="ic">&#127942;</span> Classement des &eacute;quipes</div>
+    <div class="pnl-b">
+      <ul class="lst" id="tm-rank"><li class="empty">Chargement&hellip;</li></ul>
+      <p class="mini">Poids d&rsquo;une &eacute;quipe = cagnotte + parts en banque de ses membres.
+        Les jetons dans les poches ne s&rsquo;y voient pas.</p>
+    </div>
   </div>
 </section>
 
-<!-- ======================= 3. REGISTRE ======================= -->
-<section class="sec" id="sec-registre">
-  <div class="pnl">
-    <div class="pnl-h"><span class="ic">&#128202;</span> O&ugrave; est le capital</div>
-    <div class="pnl-b">
-      <div class="split" id="g-split"><i class="s-acc" style="width:100%"></i></div>
-      <div class="split-key" id="g-key"></div>
-      <hr class="hr">
-      <div class="stat-grid" id="g-stats"></div>
-    </div>
-  </div>
-  <div class="pnl">
-    <div class="pnl-h"><span class="ic">&#127942;</span> Principaux actionnaires <span class="sp"></span>
-      <span class="bdg" id="g-topn"></span></div>
-    <div class="pnl-b">
-      <ul class="lst" id="g-top"><li class="empty">Chargement&hellip;</li></ul>
-      <div id="g-mine"></div>
-      <p class="mini">Le registre compte les parts d&eacute;tenues&nbsp;: en banque, plus
-        celles engag&eacute;es au scrutin. Les jetons physiques, lui, il les ignore.</p>
-    </div>
-  </div>
-</section>
-
-<!-- ======================= 4. MAGASIN ======================= -->
+<!-- ======================= 3. SHOP ======================= -->
 <section class="sec" id="sec-shop">
   <div class="pnl">
-    <div class="pnl-h"><span class="ic">&#128722;</span> Magasin de la compagnie <span class="sp"></span>
+    <div class="pnl-h"><span class="ic">&#128722;</span> Shop <span class="sp"></span>
       <span class="bdg bdg-ok" id="s-bal">&mdash;</span></div>
     <div class="pnl-b">
-      <div class="tok-note">
-        <span class="ic">&#128176;</span>
-        <div>Tout se paie <strong>en parts, depuis ton compte</strong>. Ce que tu ach&egrave;tes,
-        c&rsquo;est autant de voix que tu ne pourras pas peser au scrutin.</div>
-      </div>
       <div id="s-msg"></div>
+      <h3 style="margin:0 0 9px">Pour moi</h3>
       <div class="shop-grid" id="s-grid"></div>
-      <div class="empty" id="s-empty">Catalogue vide pour le moment.</div>
+      <div class="empty" id="s-empty">Rien &agrave; vendre pour l&rsquo;instant.</div>
+      <hr class="hr">
+      <h3 style="margin:0 0 4px">Pour l&rsquo;&eacute;quipe</h3>
+      <p class="mini" style="margin:0 0 10px">Pay&eacute; sur la cagnotte, et soumis au vote des
+        co&eacute;quipiers pendant 5&nbsp;minutes.</p>
+      <div class="shop-grid" id="s-team"></div>
+      <div class="empty" id="s-team-empty">Rien pour les &eacute;quipes pour l&rsquo;instant.</div>
     </div>
   </div>
+
+  <div class="pnl">
+    <div class="pnl-h"><span class="ic">&#127903;</span> P&eacute;ages &mdash; activit&eacute;s des autres</div>
+    <div class="pnl-b" id="s-tolls"><div class="empty">Aucune activit&eacute; ouverte.</div></div>
+  </div>
+
   <div class="pnl">
     <div class="pnl-h"><span class="ic">&#128230;</span> Mes commandes</div>
     <div class="pnl-b"><ul class="lst" id="s-orders"><li class="empty">Aucune commande.</li></ul></div>
   </div>
 </section>
 
-<!-- ======================= 5. JOURNAL ======================= -->
-<section class="sec" id="sec-journal">
+<!-- ======================= 4. FIL ======================= -->
+<section class="sec" id="sec-fil">
   <div class="pnl">
-    <div class="pnl-h"><span class="ic">&#128240;</span> Communiqu&eacute;s de la direction</div>
-    <div class="pnl-b" id="j-list"><div class="empty">Rien &agrave; signaler.</div></div>
+    <div class="pnl-h"><span class="ic">&#128197;</span> Programme</div>
+    <div class="pnl-b" id="f-prog"><div class="empty">Programme &agrave; venir.</div></div>
+  </div>
+  <div class="pnl">
+    <div class="pnl-h"><span class="ic">&#128240;</span> Journal officiel</div>
+    <div class="pnl-b" id="f-journal"><div class="empty">Rien &agrave; signaler.</div></div>
+  </div>
+</section>
+
+<!-- ======================= 5. VOTE ======================= -->
+<section class="sec" id="sec-vote">
+  <div class="pnl">
+    <div class="pnl-h"><span class="ic">&#128499;</span> Le vote <span class="sp"></span>
+      <span class="bdg" id="v-status">&mdash;</span></div>
+    <div class="pnl-b" id="v-body"><div class="empty">Chargement&hellip;</div></div>
+  </div>
+  <div class="pnl" id="v-part-pnl" style="display:none">
+    <div class="pnl-h"><span class="ic">&#128101;</span> Participation</div>
+    <div class="pnl-b" id="v-part"></div>
   </div>
 </section>
 
@@ -181,26 +227,26 @@
     </div>
   </div>
   <div class="pnl">
-    <div class="pnl-h"><span class="ic">&#128220;</span> R&egrave;gles du jeu</div>
-    <div class="pnl-b doc" id="r-body"><div class="empty">Chargement&hellip;</div></div>
+    <div class="pnl-h"><span class="ic">&#128202;</span> Gros porteurs</div>
+    <div class="pnl-b">
+      <ul class="lst" id="i-top"><li class="empty">Chargement&hellip;</li></ul>
+      <div id="i-mine"></div>
+    </div>
   </div>
   <div class="pnl">
-    <div class="pnl-h"><span class="ic">&#128100;</span> Mon dossier</div>
-    <div class="pnl-b">
-      <div class="stat-grid" id="st-mine"><div class="empty">Aucune donn&eacute;e.</div></div>
-      <div id="st-notes"></div>
-    </div>
+    <div class="pnl-h"><span class="ic">&#128220;</span> R&egrave;gles du jeu</div>
+    <div class="pnl-b doc" id="i-rules"><div class="empty">Chargement&hellip;</div></div>
   </div>
 </section>
 
 </div>
 
 <nav class="tabbar" id="tabbar">
-  <button data-sec="parts" class="on"><span class="ic">&#128312;</span>Parts</button>
-  <button data-sec="vote"><span class="ic">&#128499;</span>Vote<span class="dot" id="tab-dot" style="display:none"></span></button>
-  <button data-sec="registre"><span class="ic">&#128202;</span>Registre</button>
-  <button data-sec="shop"><span class="ic">&#128722;</span>Magasin</button>
-  <button data-sec="journal"><span class="ic">&#128240;</span>Journal</button>
+  <button data-sec="parts" class="on"><span class="ic">&#128176;</span>Parts</button>
+  <button data-sec="equipe"><span class="ic">&#129309;</span>&Eacute;quipe<span class="dot" id="dot-team" style="display:none"></span></button>
+  <button data-sec="shop"><span class="ic">&#128722;</span>Shop</button>
+  <button data-sec="fil"><span class="ic">&#128197;</span>Fil</button>
+  <button data-sec="vote"><span class="ic">&#128499;</span>Vote<span class="dot" id="dot-vote" style="display:none"></span></button>
   <button data-sec="infos"><span class="ic">&#8505;</span>Infos</button>
 </nav>
 
@@ -211,18 +257,20 @@
 <script src="common/app.js"></script>
 <script>
 /* ============================================================
-   perso.html — compte actionnaire. Tout est en temps réel.
+   perso.html — le hub du week-end. Tout est en temps réel.
    ============================================================ */
 const SESS = requireSession();
-let ME = null;            // ma fiche /players/{id}
-let PLAYERS = [];         // tous les actionnaires
+let ME = null, PLAYERS = [], TEAMS = [], ACTS = [], MOTIONS = [], SHOP = [];
 let TRES = { issued:0, circulating:0, company:0 };
-let SHOP = [];
-let VOTE = null;          // /vote/current
-let MYBALLOT = null;      // /ballots/{moi}
-let ALLOC = {};           // brouillon de répartition (optionId → parts)
-let POIS = [];
+let VOTE = null, MYBALLOT = null, ALLOC = {}, FEE_DRAFT = {};
+let SCHEDULE = [], POIS = [];
 let MAP = null, meMarker = null, poiLayer = null;
+
+const myTeam    = () => TEAMS.find(t => t.id === (ME && ME.team)) || null;
+const actifs    = () => PLAYERS.filter(p => p.active !== false);
+const teamById  = id => TEAMS.find(t => t.id === id) || null;
+const teamName  = id => { const t = teamById(id); return t ? t.name : '—'; };
+const teamColor = id => { const t = teamById(id); return (t && t.color) || 'var(--td)'; };
 
 /* ---------- Onglets ---------- */
 document.getElementById('tabbar').addEventListener('click', ev => {
@@ -236,10 +284,8 @@ function showSec(name){
   window.scrollTo(0,0);
   if (name === 'infos') initMap();     // Leaflet exige un conteneur visible
 }
-
 document.getElementById('h-out').addEventListener('click', () => {
-  clearSession();
-  location.href = 'index.html?logout=1';
+  clearSession(); location.href = 'index.html?logout=1';
 });
 
 /* ============================================================
@@ -259,14 +305,31 @@ document.getElementById('h-out').addEventListener('click', () => {
 
   db.collection(COL.players).onSnapshot(qs => {
     PLAYERS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()));
-    renderRecipients(); renderRegistre(); renderVote();
+    renderRecipients(); renderTeam(); renderTops(); renderVote();
+  });
+
+  db.collection(COL.teams).onSnapshot(qs => {
+    TEAMS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()))
+      .sort((a,b) => (a.order||0) - (b.order||0) ||
+                     String(a.name||'').localeCompare(String(b.name||''),'fr'));
+    renderMe(); renderTeam(); renderShop(); renderVote();
   });
 
   db.collection(COL.config).doc('treasury').onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     TRES = { issued:Number(d.issued)||0, circulating:Number(d.circulating)||0,
              company:Number(d.company)||0 };
-    renderMe(); renderRegistre();
+    renderMe(); renderTops();
+  });
+
+  db.collection(COL.activities).onSnapshot(qs => {
+    ACTS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()));
+    renderTeamActs(); renderTolls();
+  });
+
+  db.collection(COL.motions).where('status','==','open').onSnapshot(qs => {
+    MOTIONS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()));
+    renderMotion();
   });
 
   // Mes mouvements : deux requêtes fusionnées côté client
@@ -281,20 +344,13 @@ document.getElementById('h-out').addEventListener('click', () => {
   });
 
   db.collection(COL.requests).where('playerId','==',SESS.id)
-    .where('status','==','pending').onSnapshot(qs => {
-      renderPending(qs.docs.map(d => d.data()));
-    });
+    .where('status','==','pending').onSnapshot(qs => renderPending(qs.docs.map(d => d.data())));
 
   db.collection(COL.vote).doc('current').onSnapshot(s => {
-    VOTE = s.exists ? s.data() : null;
-    renderVote();
+    VOTE = s.exists ? s.data() : null; renderVote();
   });
-
-  // Mon bulletin, en écoute : si je vote depuis un autre appareil,
-  // cet écran le reflète au lieu de croire que je n'ai pas voté.
   db.collection(COL.ballots).doc(SESS.id).onSnapshot(s => {
-    MYBALLOT = s.exists ? s.data() : null;
-    renderVote();
+    MYBALLOT = s.exists ? s.data() : null; renderVote();
   });
 
   db.collection(COL.shop).doc('catalog').onSnapshot(s => {
@@ -306,12 +362,20 @@ document.getElementById('h-out').addEventListener('click', () => {
   db.collection(COL.journal).doc('public').onSnapshot(s => {
     renderJournal(s.exists ? (s.data().entries || []) : []);
   });
+  db.collection(COL.schedule).doc('data').onSnapshot(s => {
+    SCHEDULE = s.exists ? (s.data().items || []) : []; renderProgramme();
+  });
   db.collection(COL.map).doc('data').onSnapshot(s => {
     POIS = s.exists ? (s.data().pois || []) : []; renderPois();
   });
 
   loadRules();
-  setInterval(refreshVoteLive, 20000);   // compte à rebours
+
+  // Les comptes à rebours bougent à la seconde ; les motions échues sont
+  // closes par le premier écran qui s'en aperçoit (resolveMotion est idempotent).
+  setInterval(() => { tickCountdowns(); refreshVoteLive(); }, 1000);
+  setInterval(sweepMotions, 20000);
+  sweepMotions();
 
   try{
     const t = localStorage.getItem('gpc_tab');
@@ -320,46 +384,48 @@ document.getElementById('h-out').addEventListener('click', () => {
 })();
 
 /* ---------- Agrégats ---------- */
-const actifs = () => PLAYERS.filter(p => p.active !== false);
-const onAccounts = () => actifs().reduce((s,p) => s + (Number(p.shares)||0), 0);
-const totalEngaged = () => actifs().reduce((s,p) => s + (Number(p.engaged)||0), 0);
-const capital = () => TRES.issued ||
-  (onAccounts() + totalEngaged() + TRES.circulating + TRES.company);
+const onAccounts  = () => actifs().reduce((s,p) => s + (Number(p.shares)||0), 0);
+const totEngaged  = () => actifs().reduce((s,p) => s + (Number(p.engaged)||0), 0);
+const totPots     = () => TEAMS.reduce((s,t) => s + (Number(t.pot)||0), 0);
+const capital     = () => TRES.issued ||
+  (onAccounts() + totEngaged() + totPots() + TRES.circulating + TRES.company);
+/** Poids d'une équipe : cagnotte + parts détenues par ses membres. */
+const teamWeight  = id => (Number((teamById(id)||{}).pot)||0) +
+  actifs().filter(p => p.team === id).reduce((s,p) => s + held(p), 0);
 
 /* ============================================================
    Mes parts
    ============================================================ */
 function renderMe(){
   if (!ME) return;
-  document.getElementById('h-who').textContent  = ME.pseudo || ME.id;
-  document.getElementById('h-role').textContent = ME.role || '';
-  document.getElementById('w-amt').textContent  = num(ME.shares);
-  document.getElementById('s-bal').textContent  = parts(ME.shares);
+  document.getElementById('h-who').textContent = ME.pseudo || ME.id;
+  const t = myTeam();
+  const role = document.getElementById('h-role');
+  role.textContent = t ? t.name : (ME.role || '');
+  role.style.color = t ? (t.color || '') : '';
+  document.getElementById('w-amt').textContent = num(ME.shares);
+  document.getElementById('s-bal').textContent = parts(ME.shares);
   const cap = capital();
   document.getElementById('w-pct').innerHTML = cap
-    ? 'soit <b>' + pctOf(held(ME), cap) + '</b> du capital, engagées comprises'
-    : '';
+    ? 'soit <b>' + pctOf(held(ME), cap) + '</b> du capital' : '';
 
   const eng = Number(ME.engaged)||0;
   document.getElementById('w-engaged').innerHTML = eng
     ? '<div class="msg msg-ok" style="display:flex;gap:9px;align-items:flex-start">' +
-      '<span>&#128499;</span><div><strong>' + parts(eng) + ' engagées au scrutin.</strong> ' +
-      'Elles sont bloquées jusqu’au dépouillement, puis elles te seront rendues. ' +
-      'Tu détiens toujours ' + parts(held(ME)) + ' en tout.</div></div>'
+      '<span>&#128499;</span><div><strong>' + parts(eng) + ' engagées au vote.</strong> ' +
+      'Bloquées jusqu’au dépouillement, puis rendues.</div></div>'
     : '';
-
-  renderStatsMine(); renderShop(); renderRegistre(); renderVote();
+  renderShop(); renderTops();
 }
 
 function renderRecipients(){
   const sel = document.getElementById('t-to');
   const keep = sel.value;
-  const others = actifs()
-    .filter(p => p.id !== SESS.id)
+  const others = actifs().filter(p => p.id !== SESS.id)
     .sort((a,b) => String(a.pseudo||a.id).localeCompare(String(b.pseudo||b.id),'fr'));
-  sel.innerHTML = '<option value="">— Choisir un actionnaire —</option>' +
-    others.map(p => '<option value="' + esc(p.id) + '">' + esc(p.pseudo || p.id) +
-      (p.role ? ' — ' + esc(p.role) : '') + '</option>').join('');
+  sel.innerHTML = '<option value="">— Choisir —</option>' + others.map(p =>
+    '<option value="' + esc(p.id) + '">' + esc(p.pseudo || p.id) +
+    (p.team ? ' — ' + esc(teamName(p.team)) : '') + '</option>').join('');
   if (keep) sel.value = keep;
 }
 
@@ -367,14 +433,14 @@ document.getElementById('t-go').addEventListener('click', async () => {
   const btn = document.getElementById('t-go');
   const to = document.getElementById('t-to').value;
   say('t-msg','');
-  if (!to){ say('t-msg','Choisis un destinataire.','err'); return; }
+  if (!to){ say('t-msg','Choisis quelqu’un.','err'); return; }
   const n = Math.round(Number(document.getElementById('t-qty').value)||0);
   if (n <= 0){ say('t-msg','Indique un nombre de parts.','err'); return; }
   const who = (PLAYERS.find(p => p.id === to) || {}).pseudo || to;
   if (!confirm('Céder ' + parts(n) + ' à ' + who + ' ?\n\nC’est immédiat et définitif.')) return;
   btn.disabled = true; btn.textContent = 'Transfert…';
   const r = await transferShares(SESS.id, to, n, document.getElementById('t-lb').value);
-  btn.disabled = false; btn.textContent = 'Céder les parts';
+  btn.disabled = false; btn.textContent = 'Céder';
   if (r.ok){
     say('t-msg','Parts cédées.','ok');
     document.getElementById('t-qty').value = '';
@@ -382,14 +448,12 @@ document.getElementById('t-go').addEventListener('click', async () => {
   } else say('t-msg', r.error, 'err');
 });
 
-/* ---------- Guichet ---------- */
 function renderPending(rows){
-  const box = document.getElementById('g-pending');
-  box.innerHTML = rows.map(r =>
+  document.getElementById('g-pending').innerHTML = rows.map(r =>
     '<div class="msg msg-ok" style="display:flex;align-items:center;gap:8px">' +
-      '<span>&#9203;</span><div>Demande en attente&nbsp;: <strong>' +
+      '<span>&#9203;</span><div>En attente&nbsp;: <strong>' +
       (r.kind === 'withdraw' ? 'retirer' : 'déposer') + ' ' + num(r.qty) +
-      ' jeton' + (r.qty > 1 ? 's' : '') + '</strong>. Présente-toi au guichet.</div></div>').join('');
+      ' jeton' + (r.qty > 1 ? 's' : '') + '</strong>. Va au guichet.</div></div>').join('');
 }
 
 async function guichet(kind){
@@ -403,18 +467,17 @@ async function guichet(kind){
   btn.disabled = true;
   const r = await fileRequest(SESS.id, ME.pseudo || SESS.id, kind, n);
   btn.disabled = false;
-  if (r.ok){
-    say('g-msg','Demande transmise. Va voir l’organisation avec tes jetons.','ok');
-    document.getElementById('g-qty').value = '';
-  } else say('g-msg', r.error, 'err');
+  if (r.ok){ say('g-msg','Demande transmise. Va voir l’orga.','ok');
+             document.getElementById('g-qty').value = ''; }
+  else say('g-msg', r.error, 'err');
 }
 document.getElementById('g-wd').addEventListener('click', () => guichet('withdraw'));
 document.getElementById('g-dp').addEventListener('click', () => guichet('deposit'));
 
-/* ---------- Relevé ---------- */
 const MV_LABEL = {
   transfer:'Cession', withdraw:'Retrait en jetons', deposit:'Dépôt de jetons',
-  issue:'Émission', grant:'Attribution', reclaim:'Reprise', shop:'Achat',
+  issue:'Émission', grant:'Prime', reclaim:'Reprise', shop:'Achat',
+  pot_in:'Versement cagnotte', pot_out:'Dépense d’équipe', toll:'Péage',
   vote:'Conversion en voix', release:'Parts rendues'
 };
 function renderHist(rows){
@@ -422,7 +485,7 @@ function renderHist(rows){
   if (!rows.length){ ul.innerHTML = '<li class="empty">Aucun mouvement.</li>'; return; }
   ul.innerHTML = rows.map(r => {
     const out   = r.dir === 'out';
-    const other = out ? partyName(r.to, r.toName) : partyName(r.from, r.fromName);
+    const other = out ? partyName(r.to, r.toName, TEAMS) : partyName(r.from, r.fromName, TEAMS);
     const cls   = (r.type === 'withdraw' || r.type === 'deposit') ? 'amt-tok'
                 : (r.type === 'vote' || r.type === 'release')     ? 'amt-vote'
                 : (out ? 'amt-out' : 'amt-in');
@@ -434,83 +497,396 @@ function renderHist(rows){
 }
 
 /* ============================================================
-   Scrutin
+   Équipe
+   ============================================================ */
+function renderTeam(){
+  const t = myTeam();
+  const head = document.getElementById('tm-head');
+  if (!t){
+    head.innerHTML = '<div class="pnl"><div class="pnl-b"><div class="empty">' +
+      'Tu n’es encore dans aucune équipe.<br>L’orga va t’en attribuer une.</div></div></div>';
+    document.getElementById('tm-secret').innerHTML = '';
+    ['tm-pot-pnl'].forEach(id => document.getElementById(id).style.display = 'none');
+    return;
+  }
+  document.getElementById('tm-pot-pnl').style.display = '';
+  head.innerHTML =
+    '<div class="team-hero" style="--tc:' + esc(t.color || '#1b3a57') + '">' +
+      '<div class="th-name">' + esc(t.name) + '</div>' +
+      (t.motto ? '<div class="th-motto">' + esc(t.motto) + '</div>' : '') +
+      '<div class="th-stats">' +
+        '<span><b>' + num(t.pot) + '</b> en cagnotte</span>' +
+        '<span><b>' + num(teamWeight(t.id)) + '</b> de poids total</span>' +
+      '</div></div>';
 
-   Le corps n'est reconstruit que si l'ÉTAT change (_voteKey) : sinon un
-   rafraîchissement effacerait la répartition en cours de saisie. Les
-   éléments vivants (compte à rebours, parts disponibles, participation)
-   sont mis à jour séparément par refreshVoteLive().
+  document.getElementById('tm-secret').innerHTML = t.secret
+    ? '<div class="secret"><div class="sc-lb">&#128274; Objectif secret &mdash; ne le montre à personne</div>' +
+      '<div class="sc-x">' + esc(t.secret) + '</div></div>'
+    : '';
+  document.getElementById('tm-pot').textContent = parts(t.pot);
+
+  // membres
+  const mem = actifs().filter(p => p.team === t.id)
+    .sort((a,b) => held(b) - held(a));
+  document.getElementById('tm-members').innerHTML = mem.length
+    ? mem.map(p => '<li><div class="lst-main"><div class="lst-t">' + esc(p.pseudo || p.id) +
+        (p.id === SESS.id ? ' <span class="bdg bdg-ok">toi</span>' : '') + '</div>' +
+        '<div class="lst-s">' + parts(p.shares) + ' en banque' +
+        ((Number(p.engaged)||0) ? ' · ' + num(p.engaged) + ' engagées' : '') + '</div></div>' +
+        '<div class="lst-amt">' + num(held(p)) + '</div></li>').join('')
+    : '<li class="empty">Personne.</li>';
+
+  // classement des équipes
+  const rank = TEAMS.slice().sort((a,b) => teamWeight(b.id) - teamWeight(a.id));
+  const max = Math.max(1, ...rank.map(x => teamWeight(x.id)));
+  document.getElementById('tm-rank').innerHTML = rank.map((x,i) => {
+    const w = teamWeight(x.id);
+    return '<li><div class="lst-main">' +
+      '<div class="lst-t"><span class="tdot" style="background:' + esc(x.color||'#888') + '"></span>' +
+        (i+1) + '. ' + esc(x.name) + (x.id === t.id ? ' <span class="bdg bdg-ok">nous</span>' : '') + '</div>' +
+      '<div class="bar" style="margin-top:6px"><i style="width:' + (w/max*100).toFixed(1) +
+        '%;background:' + esc(x.color||'#888') + '"></i></div>' +
+      '<div class="lst-s" style="margin-top:3px">' + num(x.pot) + ' en cagnotte</div></div>' +
+      '<div class="lst-amt">' + num(w) + '</div></li>';
+  }).join('');
+
+  renderTeamActs();
+}
+
+document.getElementById('pot-go').addEventListener('click', async () => {
+  const t = myTeam(); if (!t) return;
+  const btn = document.getElementById('pot-go');
+  const n = Math.round(Number(document.getElementById('pot-qty').value)||0);
+  say('pot-msg','');
+  if (n <= 0){ say('pot-msg','Indique un nombre de parts.','err'); return; }
+  if (!confirm('Verser ' + parts(n) + ' à la cagnotte de ' + t.name + ' ?\n\n' +
+               'Ces parts quittent ton compte : autant de voix en moins pour toi.')) return;
+  btn.disabled = true;
+  const r = await contributeToPot(SESS.id, t.id, n);
+  btn.disabled = false;
+  if (r.ok){ say('pot-msg','Versé.','ok'); document.getElementById('pot-qty').value=''; }
+  else say('pot-msg', r.error, 'err');
+});
+
+document.getElementById('pr-go').addEventListener('click', async () => {
+  const t = myTeam(); if (!t){ say('pr-msg','Tu n’as pas d’équipe.','err'); return; }
+  const btn = document.getElementById('pr-go');
+  const label = document.getElementById('pr-label').value.trim();
+  const amount = Math.round(Number(document.getElementById('pr-amount').value)||0);
+  say('pr-msg','');
+  if (!label){ say('pr-msg','Dis à quoi ça sert.','err'); return; }
+  if (amount <= 0){ say('pr-msg','Indique un montant.','err'); return; }
+  btn.disabled = true;
+  const r = await proposeSpend(t.id, SESS.id, ME.pseudo || SESS.id, { label, amount });
+  btn.disabled = false;
+  if (r.ok){
+    say('pr-msg','Motion ouverte. 5 minutes.','ok');
+    document.getElementById('pr-label').value = '';
+    document.getElementById('pr-amount').value = '';
+    showSec('equipe');
+  } else say('pr-msg', r.error, 'err');
+});
+
+/* ---------- La motion en cours ---------- */
+function myMotion(){
+  const t = myTeam(); if (!t) return null;
+  return MOTIONS.find(m => m.teamId === t.id) || null;
+}
+function renderMotion(){
+  const box = document.getElementById('tm-motion');
+  const m = myMotion();
+  document.getElementById('dot-team').style.display =
+    (m && !(m.votes||{})[SESS.id]) ? '' : 'none';
+  if (!m){ box.innerHTML = ''; return; }
+  const { pour, contre } = motionTally(m);
+  const mine = (m.votes||{})[SESS.id];
+  const t = myTeam();
+  const members = actifs().filter(p => p.team === m.teamId).length;
+  box.innerHTML =
+    '<div class="motion">' +
+      '<div class="mo-h"><span class="mo-tag">Motion en cours</span>' +
+        '<span class="mo-time" data-until="' + Number(m.expiresAt) + '">' +
+        esc(countdown(m.expiresAt)) + '</span></div>' +
+      '<div class="mo-t">' + esc(m.label) + '</div>' +
+      '<div class="mo-s">' + parts(m.amount) + ' sur la cagnotte (' + num(t ? t.pot : 0) + ' dispo)' +
+        ' · propos&eacute; par ' + esc(m.proposerName || m.proposerId) + '</div>' +
+      '<div class="mo-sc"><span class="mo-for">' + pour + ' pour</span>' +
+        '<span class="mo-ag">' + contre + ' contre</span>' +
+        '<span class="mo-ab">' + Math.max(0, members - pour - contre) + ' silencieux</span></div>' +
+      (mine
+        ? '<div class="msg msg-ok" style="margin:10px 0 0">Tu as vot&eacute; <strong>' +
+          (mine === 'for' ? 'pour' : 'contre') + '</strong>. Tu peux encore changer d’avis.</div>'
+        : '') +
+      '<div class="row" style="margin-top:11px">' +
+        '<button class="btn btn-sm' + (mine==='for' ? ' btn-sec' : '') +
+          '" data-mv="for" data-id="' + esc(m.id) + '">&#128077; Pour</button>' +
+        '<button class="btn btn-sm btn-dng' + (mine==='against' ? ' on' : '') +
+          '" data-mv="against" data-id="' + esc(m.id) + '">&#128078; Contre</button>' +
+      '</div>' +
+      '<p class="mini">Silence = accord. Sans majorit&eacute; d’opposants &agrave; la fin du d&eacute;lai, ' +
+        'la d&eacute;pense part.</p>' +
+    '</div>';
+}
+document.getElementById('tm-motion').addEventListener('click', async ev => {
+  const b = ev.target.closest('button[data-mv]'); if (!b) return;
+  b.disabled = true;
+  const r = await voteMotion(b.dataset.id, SESS.id, b.dataset.mv);
+  b.disabled = false;
+  if (!r.ok) alert(r.error);
+});
+
+/* ---------- Nos activités ---------- */
+function renderTeamActs(){
+  const t = myTeam();
+  const box = document.getElementById('tm-acts');
+  if (!t){ box.innerHTML = '<div class="empty">—</div>'; return; }
+  const mine = ACTS.filter(a => a.teamId === t.id);
+  if (!mine.length){
+    box.innerHTML = '<div class="empty">Votre équipe ne possède rien encore.<br>' +
+      'Achetez une activité dans le Shop, puis faites payer les autres.</div>'; return;
+  }
+  box.innerHTML = mine.map(a =>
+    '<div class="act" data-aid="' + esc(a.id) + '">' +
+      '<div class="act-h"><span class="act-ic">' + (a.icon ? esc(a.icon) : '🎲') + '</span>' +
+        '<div class="lst-main"><div class="lst-t">' + esc(a.name) + '</div>' +
+        '<div class="lst-s">' + num(a.plays) + ' passage(s) · ' + num(a.revenue) +
+        ' encaissé(s)</div></div></div>' +
+      '<div class="row" style="margin-top:9px">' +
+        '<div class="field" style="margin:0"><label>Tarif d’entrée</label>' +
+          '<input class="f-fee" type="number" min="0" step="1" inputmode="numeric" value="' +
+          (FEE_DRAFT[a.id] !== undefined ? esc(FEE_DRAFT[a.id]) : Number(a.fee)||0) + '"></div>' +
+        '<div style="flex:0 0 auto;display:flex;align-items:flex-end">' +
+          '<button class="btn btn-sm btn-sec" data-fee="' + esc(a.id) + '">Fixer</button></div>' +
+      '</div>' +
+      '<p class="mini">Tarif 0 = gratuit, personne ne peut payer dans l’app. ' +
+        'Rien ne t’empêche d’encaisser en jetons à côté.</p>' +
+    '</div>').join('');
+}
+document.getElementById('tm-acts').addEventListener('input', ev => {
+  const i = ev.target.closest('.f-fee'); if (!i) return;
+  FEE_DRAFT[i.closest('.act').dataset.aid] = i.value;
+});
+document.getElementById('tm-acts').addEventListener('click', async ev => {
+  const b = ev.target.closest('button[data-fee]'); if (!b) return;
+  const wrap = b.closest('.act');
+  const v = wrap.querySelector('.f-fee').value;
+  b.disabled = true;
+  const r = await setActivityFee(b.dataset.fee, v, SESS.id, (myTeam()||{}).id);
+  b.disabled = false;
+  if (!r.ok){ alert(r.error); return; }
+  delete FEE_DRAFT[b.dataset.fee];
+  b.textContent = 'Fixé ✓';
+  setTimeout(() => { b.textContent = 'Fixer'; }, 1400);
+});
+
+/* ============================================================
+   Shop
+   ============================================================ */
+function shopCard(i, forTeam){
+  const tracked = i.stock !== undefined && i.stock !== null;
+  const out  = tracked && Number(i.stock) <= 0;
+  const t = myTeam();
+  const fund = forTeam ? (t ? Number(t.pot)||0 : 0) : (Number(ME && ME.shares)||0);
+  const poor = Number(i.price) > fund;
+  const img = i.img
+    ? '<div class="card-img" style="background-image:url(' + esc(i.img) + ')"></div>'
+    : '<div class="card-img">' + (i.icon ? esc(i.icon) : '📦') + '</div>';
+  const label = out ? 'Épuisé' : poor ? (forTeam ? 'Cagnotte trop basse' : 'Trop cher')
+              : forTeam ? 'Proposer' : 'Acheter';
+  return '<div class="card' + (out ? ' stock-out' : '') + '">' + img +
+    '<div class="card-b">' +
+      '<div class="card-t">' + esc(i.name || '?') + (i.ownable ? ' <span class="bdg bdg-vio">activité</span>' : '') + '</div>' +
+      '<div class="card-d">' + esc(i.desc || '') + '</div>' +
+      (tracked ? '<div class="lst-s">Stock : ' + num(i.stock) + '</div>' : '') +
+      '<div class="card-f"><span class="price">' + num(i.price) + '</span>' +
+        '<button class="btn btn-sm' + (out||poor ? '' : (forTeam ? ' btn-sec' : ' btn-pri')) + '" ' +
+          (forTeam ? 'data-prop' : 'data-buy') + '="' + esc(i.id) + '"' +
+          (out||poor ? ' disabled' : '') + '>' + label + '</button>' +
+      '</div></div></div>';
+}
+
+function renderShop(){
+  const all = SHOP.filter(i => i.hidden !== true);
+  const perso = all.filter(i => i.scope !== 'team');
+  const team  = all.filter(i => i.scope === 'team');
+  document.getElementById('s-grid').innerHTML = perso.map(i => shopCard(i,false)).join('');
+  document.getElementById('s-empty').style.display = perso.length ? 'none' : '';
+  document.getElementById('s-team').innerHTML = team.map(i => shopCard(i,true)).join('');
+  document.getElementById('s-team-empty').style.display = team.length ? 'none' : '';
+  renderTolls();
+}
+
+document.getElementById('s-grid').addEventListener('click', async ev => {
+  const b = ev.target.closest('button[data-buy]'); if (!b || b.disabled) return;
+  const it = SHOP.find(x => x.id === b.dataset.buy); if (!it) return;
+  if (!confirm('Acheter « ' + (it.name||'') + ' » pour ' + parts(it.price) + ' ?')) return;
+  say('s-msg','');
+  b.disabled = true; b.textContent = '…';
+  const r = await purchase(SESS.id, it.id, 1);
+  if (r.ok) say('s-msg','Commande enregistrée. Va la récupérer auprès de l’orga.','ok');
+  else { say('s-msg', r.error, 'err'); b.disabled = false; }
+  renderShop();
+});
+
+document.getElementById('s-team').addEventListener('click', async ev => {
+  const b = ev.target.closest('button[data-prop]'); if (!b || b.disabled) return;
+  const t = myTeam(); if (!t){ say('s-msg','Tu n’as pas d’équipe.','err'); return; }
+  const it = SHOP.find(x => x.id === b.dataset.prop); if (!it) return;
+  if (!confirm('Proposer l’achat de « ' + (it.name||'') + ' » pour ' + parts(it.price) +
+    ' sur la cagnotte ?\n\nTes coéquipiers auront 5 minutes pour s’y opposer.')) return;
+  say('s-msg','');
+  b.disabled = true;
+  const r = await proposeSpend(t.id, SESS.id, ME.pseudo || SESS.id, {
+    label: it.name, amount: it.price, itemId: it.id,
+    ownable: !!it.ownable, icon: it.icon || '', desc: it.desc || ''
+  });
+  b.disabled = false;
+  if (r.ok){ say('s-msg','Motion ouverte — va voter dans l’onglet Équipe.','ok'); showSec('equipe'); }
+  else say('s-msg', r.error, 'err');
+});
+
+function renderTolls(){
+  const box = document.getElementById('s-tolls');
+  const mt = (myTeam()||{}).id;
+  const open = ACTS.filter(a => Number(a.fee) > 0 && a.teamId !== mt);
+  const ours = ACTS.filter(a => a.teamId === mt);
+  if (!open.length && !ours.length){
+    box.innerHTML = '<div class="empty">Aucune activité ouverte.</div>'; return;
+  }
+  box.innerHTML =
+    (open.length ? '<ul class="lst">' + open.map(a =>
+      '<li><div class="lst-main"><div class="lst-t">' + (a.icon ? esc(a.icon) + ' ' : '') +
+        esc(a.name) + '</div><div class="lst-s"><span class="tdot" style="background:' +
+        esc(teamColor(a.teamId)) + '"></span>' + esc(teamName(a.teamId)) + '</div></div>' +
+        '<span class="price" style="margin-right:8px">' + num(a.fee) + '</span>' +
+        '<button class="btn btn-sm btn-pri" data-toll="' + esc(a.id) + '">Payer</button></li>'
+      ).join('') + '</ul>' : '<div class="empty">Aucune activité des autres équipes.</div>') +
+    (ours.length ? '<hr class="hr"><p class="mini" style="margin:0">Les vôtres (' +
+      ours.map(a => esc(a.name)).join(', ') + ') se gèrent dans l’onglet Équipe.</p>' : '');
+}
+document.getElementById('s-tolls').addEventListener('click', async ev => {
+  const b = ev.target.closest('button[data-toll]'); if (!b) return;
+  const a = ACTS.find(x => x.id === b.dataset.toll); if (!a) return;
+  if (!confirm('Payer ' + parts(a.fee) + ' à ' + teamName(a.teamId) +
+               ' pour « ' + a.name + ' » ?')) return;
+  b.disabled = true;
+  const r = await payToll(SESS.id, a.id);
+  b.disabled = false;
+  if (r.ok) say('s-msg','Payé. Amuse-toi bien.','ok');
+  else say('s-msg', r.error, 'err');
+});
+
+function renderOrders(rows){
+  const ul = document.getElementById('s-orders');
+  if (!rows.length){ ul.innerHTML = '<li class="empty">Aucune commande.</li>'; return; }
+  ul.innerHTML = rows.map(o => {
+    const done = o.status === 'delivered';
+    return '<li><div class="lst-main"><div class="lst-t">' + esc(o.itemName || '?') +
+      (o.qty > 1 ? ' ×' + o.qty : '') + '</div><div class="lst-s">' + esc(when(o.ts)) + ' · ' +
+      num(o.total) + '</div></div><span class="bdg ' + (done ? 'bdg-ok' : 'bdg-warn') + '">' +
+      (done ? 'Remise' : 'À récupérer') + '</span></li>';
+  }).join('');
+}
+
+/* ============================================================
+   Fil : programme + journal
+   ============================================================ */
+function renderProgramme(){
+  const box = document.getElementById('f-prog');
+  if (!SCHEDULE.length){ box.innerHTML = '<div class="empty">Programme à venir.</div>'; return; }
+  const rows = SCHEDULE.slice().sort((a,b) =>
+    String(a.day||'').localeCompare(String(b.day||''),'fr') ||
+    String(a.time||'').localeCompare(String(b.time||'')));
+  let day = null, h = '';
+  for (const it of rows){
+    if (it.day !== day){ day = it.day; h += '<div class="pg-day">' + esc(day || '') + '</div>'; }
+    h += '<div class="pg"><div class="pg-t">' + esc(it.time || '') + '</div>' +
+         '<div class="pg-b"><div class="pg-n">' + esc(it.title || '') + '</div>' +
+         (it.place ? '<div class="lst-s">&#128205; ' + esc(it.place) + '</div>' : '') +
+         (it.desc ? '<div class="lst-s">' + esc(it.desc) + '</div>' : '') + '</div></div>';
+  }
+  box.innerHTML = h;
+}
+
+function renderJournal(entries){
+  const box = document.getElementById('f-journal');
+  const rows = entries.slice().sort((a,b) => (b.ts||0)-(a.ts||0));
+  box.innerHTML = rows.length
+    ? rows.map(e => '<div class="jr"><div class="jr-ts">' + esc(when(e.ts)) + '</div>' +
+        '<div class="jr-t">' + esc(e.title || '') + '</div>' +
+        '<div class="jr-x">' + esc(e.text || '') + '</div></div>').join('')
+    : '<div class="empty">Rien à signaler.</div>';
+}
+
+/* ============================================================
+   Vote — hybride : urnes physiques + voix de l'app
    ============================================================ */
 let _voteKey = null;
 
 function renderVote(){
   const st = VOTE && VOTE.status;
-  const mine = !!MYBALLOT;
-  const key = [st||'none', mine?'v':'n', (VOTE && (VOTE.options||[]).length)||0,
+  const key = [st||'none', MYBALLOT?'v':'n', TEAMS.length,
                VOTE && VOTE.results ? 'r' : '-'].join('|');
   if (key !== _voteKey){ _voteKey = key; buildVoteBody(); }
   refreshVoteLive();
 }
 
 function buildVoteBody(){
-  const body   = document.getElementById('v-body');
+  const body = document.getElementById('v-body');
   const status = document.getElementById('v-status');
   const st = VOTE && VOTE.status;
 
-  /* ---- pas encore publié ---- */
   if (!VOTE || !st || st === 'draft'){
     status.textContent = 'à venir'; status.className = 'bdg';
-    body.innerHTML = '<div class="empty">L’ordre du jour n’est pas encore publié.<br>' +
-      'La direction vous le communiquera en temps voulu.</div>';
+    body.innerHTML = '<div class="empty">Le vote n’est pas encore ouvert.<br>' +
+      'Rendez-vous dimanche matin.</div>';
     return;
   }
 
-  let h = '<div class="vote-q">' + esc(VOTE.question || 'Décision à prendre') + '</div>';
+  let h = '<div class="vote-q">' + esc(VOTE.question || 'L’avenir de l’entreprise') + '</div>';
   if (VOTE.detail) h += '<div class="vote-d">' + esc(VOTE.detail) + '</div>';
 
-  /* ---- annoncé : on sait quoi, pas encore quand voter ---- */
+  const urnNote = '<div class="tok-note"><span class="ic">&#127891;</span><div>' +
+    '<strong>Deux façons de peser, elles s’additionnent.</strong><br>' +
+    '&#127920; Tes <strong>jetons physiques</strong> : tu les déposes dans l’urne de l’équipe ' +
+    'que tu soutiens.<br>' +
+    '&#128241; Tes <strong>parts en banque</strong> : tu les convertis ici en voix, ' +
+    'réparties comme tu veux.</div></div>';
+
+  /* ---- annoncé ---- */
   if (st === 'announced'){
     status.textContent = 'annoncé'; status.className = 'bdg bdg-warn';
     h += '<div class="deadline"><span>&#128276;</span><div class="dl-t">' +
-         'Le scrutin ouvrira' + (VOTE.opensAt ? ' <b>' + esc(whenLong(VOTE.opensAt)) + '</b>' : ' bientôt') +
-         (VOTE.opensAt ? '<br><span id="v-dl"></span>' : '') + '</div></div>';
-    h += '<div class="tok-note"><span class="ic">&#9878;</span><div>' +
-         'Le jour venu, tu <strong>échangeras tes parts en banque contre des voix</strong> ' +
-         '(1 part = 1 voix), réparties comme tu veux entre les options. ' +
-         '<strong>Un seul passage</strong>, définitif. D’ici là&nbsp;: récupère des parts, ' +
-         'et surtout <strong>fais déposer tes jetons au guichet</strong> — un jeton ne vote pas.' +
-         '</div></div>';
-    h += '<hr class="hr"><h3 style="margin:0 0 9px">Les options soumises</h3>';
-    h += (VOTE.options||[]).map((o,i) =>
-      '<div class="vote-opt" style="cursor:default">' +
-        '<span class="vo-k">' + String.fromCharCode(65+i) + '</span>' +
-        '<span><span class="vo-t">' + esc(o.label || o.id) + '</span>' +
-        (o.desc ? '<span class="vo-d">' + esc(o.desc) + '</span>' : '') + '</span></div>').join('');
+         'Ouverture' + (VOTE.opensAt ? ' <b>' + esc(whenLong(VOTE.opensAt)) + '</b>' : ' bientôt') +
+         (VOTE.opensAt ? '<br><span id="v-dl"></span>' : '') + '</div></div>' + urnNote;
+    h += '<hr class="hr"><h3 style="margin:0 0 9px">Les équipes en lice</h3>' + teamOptionsHtml(false);
     body.innerHTML = h;
     return;
   }
 
-  /* ---- clos : résultats ---- */
+  /* ---- clos : résultats + visions révélées ---- */
   if (st === 'closed'){
     status.textContent = 'clos'; status.className = 'bdg bdg-dng';
     const R = VOTE.results;
     if (!R){ body.innerHTML = h + '<div class="empty">Dépouillement en cours…</div>'; return; }
-    const max = Math.max(1, ...(R.ranked||[]).map(o => o.shares));
+    const max = Math.max(1, ...(R.ranked||[]).map(o => o.total));
     h += '<hr class="hr"><h3 style="margin:0 0 10px">Résultat</h3>';
     h += (R.ranked||[]).map(o => {
       const win = R.winnerId === o.id;
       return '<div class="res' + (win ? ' res-win' : '') + '">' +
-        '<div class="res-h"><span class="res-t">' + (win ? '★ ' : '') + esc(o.label || o.id) + '</span>' +
-        '<span class="res-v">' + voix(o.shares) + ' · ' + pctOf(o.shares, R.expressed||1) + '</span></div>' +
-        '<div class="res-bar"><i style="width:' + (o.shares/max*100).toFixed(1) + '%"></i></div>' +
-        '<div class="lst-s" style="margin-top:3px">' + num(o.voters) + ' actionnaire' +
-          (o.voters>1?'s':'') + '</div></div>';
+        '<div class="res-h"><span class="res-t">' + (win ? '★ ' : '') + esc(o.name) + '</span>' +
+        '<span class="res-v">' + num(o.total) + ' · ' + pctOf(o.total, R.expressed||1) + '</span></div>' +
+        '<div class="res-bar"><i style="width:' + (o.total/max*100).toFixed(1) +
+          '%;background:' + esc(o.color || '') + '"></i></div>' +
+        '<div class="lst-s" style="margin-top:3px">' + num(o.urn) + ' en jetons · ' +
+          num(o.app) + ' dans l’app</div>' +
+        (o.vision ? '<div class="vision">' + esc(o.vision) + '</div>' : '') +
+        '</div>';
     }).join('');
     if (R.tie) h += '<div class="msg msg-err">Égalité parfaite. La direction tranchera.</div>';
-    if (MYBALLOT) h += myBallotHtml('Ton bulletin');
-    h += '<p class="mini">' + voix(R.expressed) + ' exprimées · ' + num(R.voters) + ' votants' +
-         (R.voidShares ? ' · ' + num(R.voidShares) + ' voix perdues (option retirée)' : '') +
-         '<br>Les parts engagées ont été rendues aux comptes.</p>';
+    if (MYBALLOT) h += myBallotHtml();
+    h += '<p class="mini">' + num(R.expressed) + ' parts exprimées · ' + num(R.voters) +
+         ' votants dans l’app. Les parts engagées ont été rendues aux comptes.</p>';
     body.innerHTML = h;
     return;
   }
@@ -519,61 +895,62 @@ function buildVoteBody(){
   status.textContent = 'ouvert'; status.className = 'bdg bdg-ok';
   if (VOTE.closesAt){
     h += '<div class="deadline"><span>&#9201;</span><div class="dl-t">' +
-         'Clôture du scrutin et dernier dépôt de jetons<br><span id="v-dl"></span></div></div>';
+         'Fermeture des urnes<br><span id="v-dl"></span></div></div>';
   }
+  h += urnNote;
 
-  /* déjà voté : bulletin verrouillé */
   if (MYBALLOT){
-    h += myBallotHtml('Ton bulletin est déposé');
-    h += '<div class="msg msg-ok">Ton vote est <strong>définitif</strong> : un seul passage. ' +
-         'Tes ' + parts(MYBALLOT.total) + ' sont bloquées jusqu’au dépouillement, ' +
-         'puis elles te seront rendues.</div>';
+    h += myBallotHtml();
+    h += '<div class="msg msg-ok">Ton vote dans l’app est <strong>définitif</strong> : ' +
+         'un seul passage. Il te reste tes jetons physiques pour l’urne.</div>';
     body.innerHTML = h;
     return;
   }
-
-  /* formulaire de conversion */
-  h += '<div class="tok-note"><span class="ic">&#9878;</span><div>' +
-       '<strong>1 part en banque = 1 voix.</strong> Répartis comme tu veux entre les options. ' +
-       'Tu ne passes <strong>qu’une seule fois</strong> : une fois validé, plus de retour. ' +
-       'Les parts engagées te seront rendues après le dépouillement.</div></div>';
-  h += '<div id="v-alloc">' + (VOTE.options||[]).map((o,i) =>
-      '<div class="alloc">' +
-        '<span class="vo-k">' + String.fromCharCode(65+i) + '</span>' +
-        '<div class="alloc-t"><div class="vo-t">' + esc(o.label || o.id) + '</div>' +
-          (o.desc ? '<div class="vo-d">' + esc(o.desc) + '</div>' : '') + '</div>' +
-        '<input class="alloc-n" type="number" min="0" step="1" inputmode="numeric" ' +
-          'placeholder="0" data-opt="' + esc(o.id) + '" value="' +
-          (ALLOC[o.id] ? Number(ALLOC[o.id]) : '') + '">' +
-      '</div>').join('') + '</div>';
-  h += '<div class="alloc-sum" id="v-sum"></div>';
-  h += '<div id="v-msg"></div>';
-  h += '<button class="btn btn-pri btn-blk" id="v-cast">Convertir mes parts et voter</button>';
-  h += '<p class="mini">Tu peux n’engager qu’une partie de tes parts. ' +
-       'Ce que tu n’engages pas ne pèsera rien — et ne te servira à rien d’autre.</p>';
+  h += '<h3 style="margin:16px 0 9px">Convertir mes parts en banque</h3>' +
+       '<div id="v-alloc">' + teamOptionsHtml(true) + '</div>' +
+       '<div class="alloc-sum" id="v-sum"></div><div id="v-msg"></div>' +
+       '<button class="btn btn-pri btn-blk" id="v-cast">Voter définitivement</button>' +
+       '<p class="mini">Tu peux n’engager qu’une partie, ou rien du tout si tu préfères ' +
+       'tout mettre dans les urnes en jetons.</p>';
   body.innerHTML = h;
 }
 
-/** Récapitulatif d'un bulletin déposé. */
-function myBallotHtml(title){
-  const opts = {}; (VOTE.options||[]).forEach(o => { opts[o.id] = o.label || o.id; });
-  const rows = Object.keys(MYBALLOT.alloc || {})
-    .map(k => '<li><div class="lst-main"><div class="lst-t">' + esc(opts[k] || k) +
-      '</div></div><div class="lst-amt amt-vote">' + voix(MYBALLOT.alloc[k]) + '</div></li>').join('');
-  return '<hr class="hr"><h3 style="margin:0 0 7px">' + esc(title) + '</h3>' +
+/** Les options du scrutin sont les équipes. */
+function teamOptionsHtml(editable){
+  if (!TEAMS.length) return '<div class="empty">Aucune équipe.</div>';
+  return TEAMS.map((t,i) => editable
+    ? '<div class="alloc" style="--tc:' + esc(t.color||'#888') + '">' +
+        '<span class="vo-k" style="border-color:' + esc(t.color||'') + ';color:' + esc(t.color||'') + '">' +
+          String.fromCharCode(65+i) + '</span>' +
+        '<div class="alloc-t"><div class="vo-t">' + esc(t.name) + '</div>' +
+          (t.motto ? '<span class="vo-d">' + esc(t.motto) + '</span>' : '') + '</div>' +
+        '<input class="alloc-n" type="number" min="0" step="1" inputmode="numeric" ' +
+          'placeholder="0" data-opt="' + esc(t.id) + '" value="' +
+          (ALLOC[t.id] ? Number(ALLOC[t.id]) : '') + '"></div>'
+    : '<div class="vote-opt" style="cursor:default;border-left:4px solid ' + esc(t.color||'#888') + '">' +
+        '<span class="vo-k">' + String.fromCharCode(65+i) + '</span>' +
+        '<span><span class="vo-t">' + esc(t.name) + '</span>' +
+        (t.motto ? '<span class="vo-d">' + esc(t.motto) + '</span>' : '') + '</span></div>'
+  ).join('');
+}
+
+function myBallotHtml(){
+  const rows = Object.keys(MYBALLOT.alloc || {}).map(k =>
+    '<li><div class="lst-main"><div class="lst-t">' +
+      '<span class="tdot" style="background:' + esc(teamColor(k)) + '"></span>' +
+      esc(teamName(k)) + '</div></div>' +
+      '<div class="lst-amt amt-vote">' + voix(MYBALLOT.alloc[k]) + '</div></li>').join('');
+  return '<hr class="hr"><h3 style="margin:0 0 7px">Ton bulletin dans l’app</h3>' +
     '<ul class="lst">' + rows + '</ul>' +
     '<p class="mini">Déposé ' + esc(when(MYBALLOT.ts)) + ' · ' + parts(MYBALLOT.total) + ' engagées</p>';
 }
 
-/** Éléments vivants : compte à rebours, total de la répartition, participation. */
+/** Les éléments vivants : comptes à rebours, total de la répartition, participation. */
 function refreshVoteLive(){
   const st = VOTE && VOTE.status;
-
   const dl = document.getElementById('v-dl');
-  if (dl) dl.innerHTML = '<b>' + esc(countdown(st === 'announced' ? VOTE.opensAt : VOTE.closesAt)) +
-    '</b>' + (st === 'announced' ? '' : ' restant');
+  if (dl) dl.innerHTML = '<b>' + esc(countdown(st === 'announced' ? VOTE.opensAt : VOTE.closesAt)) + '</b>';
 
-  // Total de ma répartition en cours
   const sum = document.getElementById('v-sum');
   if (sum){
     const avail = Number(ME && ME.shares) || 0;
@@ -583,20 +960,18 @@ function refreshVoteLive(){
     });
     const over = total > avail;
     sum.innerHTML =
-      '<div class="as-row"><span>Parts engagées</span><b class="' + (over ? 'as-bad' : 'as-ok') + '">' +
+      '<div class="as-row"><span>Parts engagées</span><b class="' + (over?'as-bad':'as-ok') + '">' +
         num(total) + '</b></div>' +
       '<div class="as-row"><span>Disponibles en banque</span><b>' + num(avail) + '</b></div>' +
       (over ? '<div class="as-warn">Tu engages plus que tu ne possèdes.</div>'
-            : total ? '<div class="as-note">Soit ' + voix(total) + ' au scrutin.</div>' : '');
+            : total ? '<div class="as-note">Soit ' + voix(total) + '.</div>' : '');
     const btn = document.getElementById('v-cast');
-    if (btn){ btn.disabled = (total <= 0 || over); }
+    if (btn) btn.disabled = (total <= 0 || over);
   }
 
-  // Pastille d'onglet : scrutin ouvert et je n'ai pas voté
-  document.getElementById('tab-dot').style.display =
+  document.getElementById('dot-vote').style.display =
     (st === 'open' && !MYBALLOT) ? '' : 'none';
 
-  // Participation
   const pnl = document.getElementById('v-part-pnl');
   if (st !== 'open' && st !== 'closed'){ pnl.style.display = 'none'; return; }
   pnl.style.display = '';
@@ -605,185 +980,81 @@ function refreshVoteLive(){
   const ids = Object.keys(voted);
   const engaged = ids.reduce((s,k) => s + (Number(voted[k])||0), 0);
   const pending = act.filter(p => !(p.id in voted));
-  const potential = engaged + act.reduce((s,p) => s + (Number(p.shares)||0), 0);
   document.getElementById('v-part').innerHTML =
     '<div class="stat-grid">' +
       '<div class="stat"><div class="stat-v">' + ids.length +
         '<span style="font-size:.6em;color:var(--td)">/' + act.length + '</span></div>' +
-        '<div class="stat-l">Votants</div></div>' +
+        '<div class="stat-l">Ont voté dans l’app</div></div>' +
       '<div class="stat"><div class="stat-v vio sm">' + num(engaged) +
         '</div><div class="stat-l">Voix déposées</div></div>' +
       '<div class="stat"><div class="stat-v gold sm">' + num(TRES.circulating) +
         '</div><div class="stat-l">Jetons dehors</div></div>' +
     '</div>' +
-    '<div class="bar" style="margin-top:10px"><i style="width:' +
-      (potential ? (engaged/potential*100).toFixed(1) : 0) + '%"></i></div>' +
-    '<p class="mini">Qui a voté et combien il a engagé sont publics. ' +
-      'Pour quoi il a voté ne l’est pas' + (st === 'closed' ? '' : ', jusqu’au dépouillement') + '.</p>' +
-    (ids.length
-      ? '<hr class="hr"><h3 style="margin:0 0 7px">Ont voté</h3>' +
-        '<p style="margin:0;color:var(--td);font-size:.9rem">' +
-        ids.map(k => { const p = PLAYERS.find(x => x.id === k);
-          return esc((p && p.pseudo) || k) + ' <span class="amt-vote">(' + num(voted[k]) + ')</span>'; })
-          .join(' · ') + '</p>'
-      : '') +
+    '<p class="mini">Qui a voté dans l’app et combien il a engagé sont publics. ' +
+      'Pour qui, non' + (st === 'closed' ? '' : ', jusqu’au dépouillement') + '. ' +
+      'Les urnes, elles, ne disent rien avant le comptage.</p>' +
     (st === 'open' && pending.length
-      ? '<hr class="hr"><h3 style="margin:0 0 7px">N’ont pas encore voté (' + pending.length + ')</h3>' +
+      ? '<hr class="hr"><h3 style="margin:0 0 7px">Pas encore passés par l’app (' + pending.length + ')</h3>' +
         '<p style="margin:0;color:var(--td);font-size:.9rem">' +
         pending.map(p => esc(p.pseudo || p.id)).join(' · ') + '</p>'
-      : st === 'open' ? '<p class="mini" style="color:var(--ac)">Tout le monde a voté.</p>' : '');
+      : '');
 }
 
-/* saisie de la répartition */
 document.getElementById('v-body').addEventListener('input', ev => {
   const i = ev.target.closest('.alloc-n'); if (!i) return;
   const n = Math.max(0, Math.round(Number(i.value)||0));
   if (n) ALLOC[i.dataset.opt] = n; else delete ALLOC[i.dataset.opt];
   refreshVoteLive();
 });
-
 document.getElementById('v-body').addEventListener('click', async ev => {
-  const b = ev.target.closest('#v-cast');
-  if (!b || b.disabled) return;
-  const opts = {}; (VOTE.options||[]).forEach(o => { opts[o.id] = o.label || o.id; });
+  const b = ev.target.closest('#v-cast'); if (!b || b.disabled) return;
   const lines = Object.keys(ALLOC).filter(k => ALLOC[k] > 0)
-    .map(k => '  · ' + (opts[k] || k) + ' : ' + ALLOC[k] + ' voix');
+    .map(k => '  · ' + teamName(k) + ' : ' + ALLOC[k]);
   const total = Object.keys(ALLOC).reduce((s,k) => s + (Number(ALLOC[k])||0), 0);
   if (!total) return;
   if (!confirm('Voter définitivement ?\n\n' + lines.join('\n') +
-      '\n\nTotal : ' + total + ' voix pour ' + total + ' parts engagées.\n\n' +
-      'Un seul passage : tu ne pourras plus revenir, ni changer, ni ajouter.')) return;
+      '\n\nTotal : ' + total + ' voix.\n\nUn seul passage : plus de retour en arrière.')) return;
   say('v-msg','');
   b.disabled = true; b.textContent = 'Dépôt du bulletin…';
   const r = await castBallot(SESS.id, ME.pseudo || SESS.id, ALLOC);
-  if (r.ok){ ALLOC = {}; }
-  else {
-    say('v-msg', r.error, 'err');
-    b.disabled = false; b.textContent = 'Convertir mes parts et voter';
-  }
+  if (r.ok) ALLOC = {};
+  else { say('v-msg', r.error, 'err'); b.disabled = false; b.textContent = 'Voter définitivement'; }
 });
 
+/* ---------- Comptes à rebours ---------- */
+function tickCountdowns(){
+  document.querySelectorAll('[data-until]').forEach(el => {
+    el.textContent = countdown(Number(el.dataset.until));
+  });
+}
+
 /* ============================================================
-   Registre
+   Infos
    ============================================================ */
-function renderRegistre(){
-  const acc = onAccounts(), eng = totalEngaged(), cap = capital();
-  const w = v => cap ? (v/cap*100).toFixed(2) + '%' : '0%';
-  document.getElementById('g-split').innerHTML =
-    '<i class="s-acc"  style="width:' + w(acc) + '"></i>' +
-    '<i class="s-vote" style="width:' + w(eng) + '"></i>' +
-    '<i class="s-tok"  style="width:' + w(TRES.circulating) + '"></i>' +
-    '<i class="s-co"   style="width:' + w(TRES.company) + '"></i>';
-  document.getElementById('g-key').innerHTML =
-    '<span><i style="background:var(--ac)"></i>En banque ' + num(acc) + '</span>' +
-    (eng ? '<span><i style="background:var(--vio)"></i>Engagées au vote ' + num(eng) + '</span>' : '') +
-    '<span><i style="background:var(--gold)"></i>En jetons ' + num(TRES.circulating) + '</span>' +
-    '<span><i style="background:var(--b2)"></i>Trésorerie ' + num(TRES.company) + '</span>';
-
-  const act = actifs();
-  document.getElementById('g-stats').innerHTML = [
-    ['Capital émis', num(cap), 'plain'],
-    ['Actionnaires', act.length, 'plain'],
-    ['Hors de l’app', pctOf(TRES.circulating, cap||1), 'gold']
-  ].map(c => '<div class="stat"><div class="stat-v sm ' + c[2] + '">' + c[1] +
-    '</div><div class="stat-l">' + c[0] + '</div></div>').join('');
-
-  // Registre public : top N seulement (choix d'organisation)
-  const topN = Number(GAME.registryTop);
-  const N = isNaN(topN) ? 10 : topN;
-  document.getElementById('g-topn').textContent = N ? 'top ' + N : 'non publié';
-  const ranked = act.slice().sort((a,b) => held(b) - held(a));
-  const ul = document.getElementById('g-top');
+function renderTops(){
+  const cap = capital();
+  const ranked = actifs().slice().sort((a,b) => held(b) - held(a));
+  const N = isNaN(Number(GAME.registryTop)) ? 10 : Number(GAME.registryTop);
+  const ul = document.getElementById('i-top');
   ul.innerHTML = N
     ? (ranked.slice(0,N).map((p,i) =>
         '<li><div class="lst-main"><div class="lst-t">' + (i+1) + '. ' + esc(p.pseudo || p.id) +
           (p.id === SESS.id ? ' <span class="bdg bdg-ok">toi</span>' : '') + '</div>' +
-          (p.role ? '<div class="lst-s">' + esc(p.role) + '</div>' : '') + '</div>' +
-          '<div class="lst-amt">' + num(held(p)) + '<span class="lst-s"> · ' +
-          pctOf(held(p), cap||1) + '</span></div></li>').join('')
-       || '<li class="empty">Aucun actionnaire.</li>')
-    : '<li class="empty">Le registre nominatif n’est pas publié.</li>';
-
+          (p.team ? '<div class="lst-s"><span class="tdot" style="background:' +
+            esc(teamColor(p.team)) + '"></span>' + esc(teamName(p.team)) + '</div>' : '') + '</div>' +
+          '<div class="lst-amt">' + num(held(p)) + '</div></li>').join('')
+       || '<li class="empty">Personne.</li>')
+    : '<li class="empty">Classement non publié.</li>';
   const myRank = ranked.findIndex(p => p.id === SESS.id) + 1;
-  document.getElementById('g-mine').innerHTML = (myRank && (!N || myRank > N))
-    ? '<hr class="hr"><p style="margin:0;color:var(--td);font-size:.9rem">Toi&nbsp;: <strong>' +
+  document.getElementById('i-mine').innerHTML = (myRank && (!N || myRank > N))
+    ? '<hr class="hr"><p style="margin:0;color:var(--td);font-size:.9rem">Toi : <strong>' +
       myRank + '<sup>e</sup></strong> sur ' + ranked.length + ' avec ' + parts(held(ME)) +
-      ' (' + pctOf(held(ME), cap||1) + '). Hors du top ' + N + ' publié.</p>'
-    : '';
-}
-
-/* ============================================================
-   Magasin
-   ============================================================ */
-function renderShop(){
-  const grid  = document.getElementById('s-grid');
-  const empty = document.getElementById('s-empty');
-  const items = SHOP.filter(i => i.hidden !== true);
-  empty.style.display = items.length ? 'none' : '';
-  const bal = Number(ME && ME.shares) || 0;
-  grid.innerHTML = items.map(i => {
-    const tracked = i.stock !== undefined && i.stock !== null;
-    const out  = tracked && Number(i.stock) <= 0;
-    const poor = Number(i.price) > bal;
-    const img = i.img
-      ? '<div class="card-img" style="background-image:url(' + esc(i.img) + ')"></div>'
-      : '<div class="card-img">' + (i.icon ? esc(i.icon) : '📦') + '</div>';
-    return '<div class="card' + (out ? ' stock-out' : '') + '">' + img +
-      '<div class="card-b">' +
-        '<div class="card-t">' + esc(i.name || '?') + '</div>' +
-        '<div class="card-d">' + esc(i.desc || '') + '</div>' +
-        (tracked ? '<div class="lst-s">Stock : ' + num(i.stock) + '</div>' : '') +
-        '<div class="card-f"><span class="price">' + num(i.price) + ' ' + esc(GAME.units||'parts') + '</span>' +
-          '<button class="btn btn-sm' + (out||poor ? '' : ' btn-pri') + '" data-buy="' + esc(i.id) + '"' +
-            (out||poor ? ' disabled' : '') + '>' +
-            (out ? 'Épuisé' : poor ? 'Trop cher' : 'Acheter') + '</button>' +
-        '</div></div></div>';
-  }).join('');
-}
-
-document.getElementById('s-grid').addEventListener('click', async ev => {
-  const b = ev.target.closest('button[data-buy]');
-  if (!b || b.disabled) return;
-  const it = SHOP.find(x => x.id === b.dataset.buy);
-  if (!it) return;
-  if (!confirm('Acheter « ' + (it.name||'') + ' » pour ' + parts(it.price) + ' ?\n\n' +
-               'Autant de voix en moins au scrutin.')) return;
-  say('s-msg','');
-  b.disabled = true; b.textContent = '…';
-  const r = await purchase(SESS.id, it.id, 1);
-  if (r.ok) say('s-msg','Commande enregistrée. Présente-toi au comptoir.','ok');
-  else { say('s-msg', r.error, 'err'); b.disabled = false; }
-  renderShop();
-});
-
-function renderOrders(rows){
-  const ul = document.getElementById('s-orders');
-  if (!rows.length){ ul.innerHTML = '<li class="empty">Aucune commande.</li>'; return; }
-  ul.innerHTML = rows.map(o => {
-    const done = o.status === 'delivered';
-    return '<li><div class="lst-main"><div class="lst-t">' + esc(o.itemName || '?') +
-        (o.qty > 1 ? ' ×' + o.qty : '') + '</div>' +
-        '<div class="lst-s">' + esc(when(o.ts)) + ' · ' + num(o.total) + ' ' + esc(GAME.units||'parts') +
-        '</div></div><span class="bdg ' + (done ? 'bdg-ok' : 'bdg-warn') + '">' +
-        (done ? 'Livrée' : 'À récupérer') + '</span></li>';
-  }).join('');
-}
-
-/* ============================================================
-   Journal, règles, dossier
-   ============================================================ */
-function renderJournal(entries){
-  const box = document.getElementById('j-list');
-  const rows = entries.slice().sort((a,b) => (b.ts||0)-(a.ts||0));
-  box.innerHTML = rows.length
-    ? rows.map(e => '<div class="jr"><div class="jr-ts">' + esc(when(e.ts)) + '</div>' +
-        '<div class="jr-t">' + esc(e.title || '') + '</div>' +
-        '<div class="jr-x">' + esc(e.text || '') + '</div></div>').join('')
-    : '<div class="empty">Rien à signaler.</div>';
+      ' (' + pctOf(held(ME), cap||1) + ').</p>'
+    : '<p class="mini">Seules les parts en banque comptent ici. Les jetons en poche, personne ne les voit.</p>';
 }
 
 async function loadRules(){
-  const box = document.getElementById('r-body');
+  const box = document.getElementById('i-rules');
   if (GAME.rules){ box.innerHTML = miniMd(GAME.rules); return; }
   try{
     const r = await fetch('data/rules.json', { cache:'no-cache' });
@@ -792,32 +1063,7 @@ async function loadRules(){
   }catch(e){ box.innerHTML = '<div class="empty">Règles indisponibles.</div>'; }
 }
 
-function renderStatsMine(){
-  const box = document.getElementById('st-mine');
-  const st = (ME && ME.stats) || {};
-  const keys = Object.keys(st);
-  box.innerHTML = keys.length
-    ? keys.map(k => {
-        const v   = st[k];
-        const val = (v && typeof v === 'object') ? v.value : v;
-        const max = (v && typeof v === 'object') ? v.max : null;
-        const pct = max ? Math.max(0, Math.min(100, (Number(val)/Number(max))*100)) : null;
-        return '<div class="stat"><div class="stat-v">' + esc(val) +
-          (max ? '<span style="font-size:.7em;color:var(--td)">/' + esc(max) + '</span>' : '') +
-          '</div><div class="stat-l">' + esc(k) + '</div>' +
-          (pct !== null ? '<div class="bar"><i style="width:' + pct.toFixed(0) + '%"></i></div>' : '') +
-          '</div>';
-      }).join('')
-    : '<div class="empty">La direction n’a encore rien consigné.</div>';
-  document.getElementById('st-notes').innerHTML = (ME && ME.publicNote)
-    ? '<hr class="hr"><h3 style="margin:0 0 6px">Note au dossier</h3>' +
-      '<p style="margin:0;color:var(--td)">' + esc(ME.publicNote) + '</p>'
-    : '';
-}
-
-/* ============================================================
-   Carte
-   ============================================================ */
+/* ---------- Carte ---------- */
 function initMap(){
   if (MAP){ MAP.invalidateSize(); return; }
   MAP = L.map('map').setView(GAME.mapCenter || [48.8566,2.3522], GAME.mapZoom || 17);
@@ -826,36 +1072,30 @@ function initMap(){
   poiLayer = L.layerGroup().addTo(MAP);
   drawPois();
 }
-
 function renderPois(){
-  const ul = document.getElementById('m-pois');
-  ul.innerHTML = POIS.length
+  document.getElementById('m-pois').innerHTML = POIS.length
     ? POIS.map((p,i) => '<li><div class="lst-main"><div class="lst-t">' + esc(p.name || 'Sans nom') +
         '</div>' + (p.desc ? '<div class="lst-s">' + esc(p.desc) + '</div>' : '') + '</div>' +
         '<button class="btn btn-sm" data-poi="' + i + '">Voir</button></li>').join('')
     : '<li class="empty">Aucun point publié.</li>';
   drawPois();
 }
-
 document.getElementById('m-pois').addEventListener('click', ev => {
   const b = ev.target.closest('button[data-poi]'); if (!b) return;
   const p = POIS[Number(b.dataset.poi)]; if (!p) return;
-  initMap();
-  MAP.setView([p.lat, p.lng], 19);
+  initMap(); MAP.setView([p.lat, p.lng], 19);
   document.getElementById('map').scrollIntoView({ behavior:'smooth', block:'center' });
 });
-
 function drawPois(){
   if (!poiLayer) return;
   poiLayer.clearLayers();
   POIS.forEach(p => {
     if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return;
-    L.marker([p.lat,p.lng], { icon: L.divIcon({ className:'', html:'<div class="poi-dot"></div>', iconSize:[13,13] }) })
+    L.marker([p.lat,p.lng], { icon: L.divIcon({ className:'', html:'<div class="poi-dot"></div>', iconSize:[14,14] }) })
      .bindPopup('<strong>' + esc(p.name||'') + '</strong>' + (p.desc ? '<br>' + esc(p.desc) : ''))
      .addTo(poiLayer);
   });
 }
-
 document.getElementById('m-loc').addEventListener('click', () => {
   if (!navigator.geolocation){ say('m-msg','Ton appareil ne donne pas la position.','err'); return; }
   say('m-msg','Localisation…','ok');
@@ -866,8 +1106,7 @@ document.getElementById('m-loc').addEventListener('click', () => {
       meMarker = L.marker(ll, { icon: L.divIcon({ className:'', html:'<div class="me-dot"></div>', iconSize:[16,16] }) })
                   .addTo(MAP).bindPopup('Toi');
     } else meMarker.setLatLng(ll);
-    MAP.setView(ll, 19);
-    say('m-msg','');
+    MAP.setView(ll, 19); say('m-msg','');
   }, err => say('m-msg','Position refusée ou indisponible (' + err.message + ').','err'),
      { enableHighAccuracy:true, timeout:10000 });
 });

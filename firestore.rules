@@ -9,8 +9,8 @@ rules_version = '2';
 //  ⚠️ LIRE CECI. Ce jeu n'utilise PAS Firebase Auth (la connexion est
 //  « nom + code », vérifiée dans le navigateur). Firestore ne peut donc
 //  pas savoir QUI écrit : n'importe qui ouvrant la console de son
-//  navigateur peut lire les codes d'accès, les bulletins de vote, et
-//  modifier son nombre de parts.
+//  navigateur peut lire les codes d'accès, les bulletins de vote, les
+//  OBJECTIFS SECRETS DES ÉQUIPES, et modifier son nombre de parts.
 //
 //  C'est un compromis assumé pour un week-end entre 40 personnes
 //  consentantes. Ce que ça implique concrètement :
@@ -60,12 +60,32 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
-    // Commandes du magasin (pending → delivered).
+    // Équipes : cagnotte, objectif secret, couleur.
+    match /teams/{teamId} {
+      allow read, write: if true;
+    }
+
+    // Motions de dépense d'équipe (5 minutes, le silence vaut accord).
+    match /motions/{motionId} {
+      allow read, write: if true;
+    }
+
+    // Activités possédées par une équipe, et leur péage.
+    match /activities/{activityId} {
+      allow read, write: if true;
+    }
+
+    // Programme du week-end : /schedule/data = { items: [...] }
+    match /schedule/{docId} {
+      allow read, write: if true;
+    }
+
+    // Commandes à remettre (perso ou équipe).
     match /orders/{orderId} {
       allow read, write: if true;
     }
 
-    // Catalogue : /shop/catalog = { items: [...] }
+    // Catalogue du shop : /shop/catalog = { items: [...] }
     match /shop/{docId} {
       allow read, write: if true;
     }

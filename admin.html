@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1b3a57">
-<title>Guichet — Goodfolks Industries</title>
+<title>Orga — Goodfolks Industries</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap">
@@ -18,7 +18,7 @@
 <!-- ================= Verrou ================= -->
 <div id="gate" class="gate wrap">
   <div class="pnl">
-    <div class="pnl-h"><span class="ic">&#128274;</span> Acc&egrave;s guichet</div>
+    <div class="pnl-h"><span class="ic">&#128274;</span> Acc&egrave;s orga</div>
     <div class="pnl-b">
       <div id="g-msg"></div>
       <form id="g-form">
@@ -38,7 +38,7 @@
 <div class="topbar">
   <div class="brand">
     <img class="brand-mark" src="img/goodfolks-mark.png" alt="" width="34" height="34">
-    <div><span class="brand-txt">Guichet &amp; direction</span>
+    <div><span class="brand-txt">Console orga</span>
          <span class="brand-sub" id="h-camp">&nbsp;</span></div>
   </div>
   <div class="sp"></div>
@@ -48,17 +48,62 @@
 <div class="wrap-wide">
   <div class="atabs" id="atabs">
     <button data-sec="guichet" class="on">&#127974; Guichet<span class="n" id="n-req" style="display:none">0</span></button>
-    <button data-sec="actionnaires">&#128101; Actionnaires</button>
-    <button data-sec="scrutin">&#128499; Scrutin</button>
-    <button data-sec="shop">&#128722; Magasin</button>
-    <button data-sec="orders">&#128230; Commandes<span class="n" id="n-ord" style="display:none">0</span></button>
-    <button data-sec="journal">&#128240; Journal</button>
-    <button data-sec="map">&#128506; Carte</button>
+    <button data-sec="equipes">&#129309; &Eacute;quipes<span class="n" id="n-mot" style="display:none">0</span></button>
+    <button data-sec="joueurs">&#128101; Joueurs</button>
+    <button data-sec="shop">&#128722; Shop</button>
+    <button data-sec="commandes">&#128230; Commandes<span class="n" id="n-ord" style="display:none">0</span></button>
+    <button data-sec="fil">&#128197; Fil</button>
+    <button data-sec="vote">&#128499; Vote</button>
+    <button data-sec="carte">&#128506; Carte</button>
     <button data-sec="cfg">&#9881; R&eacute;glages</button>
   </div>
 
   <!-- ---------- GUICHET ---------- -->
   <section class="sec on" id="sec-guichet">
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#9889;</span> Primes &amp; p&eacute;nalit&eacute;s</div>
+      <div class="pnl-b">
+        <div id="q-msg"></div>
+        <div class="row">
+          <div class="field"><label>Joueur</label>
+            <select id="q-who"><option value="">Chargement&hellip;</option></select></div>
+          <div class="field"><label>Parts</label>
+            <input id="q-qty" type="number" min="1" step="1" inputmode="numeric" value="5"></div>
+          <div class="field"><label>Motif</label>
+            <input id="q-lb" placeholder="Beer pong gagn&eacute;"></div>
+        </div>
+        <div class="row">
+          <button class="btn btn-sec" id="q-give">&#10133; Donner</button>
+          <button class="btn btn-dng" id="q-take">&#10134; Reprendre</button>
+        </div>
+        <p class="mini">Le raccourci du week-end&nbsp;: paris, casino, d&eacute;fis, gages.
+          Donner puise dans la tr&eacute;sorerie de la direction, reprendre l&rsquo;y renvoie.</p>
+      </div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#9203;</span> File du guichet <span class="sp"></span>
+        <span class="bdg bdg-warn" id="q-count">0</span></div>
+      <div class="pnl-b" id="q-list"><div class="empty">Personne au guichet.</div></div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#128273;</span> Conversion directe</div>
+      <div class="pnl-b">
+        <div id="d-msg"></div>
+        <div class="row">
+          <div class="field"><label>Joueur</label>
+            <select id="d-who"><option value="">Chargement&hellip;</option></select></div>
+          <div class="field"><label>Jetons</label>
+            <input id="d-qty" type="number" min="1" step="1" inputmode="numeric"></div>
+        </div>
+        <div class="row">
+          <button class="btn btn-gold" id="d-wd">&#11014; Retirer (compte &rarr; jetons)</button>
+          <button class="btn btn-pri" id="d-dp">&#11015; D&eacute;poser (jetons &rarr; compte)</button>
+        </div>
+      </div>
+    </div>
+
     <div class="pnl">
       <div class="pnl-h"><span class="ic">&#128202;</span> O&ugrave; est le capital</div>
       <div class="pnl-b">
@@ -66,150 +111,103 @@
         <div class="split-key" id="t-key"></div>
         <hr class="hr">
         <div class="stat-grid" id="t-stats"></div>
-        <p class="mini">Invariant&nbsp;: capital &eacute;mis = en banque + engag&eacute;es au vote
-          + en jetons + tr&eacute;sorerie. Un &eacute;cart signale une saisie manuelle dans la
-          console Firebase, ou un actionnaire supprim&eacute; qui d&eacute;tenait des parts.</p>
-      </div>
-    </div>
-
-    <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#9203;</span> File d&rsquo;attente <span class="sp"></span>
-        <span class="bdg bdg-warn" id="q-count">0</span></div>
-      <div class="pnl-b" id="q-list"><div class="empty">Personne au guichet.</div></div>
-    </div>
-
-    <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#128273;</span> Op&eacute;ration directe</div>
-      <div class="pnl-b">
-        <div id="d-msg"></div>
-        <div class="row">
-          <div class="field"><label>Actionnaire</label>
-            <select id="d-who"><option value="">Chargement&hellip;</option></select></div>
-          <div class="field"><label>Nombre de jetons</label>
-            <input id="d-qty" type="number" min="1" step="1" inputmode="numeric"></div>
-        </div>
-        <div class="row">
-          <button class="btn btn-gold" id="d-wd">&#11014; Retirer (compte &rarr; jetons)</button>
-          <button class="btn btn-pri" id="d-dp">&#11015; D&eacute;poser (jetons &rarr; compte)</button>
-        </div>
-        <p class="mini">Pour quelqu&rsquo;un qui arrive sans avoir pos&eacute; de demande.</p>
+        <p class="mini">Invariant&nbsp;: capital &eacute;mis = comptes + engag&eacute;es au vote
+          + cagnottes + jetons dehors + tr&eacute;sorerie.</p>
       </div>
     </div>
   </section>
 
-  <!-- ---------- ACTIONNAIRES ---------- -->
-  <section class="sec" id="sec-actionnaires">
+  <!-- ---------- ÉQUIPES ---------- -->
+  <section class="sec" id="sec-equipes">
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#10133;</span> Cr&eacute;er une &eacute;quipe</div>
+      <div class="pnl-b">
+        <div id="nt-msg"></div>
+        <div class="row">
+          <div class="field"><label>Nom</label><input id="nt-name" placeholder="Les Continuateurs"></div>
+          <div class="field"><label>Devise (publique)</label><input id="nt-motto" placeholder="On ne touche à rien"></div>
+          <div class="field" style="flex:0 0 110px"><label>Couleur</label>
+            <input id="nt-color" type="color" value="#1b3a57"></div>
+        </div>
+        <div class="field"><label>Objectif secret &mdash; visible des seuls membres</label>
+          <textarea id="nt-secret" placeholder="Votre vision pour l&rsquo;avenir de l&rsquo;entreprise. R&eacute;v&eacute;l&eacute;e à tous au d&eacute;pouillement."></textarea></div>
+        <button class="btn btn-pri" id="nt-go">Cr&eacute;er l&rsquo;&eacute;quipe</button>
+        <p class="mini">Les 5 &eacute;quipes deviennent automatiquement les options du vote
+          et les urnes du dimanche.</p>
+      </div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#128499;</span> Motions en cours <span class="sp"></span>
+        <span class="bdg" id="mo-count">0</span></div>
+      <div class="pnl-b" id="mo-list"><div class="empty">Aucune motion.</div></div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#129309;</span> Les &eacute;quipes</div>
+      <div class="pnl-b" id="tm-list"><div class="empty">Aucune &eacute;quipe.</div></div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#127918;</span> Activit&eacute;s poss&eacute;d&eacute;es</div>
+      <div class="pnl-b" id="ac-list"><div class="empty">Aucune activit&eacute;.</div></div>
+    </div>
+  </section>
+
+  <!-- ---------- JOUEURS ---------- -->
+  <section class="sec" id="sec-joueurs">
     <div class="pnl">
       <div class="pnl-h"><span class="ic">&#128228;</span> Cr&eacute;ation en s&eacute;rie</div>
       <div class="pnl-b">
         <div id="bulk-msg"></div>
         <div class="field">
-          <label>Un actionnaire par ligne. Format&nbsp;: <span class="mono">Nom</span>
-            ou <span class="mono">Nom;code;r&ocirc;le;parts</span></label>
-          <textarea id="bulk-txt" style="min-height:150px" placeholder="Camille Dubreuil&#10;Ana&iuml;s Berger;4821;Fonds Mercure&#10;Victor Pann;;Petit porteur;5"></textarea>
+          <label>Un joueur par ligne. Format&nbsp;:
+            <span class="mono">Nom</span> &middot; <span class="mono">Nom;&eacute;quipe</span> &middot;
+            <span class="mono">Nom;&eacute;quipe;code;parts</span></label>
+          <textarea id="bulk-txt" style="min-height:160px" placeholder="Camille Dubreuil;Les Continuateurs&#10;Ana&iuml;s Berger;Les Continuateurs;4821&#10;Victor Pann;Les Bâtisseurs;;18"></textarea>
         </div>
-        <button class="btn btn-pri" id="bulk-go">Cr&eacute;er tous les dossiers</button>
-        <p class="mini">Code vide = tir&eacute; au hasard. Parts vides = dotation par d&eacute;faut
-          (<span id="bulk-def"></span>), &eacute;mises &agrave; la cr&eacute;ation.</p>
+        <button class="btn btn-pri" id="bulk-go">Cr&eacute;er tous les comptes</button>
+        <p class="mini">&Eacute;quipe reconnue par son nom (sans tenir compte de la casse).
+          Code vide = tir&eacute; au hasard. Parts vides = dotation par d&eacute;faut
+          (<span id="bulk-def"></span>).</p>
         <div id="bulk-out"></div>
       </div>
     </div>
 
     <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#10133;</span> Cr&eacute;er un actionnaire</div>
-      <div class="pnl-b">
-        <div id="np-msg"></div>
-        <div class="row">
-          <div class="field"><label>Nom</label><input id="np-pseudo" placeholder="Camille Dubreuil"></div>
-          <div class="field"><label>Code</label><input id="np-code" class="mono" placeholder="vide = al&eacute;atoire"></div>
-          <div class="field"><label>R&ocirc;le / qualit&eacute;</label><input id="np-role" placeholder="Fonds Mercure"></div>
-          <div class="field"><label>Parts de d&eacute;part</label><input id="np-sh" type="number" step="1"></div>
-        </div>
-        <button class="btn btn-pri" id="np-go">Cr&eacute;er le dossier</button>
-      </div>
-    </div>
-
-    <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#128101;</span> Registre complet <span class="sp"></span>
+      <div class="pnl-h"><span class="ic">&#128101;</span> Tous les joueurs <span class="sp"></span>
         <span class="bdg" id="p-count">0</span>
         <button class="btn btn-sm" id="p-print">&#128424; Codes</button></div>
       <div class="pnl-b" id="p-list"><div class="empty">Chargement&hellip;</div></div>
     </div>
   </section>
 
-  <!-- ---------- SCRUTIN ---------- -->
-  <section class="sec" id="sec-scrutin">
-    <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#128499;</span> La d&eacute;cision <span class="sp"></span>
-        <span class="bdg" id="v-st">&mdash;</span></div>
-      <div class="pnl-b">
-        <div id="v-msg"></div>
-        <div class="field"><label>Question soumise &agrave; l&rsquo;assembl&eacute;e</label>
-          <input id="v-q" placeholder="Faut-il vendre la filiale de Saint-Yrieix&nbsp;?"></div>
-        <div class="field"><label>Expos&eacute; des motifs (optionnel)</label>
-          <textarea id="v-d" placeholder="Ce que les actionnaires doivent savoir avant de trancher."></textarea></div>
-        <div class="field"><label>Options &mdash; une par ligne, format
-          <span class="mono">Intitul&eacute;;pr&eacute;cision</span></label>
-          <textarea id="v-opts" style="min-height:120px" placeholder="Vendre;Encaisser 40&nbsp;% du capital, perdre l&rsquo;usine&#10;Refuser;Garder l&rsquo;usine, affronter l&rsquo;hiver&#10;Abstention"></textarea></div>
-        <div class="row">
-          <div class="field"><label>Ouverture du scrutin (dimanche matin)</label>
-            <input id="v-open-at" type="datetime-local"></div>
-          <div class="field"><label>Cl&ocirc;ture (= dernier d&eacute;p&ocirc;t de jetons)</label>
-            <input id="v-close" type="datetime-local"></div>
-        </div>
-        <div class="row">
-          <button class="btn" id="v-save">Enregistrer le brouillon</button>
-          <button class="btn btn-gold" id="v-announce">&#128276; Annoncer</button>
-          <button class="btn btn-pri" id="v-go">&#9654; Ouvrir le scrutin</button>
-          <button class="btn btn-dng" id="v-tally">&#9633; Clore et d&eacute;pouiller</button>
-        </div>
-        <div class="tok-note" style="margin-top:13px"><span class="ic">&#9878;</span><div>
-          <strong>Annoncer</strong> rend la question et les options visibles de tous, avec
-          l&rsquo;heure d&rsquo;ouverture&nbsp;: le vote reste impossible. C&rsquo;est ce qui alimente les
-          tractations du samedi soir.<br>
-          <strong>Ouvrir</strong> d&eacute;clenche l&rsquo;&eacute;v&eacute;nement&nbsp;: chacun &eacute;change ses parts en
-          banque contre des voix, r&eacute;parties comme il veut, en <strong>un seul passage
-          d&eacute;finitif</strong>. Les parts engag&eacute;es sont bloqu&eacute;es, puis rendues au d&eacute;pouillement.
-        </div></div>
-      </div>
-    </div>
-
-    <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#128200;</span> D&eacute;compte en direct <span class="sp"></span>
-        <span class="bdg bdg-vio">vue direction</span></div>
-      <div class="pnl-b" id="v-live"><div class="empty">Aucun scrutin ouvert.</div></div>
-    </div>
-
-    <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#128101;</span> Participation</div>
-      <div class="pnl-b" id="v-part"><div class="empty">Aucun scrutin ouvert.</div></div>
-    </div>
-
-    <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#9888;</span> Remise &agrave; z&eacute;ro</div>
-      <div class="pnl-b">
-        <button class="btn btn-dng" id="v-reset">Effacer les bulletins et repasser en brouillon</button>
-        <p class="mini">Rend les parts engag&eacute;es, supprime tous les bulletins, efface le
-          r&eacute;sultat. &Agrave; utiliser pour rejouer un scrutin&nbsp;: n&rsquo;affecte ni les parts
-          d&eacute;tenues ni le grand livre.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ---------- MAGASIN ---------- -->
+  <!-- ---------- SHOP ---------- -->
   <section class="sec" id="sec-shop">
     <div class="pnl">
       <div class="pnl-h"><span class="ic">&#10133;</span> Ajouter un article</div>
       <div class="pnl-b">
         <div id="ni-msg"></div>
         <div class="row">
-          <div class="field"><label>Nom</label><input id="ni-name" placeholder="Si&egrave;ge au conseil"></div>
-          <div class="field"><label>Prix (en parts)</label><input id="ni-price" type="number" step="1" value="5"></div>
+          <div class="field"><label>Nom</label><input id="ni-name" placeholder="Table de beer pong"></div>
+          <div class="field"><label>Prix</label><input id="ni-price" type="number" step="1" value="20"></div>
           <div class="field"><label>Stock (vide = illimit&eacute;)</label><input id="ni-stock" type="number" step="1"></div>
-          <div class="field"><label>Emoji</label><input id="ni-icon" placeholder="&#127942;"></div>
+          <div class="field"><label>Emoji</label><input id="ni-icon" placeholder="&#127867;"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Qui ach&egrave;te</label>
+            <select id="ni-scope">
+              <option value="player">Un joueur, sur son compte</option>
+              <option value="team">Une &eacute;quipe, sur sa cagnotte (vote 5 min)</option>
+            </select></div>
+          <div class="field"><label>Devient une activit&eacute; &agrave; p&eacute;age&nbsp;?</label>
+            <select id="ni-ownable">
+              <option value="">Non &mdash; simple objet ou bonus</option>
+              <option value="1">Oui &mdash; l&rsquo;&eacute;quipe pourra faire payer les autres</option>
+            </select></div>
         </div>
         <div class="field"><label>Description</label><input id="ni-desc"></div>
-        <div class="field"><label>Image (URL, optionnel)</label><input id="ni-img" placeholder="img/siege.jpg"></div>
+        <div class="field"><label>Image (URL, optionnel)</label><input id="ni-img" placeholder="img/beerpong.jpg"></div>
         <button class="btn btn-pri" id="ni-go">Ajouter au catalogue</button>
       </div>
     </div>
@@ -220,7 +218,7 @@
   </section>
 
   <!-- ---------- COMMANDES ---------- -->
-  <section class="sec" id="sec-orders">
+  <section class="sec" id="sec-commandes">
     <div class="pnl">
       <div class="pnl-h"><span class="ic">&#128230;</span> &Agrave; remettre <span class="sp"></span>
         <span class="bdg bdg-warn" id="o-pend">0</span></div>
@@ -232,40 +230,108 @@
     </div>
   </section>
 
-  <!-- ---------- JOURNAL ---------- -->
-  <section class="sec" id="sec-journal">
+  <!-- ---------- FIL ---------- -->
+  <section class="sec" id="sec-fil">
     <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#128240;</span> Publier un communiqu&eacute;</div>
+      <div class="pnl-h"><span class="ic">&#128197;</span> Programme</div>
       <div class="pnl-b">
-        <div id="nj-msg"></div>
-        <div class="field"><label>Titre</label><input id="nj-title" placeholder="Communiqu&eacute; n&deg;4"></div>
-        <div class="field"><label>Texte</label><textarea id="nj-text" placeholder="Visible de tous les actionnaires."></textarea></div>
-        <button class="btn btn-pri" id="nj-go">Publier</button>
+        <div id="sch-msg"></div>
+        <div class="row">
+          <div class="field"><label>Jour</label><input id="sch-day" placeholder="Samedi"></div>
+          <div class="field" style="flex:0 0 120px"><label>Heure</label><input id="sch-time" placeholder="14:30"></div>
+          <div class="field"><label>Intitul&eacute;</label><input id="sch-title" placeholder="Tournoi de beer pong"></div>
+          <div class="field"><label>Lieu</label><input id="sch-place" placeholder="Grange"></div>
+        </div>
+        <div class="field"><label>D&eacute;tail (optionnel)</label><input id="sch-desc"></div>
+        <button class="btn btn-pri" id="sch-go">Ajouter au programme</button>
+        <hr class="hr">
+        <div id="sch-list"><div class="empty">Programme vide.</div></div>
       </div>
     </div>
     <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#128220;</span> Communiqu&eacute;s</div>
-      <div class="pnl-b" id="j-list"><div class="empty">Rien de publi&eacute;.</div></div>
+      <div class="pnl-h"><span class="ic">&#128240;</span> Journal officiel</div>
+      <div class="pnl-b">
+        <div id="nj-msg"></div>
+        <div class="field"><label>Titre</label><input id="nj-title" placeholder="Communiqu&eacute; n&deg;4"></div>
+        <div class="field"><label>Texte</label><textarea id="nj-text" placeholder="Visible de tous."></textarea></div>
+        <button class="btn btn-pri" id="nj-go">Publier</button>
+        <hr class="hr">
+        <div id="j-list"><div class="empty">Rien de publi&eacute;.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---------- VOTE ---------- -->
+  <section class="sec" id="sec-vote">
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#128499;</span> Le scrutin <span class="sp"></span>
+        <span class="bdg" id="v-st">&mdash;</span></div>
+      <div class="pnl-b">
+        <div id="v-msg"></div>
+        <div class="field"><label>Question pos&eacute;e</label>
+          <input id="v-q" placeholder="Quelle vision pour l&rsquo;avenir de Goodfolks&nbsp;?"></div>
+        <div class="field"><label>Pr&eacute;cisions (optionnel)</label>
+          <textarea id="v-d" placeholder="Rappel des r&egrave;gles du d&eacute;p&ocirc;t, heure de fermeture des urnes&hellip;"></textarea></div>
+        <p class="mini" style="margin:0 0 12px">Les options du vote sont <strong>les &eacute;quipes</strong>&nbsp;:
+          une urne chacune. Leur objectif secret sera r&eacute;v&eacute;l&eacute; au d&eacute;pouillement.</p>
+        <div class="row">
+          <div class="field"><label>Ouverture (dimanche matin)</label>
+            <input id="v-open-at" type="datetime-local"></div>
+          <div class="field"><label>Fermeture des urnes</label>
+            <input id="v-close" type="datetime-local"></div>
+        </div>
+        <div class="row">
+          <button class="btn" id="v-save">Enregistrer</button>
+          <button class="btn btn-gold" id="v-announce">&#128276; Annoncer</button>
+          <button class="btn btn-pri" id="v-go">&#9654; Ouvrir</button>
+          <button class="btn btn-dng" id="v-tally">&#9633; Clore et d&eacute;pouiller</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#127891;</span> Comptage des urnes</div>
+      <div class="pnl-b">
+        <div id="urn-msg"></div>
+        <p class="mini" style="margin:0 0 12px">Compte les jetons de chaque urne et saisis-les ici
+          <strong>avant</strong> de d&eacute;pouiller. Ils s&rsquo;ajoutent aux voix de l&rsquo;app.</p>
+        <div id="urn-list"><div class="empty">Cr&eacute;e d&rsquo;abord les &eacute;quipes.</div></div>
+      </div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#128200;</span> D&eacute;compte <span class="sp"></span>
+        <span class="bdg bdg-vio">vue orga</span></div>
+      <div class="pnl-b" id="v-live"><div class="empty">Aucun scrutin ouvert.</div></div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#9888;</span> Remise &agrave; z&eacute;ro</div>
+      <div class="pnl-b">
+        <button class="btn btn-dng" id="v-reset">Effacer bulletins, urnes et r&eacute;sultat</button>
+        <p class="mini">Rend les parts engag&eacute;es et repasse en brouillon. Ne touche ni aux
+          parts d&eacute;tenues, ni aux cagnottes, ni au grand livre.</p>
+      </div>
     </div>
   </section>
 
   <!-- ---------- CARTE ---------- -->
-  <section class="sec" id="sec-map">
+  <section class="sec" id="sec-carte">
     <div class="pnl">
       <div class="pnl-h"><span class="ic">&#128506;</span> Plan &mdash; clic sur la carte pour poser un point</div>
       <div class="pnl-b">
         <div id="am-msg"></div>
         <div id="amap"></div>
         <div class="row" style="margin-top:10px">
-          <div class="field"><label>Nom du point</label><input id="nm-name" placeholder="Salle de l&rsquo;assembl&eacute;e"></div>
-          <div class="field"><label>Description</label><input id="nm-desc" placeholder="Grange, b&acirc;timent nord"></div>
+          <div class="field"><label>Nom du point</label><input id="nm-name" placeholder="Guichet"></div>
+          <div class="field"><label>Description</label><input id="nm-desc" placeholder="Salle &agrave; manger"></div>
         </div>
-        <p class="mini">Nomme d&rsquo;abord le point, puis clique l&rsquo;endroit sur la carte.
-          Pense &agrave; r&eacute;gler le centre de la carte sur l&rsquo;h&eacute;bergement (onglet R&eacute;glages).</p>
+        <p class="mini">Nomme d&rsquo;abord le point, puis clique l&rsquo;endroit. Pense &agrave; r&eacute;gler
+          le centre de la carte sur l&rsquo;h&eacute;bergement (R&eacute;glages).</p>
       </div>
     </div>
     <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#128205;</span> Points d&rsquo;int&eacute;r&ecirc;t</div>
+      <div class="pnl-h"><span class="ic">&#128205;</span> Points</div>
       <div class="pnl-b" id="m-list"><div class="empty">Aucun point.</div></div>
     </div>
   </section>
@@ -273,7 +339,7 @@
   <!-- ---------- RÉGLAGES ---------- -->
   <section class="sec" id="sec-cfg">
     <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#9881;</span> R&eacute;glages de la partie</div>
+      <div class="pnl-h"><span class="ic">&#9881;</span> R&eacute;glages</div>
       <div class="pnl-b">
         <div id="cfg-msg"></div>
         <div class="row">
@@ -284,46 +350,44 @@
           <div class="field"><label>Unit&eacute; (singulier)</label><input id="c-unit"></div>
           <div class="field"><label>Unit&eacute; (pluriel)</label><input id="c-units"></div>
           <div class="field"><label>Dotation de d&eacute;part</label><input id="c-start" type="number" step="1"></div>
-          <div class="field"><label>Registre public&nbsp;: top N</label><input id="c-topn" type="number" step="1" min="0"></div>
+          <div class="field"><label>Classement public&nbsp;: top N</label><input id="c-topn" type="number" step="1" min="0"></div>
         </div>
         <div class="row">
-          <div class="field"><label>Latitude du centre</label><input id="c-lat" type="number" step="0.000001"></div>
-          <div class="field"><label>Longitude du centre</label><input id="c-lng" type="number" step="0.000001"></div>
+          <div class="field"><label>Latitude</label><input id="c-lat" type="number" step="0.000001"></div>
+          <div class="field"><label>Longitude</label><input id="c-lng" type="number" step="0.000001"></div>
           <div class="field"><label>Zoom</label><input id="c-zoom" type="number" step="1" min="1" max="19"></div>
         </div>
         <div class="field">
-          <label>R&egrave;gles du jeu (markdown l&eacute;ger&nbsp;: <span class="mono">### Titre</span>,
+          <label>R&egrave;gles du jeu (<span class="mono">### Titre</span>,
             <span class="mono">- liste</span>, <span class="mono">**gras**</span>)</label>
           <textarea id="c-rules" style="min-height:240px"></textarea>
         </div>
-        <button class="btn btn-pri" id="c-go">Enregistrer les r&eacute;glages</button>
+        <button class="btn btn-pri" id="c-go">Enregistrer</button>
         <p class="mini">R&egrave;gles vides = on retombe sur <span class="mono">data/rules.json</span>.</p>
       </div>
     </div>
 
     <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#127974;</span> Tr&eacute;sorerie de la compagnie</div>
+      <div class="pnl-h"><span class="ic">&#127974;</span> Tr&eacute;sorerie de la direction</div>
       <div class="pnl-b">
         <div id="tr-msg"></div>
         <div class="row">
           <div class="field"><label>Parts &agrave; &eacute;mettre vers la tr&eacute;sorerie</label>
-            <input id="tr-qty" type="number" min="1" step="1"></div>
+            <input id="tr-qty" type="number" min="1" step="1" value="500"></div>
         </div>
-        <button class="btn btn-gold" id="tr-go">&#128176; &Eacute;mettre vers la tr&eacute;sorerie</button>
-        <p class="mini">Cr&eacute;e des parts nouvelles non attribu&eacute;es, que tu pourras ensuite
-          <strong>attribuer</strong> &agrave; un actionnaire sans diluer personne.
-          L&rsquo;&eacute;mission directe vers un actionnaire, elle, dilue tout le monde.</p>
+        <button class="btn btn-gold" id="tr-go">&#128176; &Eacute;mettre</button>
+        <p class="mini">Ta r&eacute;serve de fondateur&nbsp;: c&rsquo;est d&rsquo;ici que sortent les primes,
+          les gains de d&eacute;fis et les cr&eacute;dits de cagnotte. &Agrave; remplir avant le d&eacute;but.</p>
       </div>
     </div>
 
     <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#9888;</span> Fin de partie</div>
+      <div class="pnl-h"><span class="ic">&#9888;</span> Apr&egrave;s le week-end</div>
       <div class="pnl-b">
         <p style="margin:0;color:var(--td);font-size:.92rem">
-          Apr&egrave;s le week-end, retourne dans la console Firebase &rarr; Firestore &rarr; R&egrave;gles
-          et remplace tout par <span class="mono">allow read, write: if false;</span>.
-          Tant que les r&egrave;gles sont ouvertes, les comptes restent lisibles par qui
-          conna&icirc;t l&rsquo;adresse du site.
+          Retourne dans la console Firebase &rarr; Firestore &rarr; R&egrave;gles et remplace tout par
+          <span class="mono">allow read, write: if false;</span>. Tant que les r&egrave;gles sont
+          ouvertes, les comptes restent lisibles par qui conna&icirc;t l&rsquo;adresse du site.
         </p>
       </div>
     </div>
@@ -338,15 +402,25 @@
 <script src="common/app.js"></script>
 <script>
 /* ============================================================
-   admin.html — guichet et direction.
+   admin.html — console orga.
    ⚠️ Le code d'accès est un verrou de confort : la sécurité réelle
    dépend de firestore.rules (voir README).
    ============================================================ */
 const GATE_KEY = 'gpc_admin';
-let PLAYERS = [], ITEMS = [], REQS = [], POIS = [], BALLOTS = [], JENTRIES = [];
-let VOTE = null;
-let TRES = { issued:0, circulating:0, company:0 };
-let AMAP = null, poiLayer = null;
+let PLAYERS = [], TEAMS = [], MOTIONS = [], ACTS = [], ITEMS = [], REQS = [],
+    POIS = [], BALLOTS = [], JENTRIES = [], SCHEDULE = [];
+let VOTE = null, TRES = { issued:0, circulating:0, company:0 };
+let AMAP = null, poiLayer = null, URN_DRAFT = {};
+
+const actifs    = () => PLAYERS.filter(p => p.active !== false);
+const teamById  = id => TEAMS.find(t => t.id === id) || null;
+const teamName  = id => { const t = teamById(id); return t ? t.name : '—'; };
+const teamColor = id => { const t = teamById(id); return (t && t.color) || '#8ca0ae'; };
+const onAccounts= () => actifs().reduce((s,p) => s + (Number(p.shares)||0), 0);
+const totEngaged= () => actifs().reduce((s,p) => s + (Number(p.engaged)||0), 0);
+const totPots   = () => TEAMS.reduce((s,t) => s + (Number(t.pot)||0), 0);
+const teamWeight= id => (Number((teamById(id)||{}).pot)||0) +
+  actifs().filter(p => p.team === id).reduce((s,p) => s + held(p), 0);
 
 /* ---- verrou ---- */
 document.getElementById('g-form').addEventListener('submit', ev => {
@@ -357,18 +431,16 @@ document.getElementById('g-form').addEventListener('submit', ev => {
   } else say('g-msg','Code incorrect.','err');
 });
 try{ if (sessionStorage.getItem(GATE_KEY) === '1') unlock(); }catch(e){}
-
 function unlock(){
   document.getElementById('gate').style.display = 'none';
   document.getElementById('console').style.display = '';
   boot();
 }
-
 document.getElementById('atabs').addEventListener('click', ev => {
   const b = ev.target.closest('button[data-sec]'); if (!b) return;
   document.querySelectorAll('.sec').forEach(s => s.classList.toggle('on', s.id === 'sec-' + b.dataset.sec));
   document.querySelectorAll('#atabs button').forEach(x => x.classList.toggle('on', x === b));
-  if (b.dataset.sec === 'map') initMap();
+  if (b.dataset.sec === 'carte') initMap();
 });
 
 /* ============================================================
@@ -386,80 +458,87 @@ async function boot(){
     PLAYERS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()))
       .sort((a,b) => String(a.pseudo||a.id).localeCompare(String(b.pseudo||b.id),'fr'));
     document.getElementById('p-count').textContent = PLAYERS.length;
-    renderPlayers(); renderWhoSel(); renderTreasury(); renderVoteAdmin();
+    renderPlayers(); renderSelects(); renderTreasury(); renderTeams(); renderVoteAdmin();
   });
-
+  db.collection(COL.teams).onSnapshot(qs => {
+    TEAMS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()))
+      .sort((a,b) => (a.order||0) - (b.order||0) ||
+                     String(a.name||'').localeCompare(String(b.name||''),'fr'));
+    renderTeams(); renderPlayers(); renderUrns(); renderTreasury(); renderVoteAdmin();
+  });
+  db.collection(COL.motions).onSnapshot(qs => {
+    MOTIONS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()))
+      .sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+    renderMotions();
+  });
+  db.collection(COL.activities).onSnapshot(qs => {
+    ACTS = qs.docs.map(d => Object.assign({ id:d.id }, d.data())); renderActs();
+  });
   db.collection(COL.config).doc('treasury').onSnapshot(s => {
     const d = s.exists ? s.data() : {};
     TRES = { issued:Number(d.issued)||0, circulating:Number(d.circulating)||0,
              company:Number(d.company)||0 };
-    renderTreasury(); renderVoteAdmin();
+    renderTreasury();
   });
-
   db.collection(COL.requests).where('status','==','pending').onSnapshot(qs => {
     REQS = qs.docs.map(d => Object.assign({ _id:d.id }, d.data())).sort((a,b)=>(a.ts||0)-(b.ts||0));
     renderQueue();
   });
-
   db.collection(COL.shop).doc('catalog').onSnapshot(s => {
     ITEMS = s.exists ? (s.data().items || []) : []; renderItems();
   });
-
   db.collection(COL.orders).onSnapshot(qs => {
     renderOrders(qs.docs.map(d => Object.assign({ _id:d.id }, d.data()))
       .sort((a,b)=>(b.ts||0)-(a.ts||0)));
   });
-
   db.collection(COL.ledger).orderBy('ts','desc').limit(60).onSnapshot(qs => {
     renderLedger(qs.docs.map(d => d.data()));
   });
-
   db.collection(COL.journal).doc('public').onSnapshot(s => {
     renderJournal(s.exists ? (s.data().entries || []) : []);
   });
-
+  db.collection(COL.schedule).doc('data').onSnapshot(s => {
+    SCHEDULE = s.exists ? (s.data().items || []) : []; renderSchedule();
+  });
   db.collection(COL.map).doc('data').onSnapshot(s => {
     POIS = s.exists ? (s.data().pois || []) : []; renderPoiList(); drawPois();
   });
-
   db.collection(COL.vote).doc('current').onSnapshot(s => {
-    VOTE = s.exists ? s.data() : null; fillVote(); renderVoteAdmin();
+    VOTE = s.exists ? s.data() : null; fillVote(); renderUrns(); renderVoteAdmin();
   });
-
-  // Les bulletins : la direction est la seule à voir la répartition en direct.
   db.collection(COL.ballots).onSnapshot(qs => {
     BALLOTS = qs.docs.map(d => d.data()); renderVoteAdmin();
   });
 
-  setInterval(renderVoteAdmin, 20000);   // compte à rebours
+  setInterval(() => { renderMotions(); renderVoteAdmin(); }, 1000);
+  setInterval(sweepMotions, 15000);
+  sweepMotions();
 }
-
-const actifs = () => PLAYERS.filter(p => p.active !== false);
-const onAccounts = () => actifs().reduce((s,p) => s + (Number(p.shares)||0), 0);
-const totalEngaged = () => actifs().reduce((s,p) => s + (Number(p.engaged)||0), 0);
 
 /* ============================================================
    Trésorerie
    ============================================================ */
 function renderTreasury(){
-  const acc = onAccounts(), eng = totalEngaged();
-  const cap = TRES.issued || (acc + eng + TRES.circulating + TRES.company);
+  const acc = onAccounts(), eng = totEngaged(), pots = totPots();
+  const cap = TRES.issued || (acc + eng + pots + TRES.circulating + TRES.company);
   const w = v => cap ? (v/cap*100).toFixed(2) + '%' : '0%';
   document.getElementById('t-split').innerHTML =
     '<i class="s-acc"  style="width:' + w(acc) + '"></i>' +
     '<i class="s-vote" style="width:' + w(eng) + '"></i>' +
+    '<i class="s-pot"  style="width:' + w(pots) + '"></i>' +
     '<i class="s-tok"  style="width:' + w(TRES.circulating) + '"></i>' +
     '<i class="s-co"   style="width:' + w(TRES.company) + '"></i>';
   document.getElementById('t-key').innerHTML =
-    '<span><i style="background:var(--ac)"></i>En banque ' + num(acc) + '</span>' +
-    '<span><i style="background:var(--vio)"></i>Engagées au vote ' + num(eng) + '</span>' +
-    '<span><i style="background:var(--gold)"></i>En jetons ' + num(TRES.circulating) + '</span>' +
-    '<span><i style="background:var(--b2)"></i>Trésorerie ' + num(TRES.company) + '</span>';
-  const ecart = TRES.issued - (acc + eng + TRES.circulating + TRES.company);
+    '<span><i style="background:var(--teal)"></i>Comptes ' + num(acc) + '</span>' +
+    '<span><i style="background:var(--navy)"></i>Au vote ' + num(eng) + '</span>' +
+    '<span><i style="background:var(--sage)"></i>Cagnottes ' + num(pots) + '</span>' +
+    '<span><i style="background:var(--gold)"></i>Jetons dehors ' + num(TRES.circulating) + '</span>' +
+    '<span><i style="background:var(--b2)"></i>Direction ' + num(TRES.company) + '</span>';
+  const ecart = TRES.issued - (acc + eng + pots + TRES.circulating + TRES.company);
   document.getElementById('t-stats').innerHTML = [
     ['Capital émis', num(TRES.issued), 'plain'],
-    ['En jetons dehors', num(TRES.circulating), 'gold'],
-    ['Trésorerie', num(TRES.company), 'plain'],
+    ['Jetons dehors', num(TRES.circulating), 'gold'],
+    ['Direction', num(TRES.company), 'plain'],
     ['Écart comptable', (ecart ? (ecart>0?'+':'') + num(ecart) : '0'), ecart ? 'gold' : 'plain']
   ].map(c => '<div class="stat"><div class="stat-v sm ' + c[2] + '">' + c[1] +
     '</div><div class="stat-l">' + c[0] + '</div></div>').join('');
@@ -471,26 +550,53 @@ document.getElementById('tr-go').addEventListener('click', async () => {
   if (n <= 0){ say('tr-msg','Indique un nombre de parts.','err'); return; }
   try{
     await db.runTransaction(async tx => {
-      const ref = db.collection(COL.config).doc('treasury');
+      const ref = treasuryRef();
       const s = await tx.get(ref);
       const d = s.exists ? s.data() : {};
-      tx.set(ref, { issued:(Number(d.issued)||0) + n,
-                    company:(Number(d.company)||0) + n }, { merge:true });
-      ledgerEntry(tx, {
-        type: MV.issue, shares:n,
+      tx.set(ref, { issued:(Number(d.issued)||0)+n, company:(Number(d.company)||0)+n }, { merge:true });
+      ledgerEntry(tx, { type: MV.issue, shares:n,
         from: PARTY.issuance, fromName: PARTY_NAME.__issuance__,
-        to: PARTY.company,    toName:   PARTY_NAME.__company__,
-        label: 'Émission vers la trésorerie'
-      });
+        to: PARTY.company, toName: PARTY_NAME.__company__,
+        label: 'Émission vers la trésorerie' });
     });
-    say('tr-msg', num(n) + ' parts émises vers la trésorerie.', 'ok');
-    document.getElementById('tr-qty').value = '';
+    say('tr-msg', num(n) + ' parts émises.', 'ok');
   }catch(e){ say('tr-msg', e.message, 'err'); }
 });
 
 /* ============================================================
    Guichet
    ============================================================ */
+function renderSelects(){
+  const opts = '<option value="">— Choisir —</option>' + PLAYERS.map(p =>
+    '<option value="' + esc(p.id) + '">' + esc(p.pseudo || p.id) +
+    (p.team ? ' · ' + esc(teamName(p.team)) : '') + ' (' + num(p.shares) + ')</option>').join('');
+  ['q-who','d-who'].forEach(id => {
+    const sel = document.getElementById(id), keep = sel.value;
+    sel.innerHTML = opts; if (keep) sel.value = keep;
+  });
+}
+
+async function quickAdjust(sign){
+  const who = document.getElementById('q-who').value;
+  const n   = Math.round(Number(document.getElementById('q-qty').value)||0);
+  const lb  = document.getElementById('q-lb').value.trim();
+  say('q-msg','');
+  if (!who){ say('q-msg','Choisis un joueur.','err'); return; }
+  if (n <= 0){ say('q-msg','Indique un nombre de parts.','err'); return; }
+  const btn = document.getElementById(sign > 0 ? 'q-give' : 'q-take');
+  btn.disabled = true;
+  const r = sign > 0 ? await grantShares(who, n, lb || undefined)
+                     : await reclaimShares(who, n, lb || undefined);
+  btn.disabled = false;
+  if (r.ok){
+    say('q-msg', (sign>0 ? '+' : '−') + num(n) + ' pour ' +
+      ((PLAYERS.find(p=>p.id===who)||{}).pseudo || who) + '.', 'ok');
+    document.getElementById('q-lb').value = '';
+  } else say('q-msg', r.error, 'err');
+}
+document.getElementById('q-give').addEventListener('click', () => quickAdjust(+1));
+document.getElementById('q-take').addEventListener('click', () => quickAdjust(-1));
+
 function renderQueue(){
   const box = document.getElementById('q-list');
   document.getElementById('q-count').textContent = REQS.length;
@@ -503,19 +609,15 @@ function renderQueue(){
     return '<div class="ed" data-rid="' + esc(r._id) + '">' +
       '<div class="ed-h"><div class="lst-main">' +
         '<div class="lst-t">' + esc(r.playerName || r.playerId) + ' — ' +
-          '<span class="' + (wd ? 'amt-tok' : 'amt-in') + '">' +
-          (wd ? 'retirer' : 'déposer') + ' ' + num(r.qty) + ' jeton' + (r.qty>1?'s':'') +
-          '</span></div>' +
-        '<div class="lst-s">' + esc(when(r.ts)) + ' · en banque : ' + num(p.shares) +
-          ((Number(p.engaged)||0) ? ' · engagées : ' + num(p.engaged) : '') + '</div></div></div>' +
+          '<span class="' + (wd ? 'amt-tok' : 'amt-in') + '">' + (wd ? 'retirer' : 'déposer') +
+          ' ' + num(r.qty) + ' jeton' + (r.qty>1?'s':'') + '</span></div>' +
+        '<div class="lst-s">' + esc(when(r.ts)) + ' · en banque : ' + num(p.shares) + '</div></div></div>' +
       '<div class="row">' +
         '<button class="btn btn-sm btn-pri" data-act="ok">' +
           (wd ? 'Remettre les jetons' : 'Encaisser les jetons') + '</button>' +
-        '<button class="btn btn-sm" data-act="no">Annuler la demande</button>' +
-      '</div></div>';
+        '<button class="btn btn-sm" data-act="no">Annuler</button></div></div>';
   }).join('');
 }
-
 document.getElementById('q-list').addEventListener('click', async ev => {
   const b = ev.target.closest('button[data-act]'); if (!b) return;
   const rid = b.closest('.ed').dataset.rid;
@@ -526,106 +628,227 @@ document.getElementById('q-list').addEventListener('click', async ev => {
       await db.collection(COL.requests).doc(rid).update({ status:'cancelled', doneAt:Date.now() });
       return;
     }
-    const res = r.kind === 'withdraw'
-      ? await withdrawTokens(r.playerId, r.qty)
-      : await depositTokens(r.playerId, r.qty);
+    const res = r.kind === 'withdraw' ? await withdrawTokens(r.playerId, r.qty)
+                                      : await depositTokens(r.playerId, r.qty);
     if (!res.ok){ alert(res.error); b.disabled = false; return; }
     await db.collection(COL.requests).doc(rid).update({ status:'done', doneAt:Date.now() });
   }catch(e){ alert(e.message); b.disabled = false; }
 });
 
-function renderWhoSel(){
-  const sel = document.getElementById('d-who');
-  const keep = sel.value;
-  sel.innerHTML = '<option value="">— Choisir —</option>' + PLAYERS.map(p =>
-    '<option value="' + esc(p.id) + '">' + esc(p.pseudo || p.id) +
-    ' (' + num(p.shares) + ')</option>').join('');
-  if (keep) sel.value = keep;
-}
-
 async function direct(kind){
   const who = document.getElementById('d-who').value;
   const n   = Math.round(Number(document.getElementById('d-qty').value)||0);
   say('d-msg','');
-  if (!who){ say('d-msg','Choisis un actionnaire.','err'); return; }
+  if (!who){ say('d-msg','Choisis un joueur.','err'); return; }
   if (n <= 0){ say('d-msg','Indique un nombre de jetons.','err'); return; }
   const btn = document.getElementById(kind === 'withdraw' ? 'd-wd' : 'd-dp');
   btn.disabled = true;
   const r = kind === 'withdraw' ? await withdrawTokens(who, n) : await depositTokens(who, n);
   btn.disabled = false;
-  if (r.ok){
-    say('d-msg','Opération enregistrée.','ok');
-    document.getElementById('d-qty').value = '';
-  } else say('d-msg', r.error, 'err');
+  if (r.ok){ say('d-msg','Enregistré.','ok'); document.getElementById('d-qty').value=''; }
+  else say('d-msg', r.error, 'err');
 }
 document.getElementById('d-wd').addEventListener('click', () => direct('withdraw'));
 document.getElementById('d-dp').addEventListener('click', () => direct('deposit'));
 
 /* ============================================================
-   Actionnaires
+   Équipes
+   ============================================================ */
+document.getElementById('nt-go').addEventListener('click', async () => {
+  const name = document.getElementById('nt-name').value.trim();
+  say('nt-msg','');
+  if (!name){ say('nt-msg','Il faut un nom.','err'); return; }
+  const id = slugify(name);
+  try{
+    const ref = db.collection(COL.teams).doc(id);
+    if ((await ref.get()).exists){ say('nt-msg','Cette équipe existe déjà.','err'); return; }
+    await ref.set({
+      name, motto: document.getElementById('nt-motto').value.trim(),
+      color: document.getElementById('nt-color').value ||
+             TEAM_COLORS[TEAMS.length % TEAM_COLORS.length],
+      secret: document.getElementById('nt-secret').value.trim(),
+      pot: 0, order: TEAMS.length, createdAt: Date.now()
+    });
+    say('nt-msg','Équipe créée.','ok');
+    ['nt-name','nt-motto','nt-secret'].forEach(k => document.getElementById(k).value='');
+  }catch(e){ say('nt-msg', e.message, 'err'); }
+});
+
+function renderTeams(){
+  const box = document.getElementById('tm-list');
+  if (!TEAMS.length){ box.innerHTML = '<div class="empty">Aucune équipe.</div>'; return; }
+  box.innerHTML = TEAMS.map(t => {
+    const mem = actifs().filter(p => p.team === t.id);
+    return '<div class="ed" data-tid="' + esc(t.id) + '" style="border-left:4px solid ' +
+        esc(t.color||'#888') + '">' +
+      '<div class="ed-h"><div class="lst-main">' +
+        '<div class="lst-t">' + esc(t.name) + ' <span class="bdg">' + mem.length + ' membres</span></div>' +
+        '<div class="lst-s">' + esc(t.motto || '') + '</div></div>' +
+        '<div class="lst-amt">' + num(t.pot) + '<span class="lst-s"> cagnotte</span></div></div>' +
+      '<div class="row">' +
+        '<div class="field"><label>Cr&eacute;diter la cagnotte (depuis la direction)</label>' +
+          '<input class="f-pot" type="number" min="1" step="1" placeholder="0"></div>' +
+        '<div class="field"><label>Motif</label><input class="f-lb" placeholder="D&eacute;fi gagn&eacute;"></div>' +
+        '<div style="flex:0 0 auto;display:flex;align-items:flex-end">' +
+          '<button class="btn btn-sm btn-sec" data-act="pot">Cr&eacute;diter</button></div>' +
+      '</div>' +
+      '<div class="row">' +
+        '<div class="field"><label>Nom</label><input class="f-name" value="' + esc(t.name) + '"></div>' +
+        '<div class="field"><label>Devise</label><input class="f-motto" value="' + esc(t.motto||'') + '"></div>' +
+        '<div class="field" style="flex:0 0 100px"><label>Couleur</label>' +
+          '<input class="f-color" type="color" value="' + esc(t.color||'#1b3a57') + '"></div>' +
+      '</div>' +
+      '<div class="field"><label>Objectif secret</label>' +
+        '<textarea class="f-secret" style="min-height:70px">' + esc(t.secret||'') + '</textarea></div>' +
+      '<div class="row">' +
+        '<button class="btn btn-sm" data-act="save">Enregistrer</button>' +
+        '<button class="btn btn-sm btn-dng" data-act="del">Supprimer</button></div>' +
+      '<p class="mini">Poids total ' + num(teamWeight(t.id)) + ' · membres : ' +
+        (mem.map(p => esc(p.pseudo||p.id)).join(', ') || '—') + '</p>' +
+    '</div>';
+  }).join('');
+}
+
+document.getElementById('tm-list').addEventListener('click', async ev => {
+  const b = ev.target.closest('button[data-act]'); if (!b) return;
+  const ed = b.closest('.ed'), tid = ed.dataset.tid;
+  const q = s => ed.querySelector(s);
+  b.disabled = true;
+  try{
+    if (b.dataset.act === 'pot'){
+      const n = Math.round(Number(q('.f-pot').value)||0);
+      if (n <= 0){ alert('Indique un montant.'); return; }
+      const r = await creditPot(tid, n, q('.f-lb').value || undefined);
+      if (!r.ok) alert(r.error); else { q('.f-pot').value=''; q('.f-lb').value=''; }
+    } else if (b.dataset.act === 'save'){
+      await db.collection(COL.teams).doc(tid).update({
+        name: q('.f-name').value.trim(), motto: q('.f-motto').value.trim(),
+        color: q('.f-color').value, secret: q('.f-secret').value
+      });
+      b.textContent = 'Enregistré ✓';
+      setTimeout(() => { b.textContent = 'Enregistrer'; }, 1400);
+    } else if (b.dataset.act === 'del'){
+      const t = teamById(tid) || {};
+      if (!confirm('Supprimer l’équipe ' + (t.name||tid) + ' ?\n\n' +
+        'Sa cagnotte de ' + num(t.pot) + ' parts disparaît du registre et ses membres ' +
+        'se retrouvent sans équipe.')) return;
+      await db.collection(COL.teams).doc(tid).delete();
+    }
+  }catch(e){ alert(e.message); }
+  finally{ b.disabled = false; }
+});
+
+/* ---- motions ---- */
+function renderMotions(){
+  const open = MOTIONS.filter(m => m.status === 'open');
+  document.getElementById('mo-count').textContent = open.length;
+  const n = document.getElementById('n-mot');
+  n.textContent = open.length; n.style.display = open.length ? '' : 'none';
+  const box = document.getElementById('mo-list');
+  const recent = MOTIONS.slice(0, 12);
+  if (!recent.length){ box.innerHTML = '<div class="empty">Aucune motion.</div>'; return; }
+  box.innerHTML = recent.map(m => {
+    const { pour, contre } = motionTally(m);
+    const lbl = { open:'en cours', approved:'adoptée', rejected:'rejetée', failed:'échouée' }[m.status];
+    const cls = { open:'bdg-warn', approved:'bdg-ok', rejected:'bdg-dng', failed:'bdg-dng' }[m.status];
+    return '<div class="ed" style="border-left:4px solid ' + esc(teamColor(m.teamId)) + '">' +
+      '<div class="ed-h"><div class="lst-main"><div class="lst-t">' + esc(m.label) +
+        ' <span class="bdg ' + cls + '">' + lbl + '</span></div>' +
+        '<div class="lst-s">' + esc(teamName(m.teamId)) + ' · ' + num(m.amount) + ' parts · ' +
+        'propos&eacute;e par ' + esc(m.proposerName || '?') + ' · ' + pour + ' pour / ' + contre + ' contre' +
+        (m.status === 'open' ? ' · <strong>' + esc(countdown(m.expiresAt)) + '</strong>' : '') +
+        (m.failReason ? ' · ' + esc(m.failReason) : '') + '</div></div>' +
+        (m.status === 'open'
+          ? '<button class="btn btn-sm" data-force="' + esc(m.id) + '">Clore maintenant</button>'
+          : '') +
+      '</div></div>';
+  }).join('');
+}
+document.getElementById('mo-list').addEventListener('click', async ev => {
+  const b = ev.target.closest('button[data-force]'); if (!b) return;
+  if (!confirm('Clore cette motion tout de suite ?\n\nLe décompte actuel fait foi.')) return;
+  b.disabled = true;
+  const r = await resolveMotion(b.dataset.force);
+  if (!r.ok) { alert(r.error); b.disabled = false; }
+});
+
+/* ---- activités ---- */
+function renderActs(){
+  const box = document.getElementById('ac-list');
+  if (!ACTS.length){ box.innerHTML = '<div class="empty">Aucune activité.</div>'; return; }
+  box.innerHTML = '<ul class="lst">' + ACTS.map(a =>
+    '<li><div class="lst-main"><div class="lst-t">' + (a.icon ? esc(a.icon)+' ' : '') +
+      esc(a.name) + '</div><div class="lst-s"><span class="tdot" style="background:' +
+      esc(teamColor(a.teamId)) + '"></span>' + esc(teamName(a.teamId)) +
+      ' · tarif ' + num(a.fee) + ' · ' + num(a.plays) + ' passage(s) · ' +
+      num(a.revenue) + ' encaiss&eacute;</div></div>' +
+      '<button class="btn btn-sm btn-dng" data-adel="' + esc(a.id) + '">Retirer</button></li>'
+    ).join('') + '</ul>';
+}
+document.getElementById('ac-list').addEventListener('click', async ev => {
+  const b = ev.target.closest('button[data-adel]'); if (!b) return;
+  if (!confirm('Retirer cette activité ? Les parts déjà encaissées restent acquises.')) return;
+  try{ await db.collection(COL.activities).doc(b.dataset.adel).delete(); }
+  catch(e){ alert(e.message); }
+});
+
+/* ============================================================
+   Joueurs
    ============================================================ */
 const randCode = () => String(Math.floor(1000 + Math.random()*9000));
 
-async function createPlayer(pseudo, code, role, shares){
+async function createPlayer(pseudo, teamId, code, shares){
   const id = slugify(pseudo);
   if (!id) throw new Error('Nom vide.');
   const ref = db.collection(COL.players).doc(id);
-  if ((await ref.get()).exists) throw new Error('« ' + pseudo +' » existe déjà.');
+  if ((await ref.get()).exists) throw new Error('« ' + pseudo + ' » existe déjà.');
   const n = Math.max(0, Math.round(Number(shares)));
   await ref.set({
-    pseudo, code: code || randCode(), role: role || '',
+    pseudo, code: code || randCode(), team: teamId || null, role:'',
     shares: 0, engaged: 0, stats:{}, publicNote:'', active:true, createdAt: Date.now()
   });
-  // La dotation initiale est une émission : elle crée le capital.
   if (n > 0){
-    const r = await issueShares(id, n, 'Dotation initiale');
+    const r = await issueShares(id, n, 'Dotation de départ');
     if (!r.ok) throw new Error(r.error);
   }
-  return { id, code: code || null };
+  return { id };
 }
-
-document.getElementById('np-go').addEventListener('click', async () => {
-  const pseudo = document.getElementById('np-pseudo').value.trim();
-  const shIn   = document.getElementById('np-sh').value;
-  say('np-msg','');
-  try{
-    const code = document.getElementById('np-code').value.trim() || randCode();
-    await createPlayer(pseudo, code,
-      document.getElementById('np-role').value.trim(),
-      shIn === '' ? GAME.startShares : shIn);
-    say('np-msg','Dossier créé. Code : ' + code, 'ok');
-    ['np-pseudo','np-code','np-role','np-sh'].forEach(k => document.getElementById(k).value = '');
-  }catch(e){ say('np-msg', e.message, 'err'); }
-});
 
 document.getElementById('bulk-go').addEventListener('click', async () => {
   const btn = document.getElementById('bulk-go');
   const lines = document.getElementById('bulk-txt').value.split('\n')
     .map(l => l.trim()).filter(Boolean);
-  say('bulk-msg','');
-  document.getElementById('bulk-out').innerHTML = '';
+  say('bulk-msg',''); document.getElementById('bulk-out').innerHTML = '';
   if (!lines.length){ say('bulk-msg','Rien à créer.','err'); return; }
-  if (!confirm('Créer ' + lines.length + ' dossier(s) ?')) return;
+  if (!confirm('Créer ' + lines.length + ' compte(s) ?')) return;
   btn.disabled = true; btn.textContent = 'Création…';
   const made = [], failed = [];
   for (const l of lines){
-    const [pseudo, code, role, sh] = l.split(';').map(x => (x||'').trim());
+    const [pseudo, teamRaw, code, sh] = l.split(';').map(x => (x||'').trim());
     try{
+      let teamId = null;
+      if (teamRaw){
+        const t = TEAMS.find(x => x.id === slugify(teamRaw) ||
+          String(x.name||'').toLowerCase() === teamRaw.toLowerCase());
+        if (!t) throw new Error('équipe « ' + teamRaw + ' » inconnue');
+        teamId = t.id;
+      }
       const c = code || randCode();
-      await createPlayer(pseudo, c, role, sh === '' || sh === undefined ? GAME.startShares : sh);
-      made.push({ pseudo, code:c, role, shares: sh || GAME.startShares });
+      const n = (sh === '' || sh === undefined) ? GAME.startShares : sh;
+      await createPlayer(pseudo, teamId, c, n);
+      made.push({ pseudo, code:c, team: teamId ? teamName(teamId) : '—', shares:n });
     }catch(e){ failed.push(pseudo + ' — ' + e.message); }
   }
-  btn.disabled = false; btn.textContent = 'Créer tous les dossiers';
-  say('bulk-msg', made.length + ' dossier(s) créé(s)' +
+  btn.disabled = false; btn.textContent = 'Créer tous les comptes';
+  say('bulk-msg', made.length + ' compte(s) créé(s)' +
     (failed.length ? ', ' + failed.length + ' en échec' : '') + '.',
     failed.length ? 'err' : 'ok');
   document.getElementById('bulk-out').innerHTML =
     (made.length ? '<hr class="hr"><h3>Codes à distribuer</h3><div class="scroll-x">' +
-      '<table class="tbl"><tr><th>Nom</th><th>Code</th><th>Rôle</th><th>Parts</th></tr>' +
+      '<table class="tbl"><tr><th>Nom</th><th>Code</th><th>Équipe</th><th>Parts</th></tr>' +
       made.map(m => '<tr><td>' + esc(m.pseudo) + '</td><td class="mono">' + esc(m.code) +
-        '</td><td class="lst-s">' + esc(m.role||'') + '</td><td>' + num(m.shares) +
-        '</td></tr>').join('') + '</table></div>' : '') +
+        '</td><td>' + esc(m.team) + '</td><td>' + num(m.shares) + '</td></tr>').join('') +
+      '</table></div>' : '') +
     (failed.length ? '<h3 style="color:var(--red)">Échecs</h3><ul>' +
       failed.map(f => '<li>' + esc(f) + '</li>').join('') + '</ul>' : '');
   if (!failed.length) document.getElementById('bulk-txt').value = '';
@@ -633,7 +856,7 @@ document.getElementById('bulk-go').addEventListener('click', async () => {
 
 document.getElementById('p-print').addEventListener('click', () => {
   const rows = PLAYERS.map(p => '<tr><td>' + esc(p.pseudo||p.id) + '</td><td class="c">' +
-    esc(p.code||'') + '</td><td>' + esc(p.role||'') + '</td></tr>').join('');
+    esc(p.code||'') + '</td><td>' + esc(p.team ? teamName(p.team) : '') + '</td></tr>').join('');
   const w = window.open('', '_blank');
   if (!w){ alert('Le navigateur a bloqué la fenêtre d’impression.'); return; }
   w.document.write('<!DOCTYPE html><meta charset="utf-8"><title>Codes d’accès</title>' +
@@ -641,50 +864,44 @@ document.getElementById('p-print').addEventListener('click', () => {
     'table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:7px 9px;text-align:left}' +
     '.c{font-family:monospace;font-size:16px;letter-spacing:2px}</style>' +
     '<h1>' + esc(GAME.gameName||'') + ' — codes d’accès</h1>' +
-    '<table><tr><th>Nom d’actionnaire</th><th>Code</th><th>Qualité</th></tr>' + rows + '</table>');
+    '<table><tr><th>Nom</th><th>Code</th><th>Équipe</th></tr>' + rows + '</table>');
   w.document.close();
 });
 
 function renderPlayers(){
   const box = document.getElementById('p-list');
-  if (!PLAYERS.length){ box.innerHTML = '<div class="empty">Aucun actionnaire.</div>'; return; }
-  const cap = TRES.issued || (onAccounts() + totalEngaged());
+  if (!PLAYERS.length){ box.innerHTML = '<div class="empty">Aucun joueur.</div>'; return; }
+  const teamOpts = p => '<option value="">— sans équipe —</option>' + TEAMS.map(t =>
+    '<option value="' + esc(t.id) + '"' + (p.team === t.id ? ' selected' : '') + '>' +
+    esc(t.name) + '</option>').join('');
   box.innerHTML = PLAYERS.map(p => {
     const eng = Number(p.engaged)||0;
-    return '<div class="ed" data-pid="' + esc(p.id) + '">' +
+    return '<div class="ed" data-pid="' + esc(p.id) + '"' +
+        (p.team ? ' style="border-left:4px solid ' + esc(teamColor(p.team)) + '"' : '') + '>' +
       '<div class="ed-h"><div class="lst-main">' +
         '<div class="lst-t">' + esc(p.pseudo || p.id) +
           (p.active === false ? ' <span class="bdg bdg-dng">suspendu</span>' : '') +
-          (eng ? ' <span class="bdg bdg-vio">&#128499; ' + num(eng) + ' engagées</span>' : '') + '</div>' +
-        '<div class="lst-s mono">' + esc(p.id) + ' · code ' + esc(p.code || '?') +
-          (p.role ? ' · ' + esc(p.role) : '') + '</div></div>' +
-        '<div class="lst-amt">' + num(p.shares) +
-          (eng ? '<span class="amt-vote"> +' + num(eng) + '</span>' : '') +
-          '<span class="lst-s"> · ' + pctOf(held(p), cap||1) + '</span></div></div>' +
+          (eng ? ' <span class="bdg bdg-vio">' + num(eng) + ' au vote</span>' : '') + '</div>' +
+        '<div class="lst-s mono">' + esc(p.id) + ' · code ' + esc(p.code || '?') + '</div></div>' +
+        '<div class="lst-amt">' + num(p.shares) + '</div></div>' +
       '<div class="row">' +
-        '<div class="field"><label>Nombre de parts</label>' +
+        '<div class="field"><label>&Eacute;quipe</label>' +
+          '<select class="f-team">' + teamOpts(p) + '</select></div>' +
+        '<div class="field"><label>Code</label><input class="f-code mono" value="' + esc(p.code||'') + '"></div>' +
+      '</div>' +
+      '<div class="row">' +
+        '<div class="field"><label>Parts (&eacute;mettre / reprendre)</label>' +
           '<input class="f-qty" type="number" min="1" step="1" placeholder="0"></div>' +
-        '<div class="field"><label>Motif</label><input class="f-lb" placeholder="Accord de la direction"></div>' +
-      '</div>' +
-      '<div class="row" style="margin-bottom:10px">' +
-        '<button class="btn btn-sm btn-gold" data-act="issue" title="Crée des parts nouvelles : dilue tout le monde">＋ Émettre</button>' +
-        '<button class="btn btn-sm btn-pri" data-act="grant" title="Depuis la trésorerie : capital constant">＋ Attribuer</button>' +
-        '<button class="btn btn-sm btn-dng" data-act="reclaim" title="Vers la trésorerie">－ Reprendre</button>' +
+        '<div style="flex:0 0 auto;display:flex;align-items:flex-end;gap:8px">' +
+          '<button class="btn btn-sm btn-gold" data-act="issue">&#10133; &Eacute;mettre</button>' +
+          '<button class="btn btn-sm btn-dng" data-act="reclaim">&#10134; Reprendre</button></div>' +
       '</div>' +
       '<div class="row">' +
-        '<div class="field"><label>Qualité</label><input class="f-role" value="' + esc(p.role || '') + '"></div>' +
-        '<div class="field"><label>Code</label><input class="f-code mono" value="' + esc(p.code || '') + '"></div>' +
-      '</div>' +
-      '<div class="field"><label>Note au dossier (visible de lui)</label>' +
-        '<input class="f-note" value="' + esc(p.publicNote || '') + '"></div>' +
-      '<div class="field"><label>Stats (JSON — nombre, ou {"value":3,"max":10} pour une barre)</label>' +
-        '<input class="f-stats mono" value="' + esc(JSON.stringify(p.stats || {})) + '"></div>' +
-      '<div class="row">' +
-        '<button class="btn btn-sm" data-act="save">Enregistrer la fiche</button>' +
+        '<button class="btn btn-sm btn-pri" data-act="save">Enregistrer</button>' +
         '<button class="btn btn-sm" data-act="toggle">' +
-          (p.active === false ? 'Réactiver' : 'Suspendre') + '</button>' +
-        '<button class="btn btn-sm btn-dng" data-act="del">Supprimer</button>' +
-      '</div></div>';
+          (p.active === false ? 'R&eacute;activer' : 'Suspendre') + '</button>' +
+        '<button class="btn btn-sm btn-dng" data-act="del">Supprimer</button></div>' +
+    '</div>';
   }).join('');
 }
 
@@ -692,36 +909,27 @@ document.getElementById('p-list').addEventListener('click', async ev => {
   const b = ev.target.closest('button[data-act]'); if (!b) return;
   const ed = b.closest('.ed'), pid = ed.dataset.pid;
   const q = s => ed.querySelector(s);
-  const ref = db.collection(COL.players).doc(pid);
   const p = PLAYERS.find(x => x.id === pid) || {};
   const act = b.dataset.act;
   b.disabled = true;
   try{
-    if (act === 'issue' || act === 'grant' || act === 'reclaim'){
+    if (act === 'issue' || act === 'reclaim'){
       const n = Math.round(Number(q('.f-qty').value)||0);
       if (n <= 0){ alert('Indique un nombre de parts.'); return; }
-      const fn = act === 'issue' ? issueShares : act === 'grant' ? grantShares : reclaimShares;
-      const r = await fn(pid, n, q('.f-lb').value || undefined);
-      if (!r.ok) alert(r.error);
-      else { q('.f-qty').value = ''; q('.f-lb').value = ''; }
-    }
-    else if (act === 'save'){
-      let stats = {};
-      try{ stats = JSON.parse(q('.f-stats').value || '{}'); }
-      catch(e){ alert('Stats : JSON invalide.'); return; }
-      await ref.update({
-        role: q('.f-role').value.trim(), code: q('.f-code').value.trim(),
-        publicNote: q('.f-note').value, stats
+      const r = act === 'issue' ? await issueShares(pid, n) : await reclaimShares(pid, n);
+      if (!r.ok) alert(r.error); else q('.f-qty').value = '';
+    } else if (act === 'save'){
+      await db.collection(COL.players).doc(pid).update({
+        team: q('.f-team').value || null, code: q('.f-code').value.trim()
       });
       b.textContent = 'Enregistré ✓';
-      setTimeout(() => { b.textContent = 'Enregistrer la fiche'; }, 1400);
-    }
-    else if (act === 'toggle') await ref.update({ active: p.active === false });
-    else if (act === 'del'){
-      if (!confirm('Supprimer le dossier de ' + (p.pseudo||pid) + ' ?\n\n' +
-        'Ses ' + num(held(p)) + ' parts disparaissent du registre : reprends-les d’abord ' +
-        'si tu veux garder la comptabilité juste.')) return;
-      await ref.delete();
+      setTimeout(() => { b.textContent = 'Enregistrer'; }, 1400);
+    } else if (act === 'toggle'){
+      await db.collection(COL.players).doc(pid).update({ active: p.active === false });
+    } else if (act === 'del'){
+      if (!confirm('Supprimer ' + (p.pseudo||pid) + ' ?\n\nSes ' + num(held(p)) +
+        ' parts disparaissent du registre : reprends-les d’abord pour garder les comptes justes.')) return;
+      await db.collection(COL.players).doc(pid).delete();
       await db.collection(COL.ballots).doc(pid).delete().catch(()=>{});
     }
   }catch(e){ alert(e.message); }
@@ -729,213 +937,23 @@ document.getElementById('p-list').addEventListener('click', async ev => {
 });
 
 /* ============================================================
-   Scrutin
-   ============================================================ */
-function parseOptions(txt){
-  return String(txt||'').split('\n').map(l => l.trim()).filter(Boolean).map((l,i) => {
-    const [label, desc] = l.split(';').map(x => (x||'').trim());
-    return { id: slugify(label) || ('opt' + (i+1)), label, desc: desc || '' };
-  });
-}
-const toLocalInput = ms => {
-  const d = new Date(Number(ms) - new Date().getTimezoneOffset()*60000);
-  return d.toISOString().slice(0,16);
-};
-
-function fillVote(){
-  if (!VOTE) return;
-  const st = document.getElementById('v-st');
-  const lbl = { draft:'brouillon', announced:'annoncé', open:'ouvert', closed:'clos' };
-  const cls = { draft:'', announced:'bdg-warn', open:'bdg-ok', closed:'bdg-dng' };
-  st.textContent = lbl[VOTE.status] || '—';
-  st.className   = 'bdg ' + (cls[VOTE.status] || '');
-  // On ne réécrit les champs que s'ils sont vides (ne pas écraser une saisie en cours)
-  const q = document.getElementById('v-q');
-  if (!q.value){
-    q.value = VOTE.question || '';
-    document.getElementById('v-d').value = VOTE.detail || '';
-    document.getElementById('v-opts').value = (VOTE.options||[])
-      .map(o => o.label + (o.desc ? ';' + o.desc : '')).join('\n');
-    if (VOTE.opensAt)  document.getElementById('v-open-at').value = toLocalInput(VOTE.opensAt);
-    if (VOTE.closesAt) document.getElementById('v-close').value   = toLocalInput(VOTE.closesAt);
-  }
-}
-
-function voteDraft(){
-  const o = document.getElementById('v-open-at').value;
-  const c = document.getElementById('v-close').value;
-  return {
-    question: document.getElementById('v-q').value.trim(),
-    detail:   document.getElementById('v-d').value.trim(),
-    options:  parseOptions(document.getElementById('v-opts').value),
-    opensAt:  o ? new Date(o).getTime() : null,
-    closesAt: c ? new Date(c).getTime() : null
-  };
-}
-
-async function saveVote(status, confirmMsg){
-  const d = voteDraft();
-  say('v-msg','');
-  if (!d.question){ say('v-msg','Il faut une question.','err'); return; }
-  if (status !== VOTE_STATUS.draft && d.options.length < 2){
-    say('v-msg','Il faut au moins deux options.','err'); return;
-  }
-  if (confirmMsg && !confirm(confirmMsg)) return;
-  try{
-    const payload = Object.assign({}, d, { status });
-    if (status === VOTE_STATUS.open) payload.openedAt = Date.now();
-    await db.collection(COL.vote).doc('current').set(payload, { merge:true });
-    const said = { draft:'Brouillon enregistré. Invisible des actionnaires.',
-                   announced:'Annoncé. La question est visible, le vote reste fermé.',
-                   open:'Scrutin ouvert. Les actionnaires peuvent convertir leurs parts.' };
-    say('v-msg', said[status] || 'Enregistré.', 'ok');
-  }catch(e){ say('v-msg', e.message, 'err'); }
-}
-
-document.getElementById('v-save').addEventListener('click',
-  () => saveVote((VOTE && VOTE.status) || VOTE_STATUS.draft));
-
-document.getElementById('v-announce').addEventListener('click',
-  () => saveVote(VOTE_STATUS.announced,
-    'Annoncer la question à tous les actionnaires ?\n\n' +
-    'Ils verront la décision et les options, mais ne pourront pas encore voter.'));
-
-document.getElementById('v-go').addEventListener('click', () => {
-  if (VOTE && VOTE.status === VOTE_STATUS.closed){
-    say('v-msg','Le scrutin est déjà dépouillé et les parts ont été rendues. ' +
-      'Pour rejouer, utilise « Effacer les bulletins et repasser en brouillon ».','err');
-    return;
-  }
-  saveVote(VOTE_STATUS.open,
-    'Ouvrir le scrutin ?\n\nLes ' + actifs().length + ' actionnaires pourront échanger ' +
-    'leurs parts en banque contre des voix. Un seul passage chacun, définitif.');
-});
-
-document.getElementById('v-tally').addEventListener('click', async () => {
-  say('v-msg','');
-  if (!VOTE || VOTE.status === VOTE_STATUS.draft || VOTE.status === VOTE_STATUS.announced){
-    say('v-msg','Aucun scrutin ouvert.','err'); return;
-  }
-  const act = actifs();
-  const voted = Object.keys((VOTE.voted)||{}).length;
-  if (!confirm('Clore et dépouiller ?\n\n' + voted + ' votant(s) sur ' + act.length + '.\n' +
-    num(TRES.circulating) + ' parts sont encore dehors en jetons : elles ne compteront pas.\n\n' +
-    'Les parts engagées seront rendues aux comptes.')) return;
-  const btn = document.getElementById('v-tally');
-  btn.disabled = true; btn.textContent = 'Dépouillement…';
-  const r = await tallyVote();
-  btn.disabled = false; btn.textContent = '◻ Clore et dépouiller';
-  say('v-msg', r.ok
-    ? 'Dépouillé : ' + r.voters + ' bulletins, ' + num(r.expressed) + ' voix exprimées. ' +
-      num(r.released) + ' parts rendues aux comptes.'
-    : r.error, r.ok ? 'ok' : 'err');
-});
-
-document.getElementById('v-reset').addEventListener('click', async () => {
-  if (!confirm('Effacer TOUS les bulletins et repasser en brouillon ?\n\n' +
-    'Les parts engagées sont rendues. Les parts détenues et le grand livre ne bougent pas.')) return;
-  const b = document.getElementById('v-reset');
-  b.disabled = true;
-  const r = await resetVote();
-  b.disabled = false;
-  say('v-msg', r.ok ? 'Scrutin remis à zéro.' : r.error, r.ok ? 'ok' : 'err');
-});
-
-function renderVoteAdmin(){
-  const live = document.getElementById('v-live');
-  const part = document.getElementById('v-part');
-  const st = VOTE && VOTE.status;
-
-  if (!st || st === VOTE_STATUS.draft){
-    live.innerHTML = '<div class="empty">Aucun scrutin publié.</div>';
-    part.innerHTML = '<div class="empty">Aucun scrutin publié.</div>';
-    return;
-  }
-  if (st === VOTE_STATUS.announced){
-    live.innerHTML = '<div class="empty">Scrutin annoncé, pas encore ouvert.' +
-      (VOTE.opensAt ? '<br>Ouverture ' + esc(whenLong(VOTE.opensAt)) +
-        ' — dans <strong>' + esc(countdown(VOTE.opensAt)) + '</strong>.' : '') + '</div>';
-    part.innerHTML = '<div class="empty">Personne ne peut encore voter.</div>';
-    return;
-  }
-
-  /* ---- décompte en direct, d'après les bulletins ---- */
-  const byOption = {};
-  (VOTE.options||[]).forEach(o => { byOption[o.id] = { label:o.label, shares:0, voters:0 }; });
-  let expressed = 0;
-  BALLOTS.forEach(b => {
-    for (const k in (b.alloc||{})){
-      const n = Number(b.alloc[k])||0;
-      if (!n || !byOption[k]) continue;
-      byOption[k].shares += n; byOption[k].voters += 1; expressed += n;
-    }
-  });
-  const ranked = Object.keys(byOption).map(id => Object.assign({ id }, byOption[id]))
-    .sort((a,b) => b.shares - a.shares);
-  const max = Math.max(1, ...ranked.map(o => o.shares));
-  const leadTie = ranked.length > 1 && ranked[0].shares === ranked[1].shares && ranked[0].shares > 0;
-
-  live.innerHTML =
-    (st === VOTE_STATUS.closed
-      ? '<p class="mini">Scrutin clos ' + esc(when(VOTE.closedAt)) + '. Résultat définitif.</p>'
-      : '<div class="msg msg-err" style="margin-bottom:12px">Décompte provisoire, visible ' +
-        'de la direction seulement. Les actionnaires ne voient que la participation.</div>') +
-    ranked.map(o => {
-      const win = ranked[0].shares > 0 && o.id === ranked[0].id && !leadTie;
-      return '<div class="res' + (win ? ' res-win' : '') + '">' +
-        '<div class="res-h"><span class="res-t">' + (win ? '★ ' : '') + esc(o.label || o.id) +
-        '</span><span class="res-v">' + voix(o.shares) + ' · ' + pctOf(o.shares, expressed||1) +
-        '</span></div><div class="res-bar"><i style="width:' + (o.shares/max*100).toFixed(1) +
-        '%"></i></div><div class="lst-s" style="margin-top:3px">' + num(o.voters) +
-        ' actionnaire' + (o.voters>1?'s':'') + '</div></div>';
-    }).join('') +
-    (leadTie ? '<div class="msg msg-err">Égalité en tête.</div>' : '') +
-    '<p class="mini">' + voix(expressed) + ' exprimées · ' + BALLOTS.length + ' bulletin(s)' +
-      (VOTE.closesAt && st === VOTE_STATUS.open
-        ? ' · clôture dans <strong>' + esc(countdown(VOTE.closesAt)) + '</strong>' : '') + '</p>';
-
-  /* ---- participation ---- */
-  const voted = (VOTE.voted) || {};
-  const act = actifs();
-  const ids = Object.keys(voted);
-  const engaged = ids.reduce((s,k) => s + (Number(voted[k])||0), 0);
-  const pending = act.filter(p => !(p.id in voted));
-  const stillAvail = act.reduce((s,p) => s + (Number(p.shares)||0), 0);
-  part.innerHTML =
-    '<div class="stat-grid">' +
-      '<div class="stat"><div class="stat-v">' + ids.length +
-        '<span style="font-size:.6em;color:var(--td)">/' + act.length + '</span></div>' +
-        '<div class="stat-l">Votants</div></div>' +
-      '<div class="stat"><div class="stat-v vio sm">' + num(engaged) +
-        '</div><div class="stat-l">Voix déposées</div></div>' +
-      '<div class="stat"><div class="stat-v sm plain">' + num(stillAvail) +
-        '</div><div class="stat-l">Parts encore en banque</div></div>' +
-      '<div class="stat"><div class="stat-v gold sm">' + num(TRES.circulating) +
-        '</div><div class="stat-l">Jetons dehors</div></div>' +
-    '</div>' +
-    (pending.length
-      ? '<hr class="hr"><h3 style="margin:0 0 7px">N’ont pas voté (' + pending.length + ')</h3>' +
-        '<p style="margin:0;color:var(--td);font-size:.9rem">' +
-        pending.sort((a,b) => (Number(b.shares)||0) - (Number(a.shares)||0))
-          .map(p => esc(p.pseudo||p.id) + ' <span class="lst-s">(' + num(p.shares) + ')</span>')
-          .join(' · ') + '</p>' +
-        '<p class="mini">Tri&eacute;s par parts en banque : les premiers sont ceux qu’il faut aller chercher.</p>'
-      : '<p class="mini" style="color:var(--ac)">Tout le monde a voté.</p>');
-}
-
-/* ============================================================
-   Magasin
+   Shop
    ============================================================ */
 const saveItems = items => db.collection(COL.shop).doc('catalog').set({ items }, { merge:true });
 
 document.getElementById('ni-go').addEventListener('click', async () => {
   const name = document.getElementById('ni-name').value.trim();
   say('ni-msg','');
-  if (!name){ say('ni-msg','Il faut un nom d’article.','err'); return; }
+  if (!name){ say('ni-msg','Il faut un nom.','err'); return; }
   const stock = document.getElementById('ni-stock').value;
+  const scope = document.getElementById('ni-scope').value;
+  const ownable = !!document.getElementById('ni-ownable').value;
+  if (ownable && scope !== 'team'){
+    say('ni-msg','Une activité à péage doit être achetée par une équipe.','err'); return;
+  }
   const it = {
     id: slugify(name) + '-' + Math.random().toString(36).slice(2,6),
-    name,
+    name, scope, ownable,
     desc:  document.getElementById('ni-desc').value.trim(),
     price: Math.round(Number(document.getElementById('ni-price').value)||0),
     icon:  document.getElementById('ni-icon').value.trim(),
@@ -956,12 +974,15 @@ function renderItems(){
   box.innerHTML = ITEMS.map(i =>
     '<div class="ed" data-iid="' + esc(i.id) + '">' +
       '<div class="ed-h"><div class="lst-main">' +
-        '<div class="lst-t">' + (i.icon ? esc(i.icon) + ' ' : '') + esc(i.name) +
-          (i.hidden ? ' <span class="bdg">masqué</span>' : '') + '</div>' +
+        '<div class="lst-t">' + (i.icon ? esc(i.icon)+' ' : '') + esc(i.name) +
+          (i.scope === 'team' ? ' <span class="bdg bdg-ok">équipe</span>'
+                              : ' <span class="bdg">perso</span>') +
+          (i.ownable ? ' <span class="bdg bdg-vio">activité</span>' : '') +
+          (i.hidden ? ' <span class="bdg bdg-dng">masqué</span>' : '') + '</div>' +
         '<div class="lst-s">' + esc(i.desc || '') + '</div></div>' +
-        '<div class="price">' + num(i.price) + ' ' + esc(GAME.units||'parts') + '</div></div>' +
+        '<div class="price">' + num(i.price) + '</div></div>' +
       '<div class="row">' +
-        '<div class="field"><label>Prix (parts)</label><input class="f-price" type="number" step="1" value="' +
+        '<div class="field"><label>Prix</label><input class="f-price" type="number" step="1" value="' +
           Number(i.price||0) + '"></div>' +
         '<div class="field"><label>Stock (vide = illimité)</label><input class="f-stock" type="number" step="1" value="' +
           (i.stock === undefined || i.stock === null ? '' : Number(i.stock)) + '"></div>' +
@@ -971,7 +992,6 @@ function renderItems(){
         '<button class="btn btn-sm btn-dng" data-act="del">Retirer</button>' +
       '</div></div>').join('');
 }
-
 document.getElementById('i-list').addEventListener('click', async ev => {
   const b = ev.target.closest('button[data-act]'); if (!b) return;
   const ed = b.closest('.ed');
@@ -981,10 +1001,9 @@ document.getElementById('i-list').addEventListener('click', async ev => {
     items[i].price = Math.round(Number(ed.querySelector('.f-price').value)||0);
     const s = ed.querySelector('.f-stock').value;
     if (s === '') delete items[i].stock; else items[i].stock = Math.round(Number(s)||0);
-  }
-  else if (b.dataset.act === 'hide') items[i].hidden = !items[i].hidden;
+  } else if (b.dataset.act === 'hide') items[i].hidden = !items[i].hidden;
   else if (b.dataset.act === 'del'){
-    if (!confirm('Retirer « ' + (items[i].name||'') + ' » du catalogue ?')) return;
+    if (!confirm('Retirer « ' + (items[i].name||'') + ' » ?')) return;
     items.splice(i,1);
   }
   try{ await saveItems(items); }catch(e){ alert(e.message); }
@@ -1001,15 +1020,14 @@ function renderOrders(rows){
   const box = document.getElementById('o-list');
   if (!rows.length){ box.innerHTML = '<div class="empty">Aucune commande.</div>'; return; }
   box.innerHTML = '<ul class="lst">' + rows.slice(0,60).map(o =>
-    '<li><div class="lst-main"><div class="lst-t">' + esc(o.playerName || o.playerId) + ' — ' +
-      esc(o.itemName || '?') + (o.qty > 1 ? ' ×' + o.qty : '') + '</div>' +
-      '<div class="lst-s">' + esc(when(o.ts)) + ' · ' + num(o.total) + ' ' + esc(GAME.units||'parts') +
-      '</div></div>' + (o.status === 'delivered'
-        ? '<span class="bdg bdg-ok">Remise</span>'
+    '<li><div class="lst-main"><div class="lst-t">' +
+      esc(o.playerName || o.teamName || '?') + ' — ' + esc(o.itemName || '?') +
+      (o.qty > 1 ? ' ×' + o.qty : '') + '</div>' +
+      '<div class="lst-s">' + esc(when(o.ts)) + ' · ' + num(o.total) + '</div></div>' +
+      (o.status === 'delivered' ? '<span class="bdg bdg-ok">Remise</span>'
         : '<button class="btn btn-sm btn-pri" data-deliver="' + esc(o._id) + '">Marquer remise</button>') +
     '</li>').join('') + '</ul>';
 }
-
 document.getElementById('o-list').addEventListener('click', async ev => {
   const b = ev.target.closest('button[data-deliver]'); if (!b) return;
   b.disabled = true;
@@ -1020,8 +1038,8 @@ document.getElementById('o-list').addEventListener('click', async ev => {
 
 const MV_LABEL = {
   transfer:'Cession', withdraw:'Retrait', deposit:'Dépôt', issue:'Émission',
-  grant:'Attribution', reclaim:'Reprise', shop:'Achat',
-  vote:'Vote', release:'Parts rendues'
+  grant:'Prime', reclaim:'Reprise', shop:'Achat', pot_in:'Versement',
+  pot_out:'Dépense équipe', toll:'Péage', vote:'Vote', release:'Rendu'
 };
 function renderLedger(rows){
   const box = document.getElementById('l-list');
@@ -1030,15 +1048,54 @@ function renderLedger(rows){
     '<th class="nowrap">Parts</th><th>Motif</th></tr>' +
     rows.map(r => '<tr><td class="lst-s nowrap">' + esc(when(r.ts)) + '</td>' +
       '<td class="lst-s">' + esc(MV_LABEL[r.type] || r.type || '—') + '</td>' +
-      '<td>' + esc(partyName(r.from, r.fromName)) + '</td>' +
-      '<td>' + esc(partyName(r.to, r.toName)) + '</td>' +
+      '<td>' + esc(partyName(r.from, r.fromName, TEAMS)) + '</td>' +
+      '<td>' + esc(partyName(r.to, r.toName, TEAMS)) + '</td>' +
       '<td class="lst-amt">' + num(r.shares) + '</td>' +
       '<td class="lst-s">' + esc(r.label || '') + '</td></tr>').join('') + '</table>';
 }
 
 /* ============================================================
-   Journal
+   Fil : programme + journal
    ============================================================ */
+const saveSchedule = items => db.collection(COL.schedule).doc('data').set({ items }, { merge:true });
+
+document.getElementById('sch-go').addEventListener('click', async () => {
+  const title = document.getElementById('sch-title').value.trim();
+  say('sch-msg','');
+  if (!title){ say('sch-msg','Il faut un intitulé.','err'); return; }
+  const it = {
+    id: 's' + Date.now(),
+    day:   document.getElementById('sch-day').value.trim(),
+    time:  document.getElementById('sch-time').value.trim(),
+    title, place: document.getElementById('sch-place').value.trim(),
+    desc:  document.getElementById('sch-desc').value.trim()
+  };
+  try{
+    await saveSchedule(SCHEDULE.concat([it]));
+    say('sch-msg','Ajouté.','ok');
+    ['sch-title','sch-place','sch-desc'].forEach(k => document.getElementById(k).value='');
+  }catch(e){ say('sch-msg', e.message, 'err'); }
+});
+
+function renderSchedule(){
+  const box = document.getElementById('sch-list');
+  if (!SCHEDULE.length){ box.innerHTML = '<div class="empty">Programme vide.</div>'; return; }
+  const rows = SCHEDULE.slice().sort((a,b) =>
+    String(a.day||'').localeCompare(String(b.day||''),'fr') ||
+    String(a.time||'').localeCompare(String(b.time||'')));
+  box.innerHTML = '<ul class="lst">' + rows.map(s =>
+    '<li><div class="lst-main"><div class="lst-t">' + esc(s.time||'') + ' — ' + esc(s.title||'') +
+      '</div><div class="lst-s">' + esc(s.day||'') + (s.place ? ' · ' + esc(s.place) : '') +
+      (s.desc ? ' · ' + esc(s.desc) : '') + '</div></div>' +
+      '<button class="btn btn-sm btn-dng" data-sdel="' + esc(s.id) + '">Retirer</button></li>'
+    ).join('') + '</ul>';
+}
+document.getElementById('sch-list').addEventListener('click', async ev => {
+  const b = ev.target.closest('button[data-sdel]'); if (!b) return;
+  try{ await saveSchedule(SCHEDULE.filter(s => s.id !== b.dataset.sdel)); }
+  catch(e){ alert(e.message); }
+});
+
 document.getElementById('nj-go').addEventListener('click', async () => {
   const title = document.getElementById('nj-title').value.trim();
   const text  = document.getElementById('nj-text').value.trim();
@@ -1047,8 +1104,7 @@ document.getElementById('nj-go').addEventListener('click', async () => {
   try{
     await db.collection(COL.journal).doc('public').set({
       entries: firebase.firestore.FieldValue.arrayUnion({
-        id: 'e' + Date.now(), title, text, ts: Date.now()
-      })
+        id: 'e' + Date.now(), title, text, ts: Date.now() })
     }, { merge:true });
     say('nj-msg','Publié.','ok');
     document.getElementById('nj-title').value = '';
@@ -1067,15 +1123,203 @@ function renderJournal(entries){
         '<div class="jr-x">' + esc(e.text || '') + '</div></div>').join('')
     : '<div class="empty">Rien de publié.</div>';
 }
-
 document.getElementById('j-list').addEventListener('click', async ev => {
   const b = ev.target.closest('button[data-jdel]'); if (!b) return;
   if (!confirm('Retirer ce communiqué ?')) return;
-  try{
-    await db.collection(COL.journal).doc('public')
-      .set({ entries: JENTRIES.filter(e => e.id !== b.dataset.jdel) }, { merge:true });
-  }catch(e){ alert(e.message); }
+  try{ await db.collection(COL.journal).doc('public')
+    .set({ entries: JENTRIES.filter(e => e.id !== b.dataset.jdel) }, { merge:true }); }
+  catch(e){ alert(e.message); }
 });
+
+/* ============================================================
+   Scrutin
+   ============================================================ */
+const toLocalInput = ms => {
+  const d = new Date(Number(ms) - new Date().getTimezoneOffset()*60000);
+  return d.toISOString().slice(0,16);
+};
+
+function fillVote(){
+  if (!VOTE) return;
+  const st = document.getElementById('v-st');
+  const lbl = { draft:'brouillon', announced:'annoncé', open:'ouvert', closed:'clos' };
+  const cls = { draft:'', announced:'bdg-warn', open:'bdg-ok', closed:'bdg-dng' };
+  st.textContent = lbl[VOTE.status] || '—';
+  st.className   = 'bdg ' + (cls[VOTE.status] || '');
+  const q = document.getElementById('v-q');
+  if (!q.value){
+    q.value = VOTE.question || '';
+    document.getElementById('v-d').value = VOTE.detail || '';
+    if (VOTE.opensAt)  document.getElementById('v-open-at').value = toLocalInput(VOTE.opensAt);
+    if (VOTE.closesAt) document.getElementById('v-close').value   = toLocalInput(VOTE.closesAt);
+  }
+}
+
+function voteDraft(){
+  const o = document.getElementById('v-open-at').value;
+  const c = document.getElementById('v-close').value;
+  return {
+    question: document.getElementById('v-q').value.trim(),
+    detail:   document.getElementById('v-d').value.trim(),
+    // les options du scrutin sont les équipes, figées au moment de la publication
+    options:  TEAMS.map(t => ({ id:t.id, label:t.name, desc:t.motto||'' })),
+    opensAt:  o ? new Date(o).getTime() : null,
+    closesAt: c ? new Date(c).getTime() : null
+  };
+}
+
+async function saveVote(status, confirmMsg){
+  const d = voteDraft();
+  say('v-msg','');
+  if (!d.question){ say('v-msg','Il faut une question.','err'); return; }
+  if (status !== VOTE_STATUS.draft && TEAMS.length < 2){
+    say('v-msg','Il faut au moins deux équipes.','err'); return;
+  }
+  if (confirmMsg && !confirm(confirmMsg)) return;
+  try{
+    const payload = Object.assign({}, d, { status });
+    if (status === VOTE_STATUS.open) payload.openedAt = Date.now();
+    await db.collection(COL.vote).doc('current').set(payload, { merge:true });
+    say('v-msg', { draft:'Enregistré. Invisible des joueurs.',
+      announced:'Annoncé. La question est visible, le vote reste fermé.',
+      open:'Scrutin ouvert.' }[status] || 'Enregistré.', 'ok');
+  }catch(e){ say('v-msg', e.message, 'err'); }
+}
+
+document.getElementById('v-save').addEventListener('click',
+  () => saveVote((VOTE && VOTE.status) || VOTE_STATUS.draft));
+document.getElementById('v-announce').addEventListener('click',
+  () => saveVote(VOTE_STATUS.announced,
+    'Annoncer le vote à tous ?\n\nIls verront la question et les équipes en lice, ' +
+    'mais ne pourront pas encore voter.'));
+document.getElementById('v-go').addEventListener('click', () => {
+  if (VOTE && VOTE.status === VOTE_STATUS.closed){
+    say('v-msg','Déjà dépouillé et parts rendues. Utilise la remise à zéro pour rejouer.','err');
+    return;
+  }
+  saveVote(VOTE_STATUS.open,
+    'Ouvrir le vote ?\n\nLes ' + actifs().length + ' joueurs pourront convertir leurs parts ' +
+    'en banque en voix. Un seul passage chacun.');
+});
+
+document.getElementById('v-tally').addEventListener('click', async () => {
+  say('v-msg','');
+  if (!VOTE || VOTE.status === VOTE_STATUS.draft || VOTE.status === VOTE_STATUS.announced){
+    say('v-msg','Aucun scrutin ouvert.','err'); return;
+  }
+  const urns = (VOTE.urns)||{};
+  const saisies = TEAMS.filter(t => urns[t.id] !== undefined).length;
+  if (saisies < TEAMS.length &&
+      !confirm('Attention : ' + (TEAMS.length - saisies) + ' urne(s) sans comptage saisi.\n\n' +
+               'Elles seront comptées à zéro. Continuer ?')) return;
+  if (!confirm('Clore et dépouiller ?\n\nLes parts engagées seront rendues aux comptes.')) return;
+  const btn = document.getElementById('v-tally');
+  btn.disabled = true; btn.textContent = 'Dépouillement…';
+  const r = await tallyVote();
+  btn.disabled = false; btn.textContent = '◻ Clore et dépouiller';
+  say('v-msg', r.ok
+    ? 'Dépouillé : ' + num(r.expressed) + ' parts exprimées, ' + num(r.released) + ' rendues.'
+    : r.error, r.ok ? 'ok' : 'err');
+});
+
+document.getElementById('v-reset').addEventListener('click', async () => {
+  if (!confirm('Effacer bulletins, urnes et résultat, et repasser en brouillon ?')) return;
+  const b = document.getElementById('v-reset');
+  b.disabled = true;
+  const r = await resetVote();
+  b.disabled = false;
+  say('v-msg', r.ok ? 'Remis à zéro.' : r.error, r.ok ? 'ok' : 'err');
+});
+
+/* ---- saisie des urnes ---- */
+function renderUrns(){
+  const box = document.getElementById('urn-list');
+  if (!TEAMS.length){ box.innerHTML = '<div class="empty">Crée d’abord les équipes.</div>'; return; }
+  const urns = (VOTE && VOTE.urns) || {};
+  box.innerHTML = TEAMS.map(t =>
+    '<div class="row" style="align-items:flex-end;margin-bottom:9px" data-uid="' + esc(t.id) + '">' +
+      '<div class="field" style="margin:0"><label><span class="tdot" style="background:' +
+        esc(t.color||'#888') + '"></span>Urne ' + esc(t.name) + '</label>' +
+        '<input class="f-urn" type="number" min="0" step="1" inputmode="numeric" value="' +
+        (URN_DRAFT[t.id] !== undefined ? esc(URN_DRAFT[t.id])
+          : (urns[t.id] !== undefined ? Number(urns[t.id]) : '')) + '" placeholder="0"></div>' +
+      '<div style="flex:0 0 auto"><button class="btn btn-sm btn-sec" data-urn="' + esc(t.id) +
+        '">Enregistrer</button></div></div>').join('');
+}
+document.getElementById('urn-list').addEventListener('input', ev => {
+  const i = ev.target.closest('.f-urn'); if (!i) return;
+  URN_DRAFT[i.closest('[data-uid]').dataset.uid] = i.value;
+});
+document.getElementById('urn-list').addEventListener('click', async ev => {
+  const b = ev.target.closest('button[data-urn]'); if (!b) return;
+  const row = b.closest('[data-uid]');
+  b.disabled = true;
+  const r = await setUrn(b.dataset.urn, row.querySelector('.f-urn').value);
+  b.disabled = false;
+  say('urn-msg', r.ok ? 'Comptage enregistré pour ' + teamName(b.dataset.urn) + '.' : r.error,
+      r.ok ? 'ok' : 'err');
+  if (r.ok) delete URN_DRAFT[b.dataset.urn];
+});
+
+function renderVoteAdmin(){
+  const live = document.getElementById('v-live');
+  const st = VOTE && VOTE.status;
+  if (!st || st === VOTE_STATUS.draft){
+    live.innerHTML = '<div class="empty">Aucun scrutin publié.</div>'; return;
+  }
+  if (st === VOTE_STATUS.announced){
+    live.innerHTML = '<div class="empty">Annoncé, pas encore ouvert.' +
+      (VOTE.opensAt ? '<br>Ouverture ' + esc(whenLong(VOTE.opensAt)) + ' — dans <strong>' +
+        esc(countdown(VOTE.opensAt)) + '</strong>.' : '') + '</div>';
+    return;
+  }
+
+  const urns = (VOTE.urns)||{};
+  const rows = TEAMS.map(t => {
+    const app = BALLOTS.reduce((s,b) => s + (Number((b.alloc||{})[t.id])||0), 0);
+    const urn = Math.max(0, Math.round(Number(urns[t.id])||0));
+    return { id:t.id, name:t.name, color:t.color, app, urn, total: app+urn };
+  }).sort((a,b) => b.total - a.total);
+  const expressed = rows.reduce((s,o) => s + o.total, 0);
+  const max = Math.max(1, ...rows.map(o => o.total));
+  const tie = rows.length > 1 && rows[0].total === rows[1].total && rows[0].total > 0;
+
+  const voted = (VOTE.voted)||{};
+  const pending = actifs().filter(p => !(p.id in voted));
+
+  live.innerHTML =
+    (st === VOTE_STATUS.closed
+      ? '<p class="mini">Clos ' + esc(when(VOTE.closedAt)) + '. Résultat définitif.</p>'
+      : '<div class="msg msg-err" style="margin-bottom:12px">Décompte provisoire, ' +
+        'vue orga uniquement. Les urnes ne comptent que ce que tu as saisi.</div>') +
+    rows.map(o => {
+      const win = rows[0].total > 0 && o.id === rows[0].id && !tie;
+      return '<div class="res' + (win ? ' res-win' : '') + '">' +
+        '<div class="res-h"><span class="res-t">' + (win ? '★ ' : '') + esc(o.name) + '</span>' +
+        '<span class="res-v">' + num(o.total) + ' · ' + pctOf(o.total, expressed||1) + '</span></div>' +
+        '<div class="res-bar"><i style="width:' + (o.total/max*100).toFixed(1) +
+          '%;background:' + esc(o.color||'') + '"></i></div>' +
+        '<div class="lst-s" style="margin-top:3px">' + num(o.urn) + ' en jetons · ' +
+          num(o.app) + ' dans l’app</div></div>';
+    }).join('') +
+    (tie ? '<div class="msg msg-err">Égalité en tête.</div>' : '') +
+    '<hr class="hr"><div class="stat-grid">' +
+      '<div class="stat"><div class="stat-v sm">' + BALLOTS.length + '<span style="font-size:.7em;color:var(--td)">/' +
+        actifs().length + '</span></div><div class="stat-l">Votes dans l’app</div></div>' +
+      '<div class="stat"><div class="stat-v sm gold">' + num(TRES.circulating) +
+        '</div><div class="stat-l">Jetons encore dehors</div></div>' +
+      '<div class="stat"><div class="stat-v sm plain">' + num(onAccounts()) +
+        '</div><div class="stat-l">Parts encore en banque</div></div>' +
+    '</div>' +
+    (VOTE.closesAt && st === VOTE_STATUS.open
+      ? '<p class="mini">Fermeture dans <strong>' + esc(countdown(VOTE.closesAt)) + '</strong></p>' : '') +
+    (st === VOTE_STATUS.open && pending.length
+      ? '<hr class="hr"><h3 style="margin:0 0 7px">Pas encore passés par l’app (' + pending.length + ')</h3>' +
+        '<p style="margin:0;color:var(--td);font-size:.9rem">' +
+        pending.sort((a,b) => (Number(b.shares)||0)-(Number(a.shares)||0))
+          .map(p => esc(p.pseudo||p.id) + ' <span class="lst-s">(' + num(p.shares) + ')</span>')
+          .join(' · ') + '</p>' : '');
+}
 
 /* ============================================================
    Carte
@@ -1089,11 +1333,9 @@ function initMap(){
   AMAP.on('click', async e => {
     const name = document.getElementById('nm-name').value.trim();
     if (!name){ say('am-msg','Donne d’abord un nom au point.','err'); return; }
-    const poi = {
-      id: 'p' + Date.now(), name,
+    const poi = { id:'p'+Date.now(), name,
       desc: document.getElementById('nm-desc').value.trim(),
-      lat: Number(e.latlng.lat.toFixed(6)), lng: Number(e.latlng.lng.toFixed(6))
-    };
+      lat: Number(e.latlng.lat.toFixed(6)), lng: Number(e.latlng.lng.toFixed(6)) };
     try{
       await db.collection(COL.map).doc('data').set({ pois: POIS.concat([poi]) }, { merge:true });
       say('am-msg','Point « ' + name + ' » posé.','ok');
@@ -1103,18 +1345,16 @@ function initMap(){
   });
   drawPois();
 }
-
 function drawPois(){
   if (!poiLayer) return;
   poiLayer.clearLayers();
   POIS.forEach(p => {
     if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return;
-    L.marker([p.lat,p.lng], { icon: L.divIcon({ className:'', html:'<div class="poi-dot"></div>', iconSize:[13,13] }) })
+    L.marker([p.lat,p.lng], { icon: L.divIcon({ className:'', html:'<div class="poi-dot"></div>', iconSize:[14,14] }) })
      .bindPopup('<strong>' + esc(p.name||'') + '</strong>' + (p.desc ? '<br>' + esc(p.desc) : ''))
      .addTo(poiLayer);
   });
 }
-
 function renderPoiList(){
   const box = document.getElementById('m-list');
   if (!POIS.length){ box.innerHTML = '<div class="empty">Aucun point.</div>'; return; }
@@ -1122,16 +1362,14 @@ function renderPoiList(){
     '<li><div class="lst-main"><div class="lst-t">' + esc(p.name||'') + '</div>' +
       '<div class="lst-s mono">' + Number(p.lat).toFixed(5) + ', ' + Number(p.lng).toFixed(5) +
       (p.desc ? ' · ' + esc(p.desc) : '') + '</div></div>' +
-      '<button class="btn btn-sm btn-dng" data-pdel="' + esc(p.id) + '">Retirer</button></li>').join('') +
-    '</ul>';
+      '<button class="btn btn-sm btn-dng" data-pdel="' + esc(p.id) + '">Retirer</button></li>'
+    ).join('') + '</ul>';
 }
-
 document.getElementById('m-list').addEventListener('click', async ev => {
   const b = ev.target.closest('button[data-pdel]'); if (!b) return;
-  try{
-    await db.collection(COL.map).doc('data')
-      .set({ pois: POIS.filter(p => p.id !== b.dataset.pdel) }, { merge:true });
-  }catch(e){ alert(e.message); }
+  try{ await db.collection(COL.map).doc('data')
+    .set({ pois: POIS.filter(p => p.id !== b.dataset.pdel) }, { merge:true }); }
+  catch(e){ alert(e.message); }
 });
 
 /* ============================================================
@@ -1147,7 +1385,6 @@ function fillCfg(){
   v('c-zoom',  GAME.mapZoom);
   v('c-rules', GAME.rules || '');
 }
-
 document.getElementById('c-go').addEventListener('click', async () => {
   const n = id => Number(document.getElementById(id).value);
   const s = id => document.getElementById(id).value.trim();
@@ -1163,7 +1400,7 @@ document.getElementById('c-go').addEventListener('click', async () => {
       rules: document.getElementById('c-rules').value
     }, { merge:true });
     await loadGame();
-    say('cfg-msg','Réglages enregistrés. Les actionnaires les reçoivent au prochain chargement.','ok');
+    say('cfg-msg','Enregistré. Les joueurs le reçoivent au prochain chargement.','ok');
   }catch(e){ say('cfg-msg', e.message, 'err'); }
 });
 </script>

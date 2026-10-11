@@ -2,11 +2,14 @@
 
 > *so much better together*
 
-Support web d'un jeu grandeur nature d'un week-end : une quarantaine de joueurs
-sont les **actionnaires d'une entreprise** et doivent trancher une décision. Tout
-le week-end, ils s'échangent des parts — entre eux, et avec l'organisation au
-guichet. Le **dimanche matin**, chacun échange ses parts contre des voix et le
-scrutin tranche.
+Hub web d'un week-end de jeux et de fête pour **30 joueurs répartis en 5 équipes**.
+Chacun détient des **parts** de l'entreprise ; chaque équipe a un **objectif
+secret** pour son avenir. On gagne, mise, échange et dépense des parts tout le
+week-end — puis **dimanche, le vote tranche** : l'équipe qui récolte le plus de
+parts impose sa vision.
+
+Le roleplay reste léger : l'entreprise est un prétexte, et une justification au
+système de parts.
 
 - **Hébergement** : GitHub Pages
 - **Base de données** : Firebase Firestore (temps réel, SDK compat v9)
@@ -14,45 +17,75 @@ scrutin tranche.
 
 ---
 
-## Le modèle de jeu, en une page
+## Le modèle de jeu
 
-Une **part** existe sous deux formes :
+### Une part, deux formes
 
-| | Où | L'app la voit ? | Vote ? |
+| | Où | L'app la voit ? | Sert à |
 |---|---|---|---|
-| **En banque** | sur le compte du joueur | oui | **oui** |
-| **En jetons** | dans sa poche, physiquement | non, jamais | **non** |
+| **En jetons** | dans la poche | non, jamais | paris, beer pong, casino, deals |
+| **En banque** | sur le compte | oui | shop, péages, cagnotte, vote dans l'app |
 
-Le **guichet de l'organisation** est le seul point de conversion, dans les deux
-sens : *retrait* (compte → jetons) et *dépôt* (jetons → compte).
+Le **guichet de l'orga** convertit dans les deux sens. Le jeton circule sans
+trace ; la part en banque paie dans l'app. Arbitrer entre les deux est le nerf
+du jeu.
 
-**La règle qui structure tout le week-end** : l'app ne peut compter que ce
-qu'elle voit. Un jeton dans une poche est intraçable par construction — donc
-**seule une part en banque peut devenir une voix**, et il faut avoir déposé ses
-jetons avant la clôture. D'où la ruée au guichet le dimanche matin, qui est une
-mécanique, pas un effet de bord.
+### Les équipes
 
-Le jeton est **discret mais muet** ; la part en banque est **bavarde mais elle
-compte**. Arbitrer entre les deux est le cœur du jeu.
+Chaque équipe a un **objectif secret** (visible de ses seuls membres, révélé à
+tous au dépouillement), une **couleur**, et une **cagnotte collective**.
 
-### Ce que ça donne concrètement
+La cagnotte se remplit de deux façons : les **versements des membres** — du
+poids perso en moins, de la force collective en plus — et les **péages
+encaissés** sur ses activités. L'orga peut aussi la créditer après un défi.
 
-- Un joueur peut **céder des parts en banque** depuis son téléphone : immédiat,
-  définitif, tracé dans son relevé et dans celui du destinataire.
-- Il peut aussi **tout sortir en jetons** pour négocier sans laisser de trace —
-  au risque d'oublier de redéposer avant l'heure.
-- Le **registre public** compte les parts en banque **et** celles engagées au
-  vote. Celui qui garde tout en jetons est invisible au classement… et sans voix
-  au scrutin.
-- L'indicateur **« en jetons dehors »** dit à tout le monde quelle fraction du
-  capital est dans la nature à cet instant — donc combien de voix dorment encore
-  dans des poches.
-- Le dimanche, voter **immobilise** les parts engagées : elles réapparaissent sur
-  les comptes au dépouillement.
+### Les dépenses d'équipe : la motion à 5 minutes
+
+Toute dépense sur la cagnotte passe par une **motion**. N'importe quel membre
+propose ; les autres ont **5 minutes** pour voter.
+
+> **Le silence vaut accord.** Sans majorité d'opposants à la fin du délai, la
+> dépense part. Qui dort laisse décider les autres.
+
+Une seule motion ouverte à la fois par équipe. Le proposant vote « pour »
+d'office. À l'expiration, le premier écran qui s'en aperçoit clôt la motion —
+`resolveMotion` est idempotent, et `sweepMotions` tourne toutes les 15-20 s sur
+chaque appareil connecté.
+
+### Posséder une activité, et la faire payer
+
+Un article du shop marqué **« activité »** s'achète sur la cagnotte et devient
+la propriété de l'équipe. Elle lui fixe alors un **tarif d'entrée** librement
+modifiable, et les autres joueurs paient depuis leur téléphone — les parts
+tombent directement dans la cagnotte propriétaire.
+
+Le tarif affiché est le **prix officiel** ; rien n'empêche un arrangement en
+jetons à côté. C'est voulu : la trace quand on la veut, la roublardise quand on
+la préfère.
+
+### Le vote du dimanche : hybride
+
+Deux façons de peser, **elles s'additionnent** :
+
+- **Les jetons physiques** vont dans l'**urne** de l'équipe soutenue. L'orga
+  compte et saisit le total par urne dans la console.
+- **Les parts en banque** se convertissent en **voix dans l'app**, réparties
+  librement entre plusieurs équipes si le joueur veut couvrir ses paris.
+
+Dans l'app : **un seul passage, définitif**. Les parts converties sont
+**bloquées** (champ `engaged`) puis **rendues** au dépouillement — voter ne
+coûte rien.
+
+> **Pourquoi bloquer ?** Sans blocage, on voterait avec 10 parts puis on les
+> céderait à quelqu'un qui revoterait avec les mêmes. Le verrou est ce qui rend
+> le décompte exact.
+
+Personne n'est lésé selon la forme où il a laissé ses parts, et la scène des
+urnes garde son enjeu.
 
 ---
 
-## Mise en route (15 minutes)
+## Mise en route
 
 ### 1. Créer le projet Firebase
 
@@ -64,7 +97,7 @@ compte**. Arbitrer entre les deux est le cœur du jeu.
 ### 2. Brancher la config
 
 Dans `common/config.js` : remplacer les `"A_REMPLACER"` par les valeurs copiées,
-et changer `GPC_ADMIN_CODE` (le code du guichet).
+et changer `GPC_ADMIN_CODE` (le code d'accès à la console orga).
 
 ### 3. Publier les règles de sécurité
 
@@ -81,24 +114,28 @@ Site en ligne sur `https://jobakledev.github.io/GoodPeopleCompany/`.
 > Le dépôt s'appelle encore `GoodPeopleCompany` alors que la société s'appelle
 > Goodfolks Industries : sans conséquence, mais l'URL publique en hérite. Pour
 > l'aligner, renommer le dépôt dans **Settings → General** (GitHub pose une
-> redirection automatique depuis l'ancienne adresse).
+> redirection depuis l'ancienne adresse).
 
-### 5. Créer les 40 actionnaires
+### 5. Créer les équipes, puis les joueurs
 
-`admin.html` → code du guichet → onglet **Actionnaires** → **Création en série** :
-coller la liste, un nom par ligne.
+**D'abord les 5 équipes** (onglet Équipes) : nom, couleur, devise publique, et
+surtout l'**objectif secret**. Elles deviennent automatiquement les options du
+vote et les urnes du dimanche.
+
+**Ensuite les 30 joueurs** (onglet Joueurs → Création en série) :
 
 ```
-Camille Dubreuil
-Anaïs Berger;4821;Fonds Mercure
-Victor Pann;;Petit porteur;5
+Camille Dubreuil;Les Continuateurs
+Anaïs Berger;Les Continuateurs;4821
+Victor Pann;Les Bâtisseurs;;18
 ```
 
-Format : `Nom` · `Nom;code` · `Nom;code;rôle` · `Nom;code;rôle;parts`.
-Code vide = tiré au hasard. Parts vides = dotation par défaut.
+Format : `Nom` · `Nom;équipe` · `Nom;équipe;code` · `Nom;équipe;code;parts`.
+L'équipe est reconnue par son nom. Code vide = tiré au hasard. Parts vides =
+dotation par défaut.
 
-La page affiche ensuite **le tableau des codes à distribuer**, et le bouton
-**🖨 Codes** du registre ouvre une version imprimable pour les badges.
+La page affiche le **tableau des codes à distribuer**, et le bouton **🖨 Codes**
+en ouvre une version imprimable pour les badges.
 
 ---
 
@@ -107,111 +144,75 @@ La page affiche ensuite **le tableau des codes à distribuer**, et le bouton
 | Fichier | Qui | Quoi |
 |---|---|---|
 | `index.html` | joueurs | Accueil + connexion (nom + code) |
-| `perso.html` | joueurs | Compte actionnaire, 6 onglets en bas d'écran |
-| `admin.html` | organisation | Guichet, registre, scrutin, magasin, journal, carte, réglages |
+| `perso.html` | joueurs | Le hub, 6 onglets en bas d'écran |
+| `admin.html` | orga | Guichet, équipes, joueurs, shop, commandes, fil, vote, carte, réglages |
 
-**Onglets joueur** : **Parts** (solde, guichet, cession, relevé) · **Vote** ·
-**Registre** (top N + où est le capital) · **Magasin** · **Journal** ·
-**Infos** (plan, règles, dossier perso).
+**Onglets joueur** : **Parts** (solde, guichet, cessions, relevé) · **Équipe**
+(objectif secret, cagnotte, motions, activités, classement) · **Shop** (perso,
+équipe, péages) · **Fil** (programme + journal officiel) · **Vote** · **Infos**
+(plan, classement, règles).
 
-**Onglets organisation** : **Guichet** (file d'attente + opération directe) ·
-**Actionnaires** · **Scrutin** · **Magasin** · **Commandes** · **Journal** ·
-**Carte** · **Réglages**.
-
-Tout est en temps réel : une attribution de parts apparaît sur le téléphone du
-joueur sans rechargement.
+Tout est en temps réel : une prime accordée depuis la console apparaît sur le
+téléphone du joueur sans rechargement.
 
 ---
 
 ## Le guichet, en pratique
 
-Avec 40 personnes, la file d'attente est le goulot. Deux chemins :
+Avec 30 personnes, la file est le goulot. Deux chemins :
 
-1. **Le joueur pose sa demande** depuis son téléphone (onglet Parts → Guichet) :
-   « retirer 12 jetons ». Elle apparaît dans la file de la console, avec son
-   solde. Tu comptes les jetons, tu cliques une fois. Un joueur ne peut avoir
-   qu'une demande en attente à la fois.
-2. **Opération directe** : pour qui arrive sans avoir rien posé — sélection,
-   quantité, un bouton.
+1. **Le joueur pose sa demande** depuis son téléphone (Parts → Guichet) :
+   « retirer 12 jetons ». Elle apparaît dans la file de la console avec son
+   solde. Tu comptes, tu cliques une fois. Une seule demande en attente par
+   joueur.
+2. **Conversion directe** : pour qui arrive sans avoir rien posé.
 
 Le compteur rouge sur l'onglet **Guichet** indique le nombre de personnes en
 attente.
 
 ---
 
-## Le scrutin — l'événement du dimanche matin
+## Les leviers de l'orga
 
-Voter n'est pas un poids passif : c'est un **acte de conversion**. Quand le
-scrutin s'ouvre, chaque actionnaire **échange des parts de son compte contre des
-voix**, à raison d'**1 part = 1 voix**.
+Onglet **Guichet**, le raccourci que tu utiliseras cent fois : **Primes &
+pénalités** — un joueur, un montant, un motif, et ➕ Donner / ➖ Reprendre. C'est
+par là que passent les gains de beer pong, de casino, de défis et les gages.
 
-### Les quatre règles du vote
-
-1. **Répartition libre** — il peut ventiler ses voix entre plusieurs options
-   (7 pour A, 3 pour B). De quoi couvrir ses paris, et surtout honorer à moitié
-   une promesse faite à deux camps.
-2. **Un seul passage, définitif** — une fois le bulletin déposé, plus de retour,
-   plus de changement, plus d'ajout. Le *moment* où l'on vote devient un pari :
-   trop tôt, on rate les parts qu'on aurait pu réunir ; trop tard, on risque la
-   clôture.
-3. **Les parts sont engagées, pas dépensées** — elles quittent le compte
-   (champ `engaged`), restent bloquées le temps du scrutin, puis sont **rendues
-   automatiquement** au dépouillement.
-4. **Un jeton ne peut pas devenir une voix** — il faut l'avoir déposé au guichet
-   avant la clôture.
-
-> **Pourquoi bloquer les parts ?** Ce n'est pas cosmétique. Sans blocage, on
-> voterait avec 10 parts puis on les céderait à quelqu'un qui revoterait avec les
-> mêmes. Le verrou est ce qui rend le décompte exact.
-
-### Le cycle, côté console
-
-| État | Ce que voient les actionnaires |
-|---|---|
-| **brouillon** | rien |
-| **annoncé** | la question, les options, l'heure d'ouverture — vote impossible |
-| **ouvert** | le formulaire de conversion, le compte à rebours de clôture |
-| **clos** | les résultats |
-
-L'état **annoncé** est là pour le samedi soir : tout le monde sait ce qui se joue
-et ce que ça vaut, personne ne peut encore agir. C'est le carburant des
-tractations.
-
-1. Rédiger la **question**, l'**exposé des motifs**, les **options** (une par
-   ligne, `Intitulé;précision`), l'**heure d'ouverture** et la **clôture**.
-2. **📢 Annoncer** le samedi soir.
-3. **▶ Ouvrir** le dimanche matin.
-4. Pendant le vote, la console affiche le **décompte en direct** — réservé à la
-   direction — et la **liste de ceux qui n'ont pas voté, triés par parts en
-   banque** : les premiers de la liste sont ceux qu'il faut aller chercher.
-5. **◻ Clore et dépouiller** : publie le résultat **et rend les parts engagées**.
-
-Autres détails :
-
-- **Qui a voté et combien il a engagé sont publics** ; pour quoi il a voté ne
-  l'est pas. Chaque bulletin vit dans `/ballots/{id}` ; `/vote/current.voted`
-  ne porte que le nombre de parts engagées par chacun.
-- En cas d'**égalité parfaite**, l'app le dit et ne tranche pas.
-- Un scrutin **clos ne se réouvre pas** (les parts ont été rendues) : pour
-  rejouer, « Effacer les bulletins et repasser en brouillon » remet tout à zéro
-  sans toucher aux parts détenues ni au grand livre.
-
-## Les leviers de l'organisation
-
-Sur la fiche de chaque actionnaire :
-
-| Bouton | Effet | Capital total |
+| Où | Action | Effet sur le capital |
 |---|---|---|
-| **＋ Émettre** | crée des parts nouvelles et les lui donne | **augmente** — dilue tous les autres |
-| **＋ Attribuer** | les prend dans la trésorerie de la compagnie | inchangé |
-| **－ Reprendre** | les renvoie à la trésorerie | inchangé |
+| Réglages | **Émettre vers la trésorerie** | **augmente** — ta réserve de fondateur |
+| Guichet | **Donner / Reprendre** | inchangé — circule entre trésorerie et joueurs |
+| Joueurs | **＋ Émettre** sur un joueur | **augmente** — crée des parts, dilue les autres |
+| Équipes | **Créditer la cagnotte** | inchangé — prend dans la trésorerie |
 
-La **dilution** est donc un vrai levier narratif : récompenser quelqu'un en
-émettant, c'est affaiblir la part de tous les autres — et ça se voit dans le
-registre.
+En tant que fondateur, tu contrôles la **trésorerie de la direction** : une part
+du capital qui ne vote pas, et d'où sort tout ce que tu distribues. Émets-en une
+bonne réserve avant le début du week-end.
 
-Onglet **Réglages** → *Émettre vers la trésorerie* : crée un stock de parts non
-attribuées, à distribuer ensuite sans diluer personne.
+---
+
+## Le dimanche, côté console
+
+Onglet **Vote** :
+
+1. Rédiger la **question** et les précisions. **Les options sont les équipes** —
+   inutile de les saisir, elles sont reprises automatiquement, une urne chacune.
+2. Fixer l'**ouverture** (dimanche matin) et la **fermeture des urnes**.
+3. **📢 Annoncer** la veille : la question et les équipes en lice deviennent
+   visibles, le vote reste fermé. C'est le carburant des tractations du samedi soir.
+4. **▶ Ouvrir** le dimanche matin.
+5. Compter les urnes et **saisir chaque total** dans « Comptage des urnes ».
+6. **◻ Clore et dépouiller** : additionne urnes + voix de l'app, publie le
+   résultat, **révèle les objectifs secrets** des 5 équipes, et rend les parts
+   engagées.
+
+Pendant le vote, la console affiche le **décompte provisoire** (vue orga
+uniquement) et la **liste de ceux qui ne sont pas encore passés par l'app**,
+triés par parts en banque.
+
+Si tu dépouilles sans avoir saisi toutes les urnes, l'app te prévient et compte
+les manquantes à zéro. Un scrutin clos **ne se réouvre pas** (les parts ont été
+rendues) : passer par la remise à zéro.
 
 ---
 
@@ -222,9 +223,9 @@ les déclinaisons web sont générées dans `img/` :
 
 | Couleur | Hex | Usage |
 |---|---|---|
-| Navy | `#1b3a57` | encre, titres, chiffres, actions irréversibles, parts engagées |
-| Pétrole | `#387589` | accent : liens, barres, indicateurs, parts en banque |
-| Sauge | `#68876c` | positif, option gagnante au dépouillement |
+| Navy | `#1b3a57` | encre, titres, chiffres, actions irréversibles, parts au vote |
+| Pétrole | `#387589` | accent : liens, barres, parts en banque |
+| Sauge | `#68876c` | positif, cagnottes, équipe gagnante |
 | Ocre | `#b07d2b` | jetons physiques en circulation, vigilance |
 | Brique | `#b3503f` | danger, dépassement |
 
@@ -234,8 +235,11 @@ Fond papier `#f4f7f8`, surfaces blanches, filets `#dde7ea`. Typographie :
 `common/style.css` — changer la marque, c'est changer ces lignes-là.
 
 Fichiers générés depuis le PNG source (ImageMagick) : `goodfolks-logo.png`
-(lockup 760px, pour l'accueil), `goodfolks-mark.png` (la marque seule, 192px,
+(lockup 760 px, pour l'accueil), `goodfolks-mark.png` (la marque seule, 192 px,
 pour les en-têtes), `favicon.png`, `apple-touch-icon.png`.
+
+Chaque équipe a sa propre couleur, choisie à la création : elle teinte son
+bandeau, son liseré dans les listes, sa barre au classement et au dépouillement.
 
 ---
 
@@ -243,14 +247,16 @@ pour les en-têtes), `favicon.png`, `apple-touch-icon.png`.
 
 ```
 index.html            → accueil + login
-perso.html            → compte actionnaire (6 onglets)
-admin.html            → guichet & direction (code: config.js)
+perso.html            → le hub joueur (6 onglets)
+admin.html            → console orga (code: config.js)
 common/
-  config.js           → firebaseConfig + code guichet + réglages par défaut
-  app.js              → session, comptabilité des parts, scrutin, helpers
-  style.css           → thème sombre « corporate », mobile-first
+  config.js           → firebaseConfig + code orga + réglages par défaut
+  app.js              → session, comptabilité des parts, équipes, motions,
+                        activités, scrutin
+  style.css           → thème clair tiré du logo, mobile-first
 data/
   rules.json          → règles par défaut (surchargées par /config/game.rules)
+img/                  → logo source + déclinaisons web
 firestore.rules       → règles à publier dans la console Firebase
 .nojekyll
 ```
@@ -259,86 +265,98 @@ firestore.rules       → règles à publier dans la console Firebase
 
 | Fonction | Rôle |
 |---|---|
-| `login(pseudo, code)` | Vérifie contre `/players/{slug}`, ouvre la session |
-| `getSession()` / `requireSession()` | Session `localStorage` ; `?id=` court-circuite (tests) |
-| `loadGame()` / `loadTreasury()` | Fusionne les défauts et `/config/*` |
-| `shareOp(pid, dShares, dTres, entry)` | **Le cœur** : une opération atomique compte + trésorerie + grand livre |
-| `transferShares(from, to, n, label)` | Cession entre actionnaires, transaction Firestore |
+| `login` / `getSession` / `requireSession` | Session `localStorage` ; `?id=` court-circuite (tests) |
+| `shareOp(pid, dShares, dTres, entry)` | **Le cœur** : opération atomique compte + trésorerie + grand livre |
+| `transferShares(from, to, n, label)` | Cession entre joueurs |
 | `withdrawTokens` / `depositTokens` | Guichet : compte ⇄ jetons physiques |
-| `issueShares` / `grantShares` / `reclaimShares` | Émission (dilution) / attribution / reprise |
-| `purchase(pid, itemId, qty)` | Achat : débite les parts **et** décrémente le stock |
-| `fileRequest(...)` | Le joueur prend un ticket au guichet |
-| `castBallot(pid, nom, alloc)` | Convertit des parts en voix, réparties ; **un seul passage**, bloque les parts |
-| `tallyVote()` | Dépouille, publie le résultat, **puis rend les parts engagées** |
-| `releaseEngaged()` / `resetVote()` | Rend les parts bloquées (idempotent) / remet le scrutin à zéro |
+| `issueShares` / `grantShares` / `reclaimShares` | Émission (dilution) / prime / reprise |
+| `contributeToPot` / `creditPot` | Versement d'un membre / crédit de l'orga à une cagnotte |
+| `proposeSpend` / `voteMotion` / `motionTally` | Motion de dépense d'équipe |
+| `resolveMotion` / `sweepMotions` | Clôture à l'expiration, **idempotente** |
+| `setActivityFee` / `payToll` | Tarif d'une activité possédée / paiement du péage |
+| `purchase(pid, itemId, qty)` | Achat perso : débite les parts **et** décrémente le stock |
+| `castBallot(pid, nom, alloc)` | Convertit des parts en voix, réparties ; un seul passage |
+| `setUrn(teamId, n)` | Comptage d'une urne physique, saisi par l'orga |
+| `tallyVote()` | Urnes + app, publie le résultat, **puis rend les parts engagées** |
+| `releaseEngaged` / `resetVote` | Restitution (idempotente) / remise à zéro du scrutin |
 | `held(p)` | Parts détenues : en banque + engagées au vote |
-| `num` `parts` `pctOf` `when` `countdown` `esc` `slugify` `miniMd` `say` | Formatage et garde-fous d'affichage |
+| `num` `parts` `voix` `pctOf` `when` `whenLong` `countdown` `esc` `slugify` `miniMd` `say` | Formatage et garde-fous d'affichage |
 
 Toutes les opérations sur les parts passent par `db.runTransaction` : deux
 personnes qui cliquent en même temps ne peuvent ni dupliquer ni perdre de parts.
-Chacune écrit une ligne dans `/ledger`, que les règles rendent non réinscriptible.
+Chacune écrit une ligne dans `/ledger`, que les règles rendent non
+réinscriptible.
 
 ---
 
 ## Schéma Firestore
 
 ```
-/players/{slug}        { pseudo, code, role, shares, engaged, stats:{},
-                         publicNote, active, createdAt }
-                       shares  = parts EN BANQUE (les jetons ne sont pas ici)
-                       engaged = parts bloquees au scrutin, rendues apres
+/players/{slug}      { pseudo, code, team, shares, engaged, active, createdAt }
+                     shares  = parts EN BANQUE (les jetons ne sont pas ici)
+                     engaged = parts bloquées au vote, rendues au dépouillement
 
-/config/treasury       { issued, circulating, company }
-                       issued      = capital émis
-                       circulating = parts sorties en jetons physiques
-                       company     = parts détenues par la compagnie
+/teams/{slug}        { name, motto, color, secret, pot, order }
+                     secret = l'objectif secret, révélé à tous au dépouillement
+                     pot    = la cagnotte collective
 
-/ledger/{auto}         { type, shares, from, fromName, to, toName, label, ts }
-                       type ∈ transfer | withdraw | deposit | issue | grant
-                              | reclaim | shop
+/motions/{auto}      { teamId, proposerId, proposerName, label, amount,
+                       itemId?, ownable, icon, desc,
+                       votes:{playerId:'for'|'against'},
+                       status:'open'|'approved'|'rejected'|'failed',
+                       createdAt, expiresAt, resolvedAt?, failReason? }
 
-/requests/{auto}       { playerId, playerName, kind:'withdraw'|'deposit', qty,
-                         status:'pending'|'done'|'cancelled', ts }
+/activities/{auto}   { name, desc, icon, itemId, teamId, fee, revenue, plays }
 
-/vote/current          { question, detail, options:[{id,label,desc}],
-                         status:'draft'|'announced'|'open'|'closed',
-                         opensAt, closesAt, openedAt, closedAt,
-                         voted:{playerId: nbParts},   ← qui et combien,
-                                                        jamais pour quoi
-                         results:{ byOption, ranked, expressed, voters,
-                                   voidShares, voidBallots, winnerId, tie, ts } }
-/ballots/{playerId}    { playerId, playerName, alloc:{optionId:nbVoix},
-                         total, ts }                  ← un seul, definitif
+/config/treasury     { issued, circulating, company }
+/ledger/{auto}       { type, shares, from, fromName, to, toName, label, ts }
+                     type ∈ transfer | withdraw | deposit | issue | grant
+                            | reclaim | shop | pot_in | pot_out | toll
+                            | vote | release
 
-/orders/{auto}         { playerId, playerName, itemId, itemName, qty,
-                         unitPrice, total, status:'pending'|'delivered', ts }
-/shop/catalog          { items:[{ id, name, desc, price, stock?, icon?, img?, hidden }] }
-/journal/public        { entries:[{ id, title, text, ts }] }
-/map/data              { pois:[{ id, name, desc, lat, lng }] }
-/config/game           { gameName, tagline, unit, units, startShares,
-                         registryTop, mapCenter:[lat,lng], mapZoom, rules }
+/requests/{auto}     { playerId, playerName, kind:'withdraw'|'deposit', qty,
+                       status:'pending'|'done'|'cancelled', ts }
+
+/vote/current        { question, detail, options:[{id,label,desc}],
+                       status:'draft'|'announced'|'open'|'closed',
+                       opensAt, closesAt, openedAt, closedAt,
+                       voted:{playerId: nbParts},  ← qui et combien, jamais pour qui
+                       urns:{teamId: nbJetons},    ← saisi par l'orga
+                       results:{ ranked, expressed, voters, voidShares,
+                                 winnerId, tie, ts } }
+/ballots/{playerId}  { playerId, playerName, alloc:{teamId:nbVoix}, total, ts }
+
+/orders/{auto}       { playerId?, playerName, teamId?, teamName?, itemId,
+                       itemName, qty, unitPrice, total,
+                       status:'pending'|'delivered', ts }
+/shop/catalog        { items:[{ id, name, desc, price, stock?, icon?, img?,
+                                scope:'player'|'team', ownable, hidden }] }
+/journal/public      { entries:[{ id, title, text, ts }] }
+/schedule/data       { items:[{ id, day, time, title, place, desc }] }
+/map/data            { pois:[{ id, name, desc, lat, lng }] }
+/config/game         { gameName, tagline, unit, units, startShares,
+                       registryTop, mapCenter:[lat,lng], mapZoom, rules }
 ```
 
 ### Invariant comptable
 
 ```
-issued  =  Σ (players.shares + players.engaged)  +  circulating  +  company
+issued = Σ (shares + engaged)  +  Σ teams.pot  +  circulating  +  company
 ```
 
-La console l'affiche en permanence sous le nom **« Écart comptable »**. Il doit
-rester à `0` : toute autre valeur signale une saisie à la main dans la console
-Firebase, ou la suppression d'un actionnaire qui détenait encore des parts.
+La console l'affiche en permanence sous **« Écart comptable »**. Il doit rester
+à `0` : toute autre valeur signale une saisie à la main dans la console
+Firebase, ou la suppression d'un joueur / d'une équipe qui détenait des parts.
 
 ### Conventions
 
-- **`stock` absent ou `null` = stock illimité.** Un nombre active le décompte.
-- **`stats`** accepte un nombre brut ou `{"value":3,"max":10}` (barre de
-  progression). Édité en JSON depuis la console.
-- Les contreparties `__company__`, `__tokens__` et `__issuance__` dans `/ledger`
-  ne sont pas des joueurs : ce sont la trésorerie, les jetons en circulation, et
-  l'émission.
-- Supprimer un actionnaire ne reprend pas ses parts : **reprends-les d'abord**
-  si tu veux garder l'invariant juste.
+- **`stock` absent ou `null` = illimité.** Un nombre active le décompte.
+- Un article `scope:'team'` ne s'achète **que** par motion sur la cagnotte ;
+  `ownable:true` le transforme en activité à péage une fois la motion adoptée.
+- Les contreparties `__company__`, `__tokens__`, `__issuance__`, `__urn__` et
+  `team:<id>` dans `/ledger` ne sont pas des joueurs.
+- Supprimer un joueur ou une équipe ne reprend pas ses parts : **reprends-les
+  d'abord** si tu veux garder l'invariant juste.
 - API compat v9 : `snap.exists` **sans parenthèses**.
 
 ---
@@ -348,48 +366,65 @@ Firebase, ou la suppression d'un actionnaire qui détenait encore des parts.
 La connexion est vérifiée **dans le navigateur**, sans Firebase Auth. Firestore
 ne sait pas qui écrit, et les règles sont ouvertes. Concrètement : un joueur
 curieux qui ouvre la console de son navigateur peut lire les codes des autres,
-lire les bulletins avant le dépouillement, et modifier son nombre de parts.
+**lire les objectifs secrets des 5 équipes**, lire les bulletins avant le
+dépouillement, et modifier son nombre de parts.
 
 C'est tenable pour un week-end entre gens consentants, à deux conditions :
 
-1. **Aucune donnée personnelle réelle** dans ces documents — noms de
-   personnage uniquement, pas de téléphone, pas d'e-mail.
+1. **Aucune donnée personnelle réelle** dans ces documents.
 2. **Après le week-end**, repasser les règles en `allow read, write: if false;`
    ou supprimer le projet Firebase.
 
-Le **grand livre est la garantie pratique** : il n'est pas réinscriptible par les
-règles, donc une part qui apparaît sans ligne de mouvement se repère. L'« écart
-comptable » de la console sert exactement à ça.
+Le **grand livre est la garantie pratique** : il n'est pas réinscriptible par
+les règles, donc une part qui apparaît sans ligne de mouvement se repère.
+L'« écart comptable » de la console sert exactement à ça.
 
-Pour une vraie étanchéité (jeu rejoué, joueurs inconnus, enjeu réel) : Firebase
-Auth anonyme + `uid` dans `/players/{id}` + Cloud Functions seules habilitées à
-écrire `shares`, `/ledger` et `/vote`.
+Pour une vraie étanchéité : Firebase Auth anonyme + `uid` dans `/players/{id}` +
+Cloud Functions seules habilitées à écrire `shares`, `teams.secret`, `/ledger`
+et `/vote`.
 
 ---
 
 ## Avant le début du jeu — liste de contrôle
 
-- [ ] `common/config.js` rempli (firebaseConfig + code du guichet changé)
-- [ ] `firestore.rules` publié dans la console
+**Technique**
+
+- [ ] `common/config.js` rempli (firebaseConfig + code orga changé)
+- [ ] `firestore.rules` publié dans la console Firebase
 - [ ] GitHub Pages actif, site ouvert depuis un téléphone **en 4G**
-- [ ] **Réseau vérifié sur place** : à la campagne, c'est le vrai risque. Pas de
-      réseau = pas de jeu. Teste la couverture dans la pièce où sera le guichet,
-      et prévois un partage de connexion ou un point Wi-Fi de secours.
-- [ ] Centre de la carte réglé sur l'hébergement (Réglages → latitude/longitude)
-- [ ] Points d'intérêt posés : guichet, salle de l'assemblée, zones interdites
+- [ ] **Réseau vérifié sur place** — à la campagne c'est le vrai risque. Pas de
+      réseau, pas de jeu : teste la couverture dans la pièce du guichet et
+      prévois un partage de connexion ou un point Wi-Fi de secours
+- [ ] Centre de la carte réglé sur l'hébergement, points posés (guichet, salles,
+      zones interdites)
+
+**Contenu**
+
+- [ ] Les **5 équipes** créées, avec leur objectif secret rédigé
+- [ ] Les **30 joueurs** créés et répartis, codes imprimés sur les badges
+- [ ] **Trésorerie de la direction** alimentée — ta réserve de fondateur, tout
+      ce que tu distribues en sort
+- [ ] Catalogue du shop rempli : articles perso **et** articles d'équipe, dont
+      quelques **activités à péage** (c'est le moteur économique du week-end)
+- [ ] Programme saisi dans l'onglet Fil
+- [ ] Question du vote rédigée, horaires d'ouverture et de fermeture saisis
 - [ ] Règles relues et adaptées — les passages entre `[crochets]` dans
-      `data/rules.json` sont à remplir (horaires, pièces interdites, mot d'arrêt)
-- [ ] Les 40 dossiers créés, codes imprimés sur les badges
-- [ ] **Les jetons physiques comptés**, et leur nombre cohérent avec la dotation
-      distribuée : tu ne pourras pas remettre plus de jetons que tu n'en as
-- [ ] Catalogue du magasin rempli, prix en parts
-- [ ] Question du vote et options rédigées, enregistrées en **brouillon**
-- [ ] Heure d'**ouverture** (dimanche matin) et de **clôture** saisies
-- [ ] Décidé **quand tu annonces** la question — l'effet sur le samedi soir en dépend
-- [ ] Un test complet sur un vrai téléphone : connexion → cession → retrait au
-      guichet → dépôt → annonce → ouverture → vote réparti → dépouillement, en
-      vérifiant que les parts engagées sont bien revenues au compte
-- [ ] Testé qu'un **second vote est refusé** (un seul passage) et qu'on ne peut
-      pas engager plus de parts qu'on en a en banque
-- [ ] Un deuxième appareil de guichet prévu (tablette ou PC), pour que la file
+      `data/rules.json` sont à remplir (mot d'arrêt, pièces interdites, horaires)
+
+**Matériel**
+
+- [ ] **Jetons physiques comptés** : tu ne pourras pas en remettre plus que tu
+      n'en as. 30 joueurs × 20 parts = 600 minimum, prévois large
+- [ ] **5 urnes** étiquetées aux couleurs des équipes
+- [ ] Un deuxième appareil de guichet (tablette ou PC) pour que la file
       n'attende pas sur un seul écran
+
+**Répétition**
+
+- [ ] Un test complet sur un vrai téléphone : connexion → cession → retrait au
+      guichet → dépôt → versement à la cagnotte → **motion de dépense et son
+      expiration à 5 min** → achat d'une activité → réglage du tarif → paiement
+      du péage par un autre joueur
+- [ ] Le vote de bout en bout : annonce → ouverture → vote réparti → saisie des
+      urnes → dépouillement, en vérifiant que les parts engagées reviennent
+- [ ] Testé qu'un **second vote est refusé** (un seul passage)
