@@ -91,7 +91,7 @@ const VOTE_STATUS = {
 };
 
 /** Couleurs d'equipe par defaut, prises dans la palette du logo. */
-const TEAM_COLORS = ['#1b3a57','#387589','#68876c','#b07d2b','#b3503f','#6b5b95'];
+const TEAM_COLORS = ['#2b6cb0','#cf4a7e','#cf7318','#7c4dbd','#3f8f54','#1b3a57'];
 
 /** Duree d'une motion de depense : le silence vaut accord au bout de ce delai. */
 const MOTION_MS = 5 * 60 * 1000;
