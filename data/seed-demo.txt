@@ -1,0 +1,55 @@
+# ---------------------------------------------------------------
+#  Jeu de test — Goodfolks Industries
+#  30 joueurs, 6 par équipe. À coller dans admin.html :
+#    1. onglet Équipes  -> créer les 5 équipes ci-dessous. Le nom doit
+#       correspondre EXACTEMENT : l'import les reconnaît par leur nom.
+#    2. onglet Joueurs  -> « Création en série » -> coller le bloc du bas.
+#  Supprime ce fichier avant le vrai week-end.
+# ---------------------------------------------------------------
+#
+#  LES 5 ÉQUIPES   (nom | couleur | devise publique)
+#    Bleu Nuit   | #1b3a57 | Équipe Bleu Nuit
+#    Pétrole     | #387589 | Équipe Pétrole
+#    Sauge       | #68876c | Équipe Sauge
+#    Ocre        | #b07d2b | Équipe Ocre
+#    Brique      | #b3503f | Équipe Brique
+#
+#  Des noms de COULEUR, volontairement : ils n'éventent pas l'objectif
+#  secret de l'équipe, et ils se déclinent en urnes, badges et bracelets.
+#
+#  Dotation totale distribuée : 533 parts.
+#  Émets au moins autant dans la trésorerie de la direction avant de créer
+#  les comptes, sinon tu n'auras rien à distribuer ensuite.
+#
+#  LES 30 JOUEURS   (Nom;équipe;code;parts)
+
+Chloé Barreau;Bleu Nuit;2859;18
+Thomas Lantier;Pétrole;5555;20
+Inès Pannetier;Sauge;2614;15
+Noé Perrin;Ocre;7871;18
+Arthur Noguès;Brique;8137;18
+Baptiste Gautheron;Bleu Nuit;6420;20
+Margaux Amrani;Pétrole;9645;18
+Rayan Khelifi;Sauge;9224;20
+Gabriel Fabre;Ocre;4319;16
+Anaïs Delcourt;Brique;4333;16
+Camille Vaillant;Bleu Nuit;6875;15
+Mehdi Caron;Pétrole;4609;17
+Yanis Berger;Sauge;9436;18
+Nathan Chevalier;Ocre;2739;20
+Jeanne Vidal;Brique;8655;20
+Maëlys Zerbib;Bleu Nuit;7801;16
+Antoine Lemoine;Pétrole;2214;17
+Juliette Sylla;Sauge;6694;17
+Paul Oriol;Ocre;5145;20
+Léa Marchand;Brique;3550;20
+Louise Roussel;Bleu Nuit;8874;19
+Lucas Dubreuil;Pétrole;1980;20
+Clara Vasseur;Sauge;5452;16
+Victor Brun;Ocre;5185;16
+Alice Thibault;Brique;1752;15
+Salomé Mercier;Bleu Nuit;8794;17
+Hugo Lemaire;Pétrole;5557;18
+Émilie Mahé;Sauge;9719;19
+Manon Benali;Ocre;6939;15
+Sarah Nguyen;Brique;6106;19
