@@ -106,6 +106,26 @@ Console Firebase → **Firestore Database → Règles** → coller `firestore.ru
 > ⚠️ **À republier chaque fois qu'une collection est ajoutée** : la règle
 > fourre-tout en fin de fichier refuse tout ce qui n'est pas listé.
 
+### Déployer une correction (cache)
+
+Les pages référencent leurs assets avec une empreinte de contenu
+(`common/app.js?v=0d36190c`). **Avant chaque commit qui touche un .js, un
+.css ou une image** :
+
+```
+node bump-cache.js
+```
+
+Le script recalcule les empreintes et réécrit les `.html`. Un fichier
+inchangé garde son URL — donc le cache continue de servir, et c'est tant
+mieux. Un fichier modifié change d'URL, et le navigateur le redemande.
+
+Sans ça, un joueur peut rester bloqué tout le week-end sur une version
+périmée, sans aucun moyen de forcer le rechargement depuis son téléphone.
+
+`node bump-cache.js --check` ne modifie rien et sort en code 1 s'il reste
+des versions périmées — pratique en hook de pré-commit.
+
 ### 4. Activer GitHub Pages
 
 Repo → **Settings → Pages** → Source `Deploy from a branch`, branche `main`, dossier `/ (root)`.
@@ -241,6 +261,7 @@ bandeau, son liseré dans les listes, sa barre au classement et au dépouillemen
 ## Structure
 
 ```
+bump-cache.js         → anti-cache : ?v=<empreinte> sur les assets locaux
 index.html            → accueil + login
 perso.html            → le hub joueur (6 onglets)
 admin.html            → console orga (code: config.js)
@@ -386,6 +407,8 @@ et `/vote`.
 
 - [ ] `common/config.js` rempli (firebaseConfig + code orga changé)
 - [ ] `firestore.rules` publié dans la console Firebase
+- [ ] `node bump-cache.js` lancé avant le dernier commit — sinon des
+      téléphones serviront une version périmée que personne ne pourra vider
 - [ ] GitHub Pages actif, site ouvert depuis un téléphone **en 4G**
 - [ ] **Réseau vérifié sur place** — à la campagne c'est le vrai risque. Pas de
       réseau, pas de jeu : teste la couverture dans la pièce du guichet et
