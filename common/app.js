@@ -133,6 +133,9 @@ const TEAM_COLORS = ['#2b6cb0','#cf4a7e','#cf7318','#7c4dbd','#3f8f54','#1b3a57'
      queue — plage ouverte : on prend un ticket et on attend son tour. */
 const ACT_MODE = { free:'free', slots:'slots', queue:'queue' };
 
+/** Minutes de retard tolerees avant qu'une place ne saute. Reglable par activite. */
+const GRACE_DEFAULT_MIN = 10;
+
 /** Cle de comptage des places pour la file (par opposition a un creneau). */
 const QUEUE_KEY = '__queue__';
 
@@ -756,6 +759,8 @@ async function setActivityConfig(activityId, patch, playerTeam){
     if (patch.capacity !== undefined)
       clean.capacity = Math.max(1, Math.round(Number(patch.capacity)||1));
     if (patch.open !== undefined) clean.open = !!patch.open;
+    if (patch.grace !== undefined)
+      clean.grace = Math.max(1, Math.round(Number(patch.grace)||GRACE_DEFAULT_MIN));
     await ref.update(clean);
     return { ok:true };
   }catch(e){ return { ok:false, error:e.message }; }
@@ -883,7 +888,8 @@ async function setSignupStatus(id, status, byTeam){
       if (!ss.exists) throw new Error('Inscription introuvable.');
       const s = ss.data();
       if (byTeam && s.teamId !== byTeam) throw new Error('Ce n\u2019est pas ton activit\u00e9.');
-      if (s.status !== 'waiting') throw new Error('D\u00e9j\u00e0 trait\u00e9e.');
+      if (s.status !== 'waiting' && s.status !== 'playing')
+        throw new Error('D\u00e9j\u00e0 trait\u00e9e.');
       tx.update(sRef, { status, closedAt: Date.now() });
       // retirer quelqu'un libere sa place ; passe ou absent la consomme
       if (status === 'cancelled'){
@@ -899,6 +905,104 @@ async function setSignupStatus(id, status, byTeam){
     });
     return { ok:true };
   }catch(e){ return { ok:false, error: e.message }; }
+}
+
+/* ============================================================
+   VALIDATION AU DEMARRAGE
+
+   Une place reservee ne vaut que si on se presente. Sans quoi un retardataire
+   bloque toute une file : les suivants attendent un joueur qui ne viendra pas.
+
+   Donc : quand le tour arrive, l'inscription doit etre DEMARREE — par le
+   joueur ou par l'equipe qui tient l'activite. Passe le delai de grace, elle
+   se perime toute seule et la file avance. Les parts, elles, restent acquises
+   a l'equipe : c'est le prix de l'absence.
+   ============================================================ */
+
+/** Minutes de grace d'une activite. */
+const graceOf = a => Math.max(1, Math.round(Number(a && a.grace) || GRACE_DEFAULT_MIN));
+
+/**
+ * L'heure a laquelle une inscription se perime, ou null si son tour n'est pas
+ * encore venu. Un creneau part de son horaire ; une file part du moment ou le
+ * joueur est arrive en tete (readyAt).
+ */
+function signupDeadline(s, act){
+  const g = graceOf(act) * 60000;
+  if (s.slotId) return (Number(s.startsAt) || 0) ? Number(s.startsAt) + g : null;
+  return Number(s.readyAt) ? Number(s.readyAt) + g : null;
+}
+
+/** Le tour de ce joueur est-il venu ? (creneau a l'heure, ou tete de file) */
+function signupIsUp(s, act, rank){
+  if (s.slotId) return Date.now() >= (Number(s.startsAt) || Infinity);
+  return rank < Math.max(1, Math.round(Number(act && act.capacity) || 1));
+}
+
+/**
+ * Demarre une inscription : la place est valid\u00e9e, le compte a rebours s'arrete.
+ * Le joueur concerne ou un membre de l'equipe proprietaire peuvent le faire.
+ */
+async function startSignup(id, actorId, actorTeam){
+  const ref = db.collection(COL.signups).doc(id);
+  try{
+    const snap = await ref.get();
+    if (!snap.exists) return { ok:false, error:'Inscription introuvable.' };
+    const s = snap.data();
+    if (s.status === 'playing') return { ok:true };
+    if (s.status !== 'waiting') return { ok:false, error:'Cette place n\u2019est plus valable.' };
+    if (s.playerId !== actorId && s.teamId !== actorTeam)
+      return { ok:false, error:'Ni ta place, ni ton activit\u00e9.' };
+    await ref.update({ status:'playing', startedAt: Date.now() });
+    return { ok:true };
+  }catch(e){ return { ok:false, error:e.message }; }
+}
+
+/**
+ * Perime les places non reclamees et amorce le compte a rebours des nouvelles
+ * tetes de file. Appele periodiquement par chaque ecran ouvert ; chaque
+ * ecriture est gardee par une condition, donc la rejouer ne fait rien.
+ */
+async function sweepSignups(){
+  try{
+    const [ss, as_] = await Promise.all([
+      db.collection(COL.signups).where('status','==','waiting').get(),
+      db.collection(COL.activities).get()
+    ]);
+    const acts = {};
+    as_.docs.forEach(d => { acts[d.id] = Object.assign({ id:d.id }, d.data()); });
+
+    // rang de chacun dans la file de son activite
+    const byAct = {};
+    ss.docs.map(d => Object.assign({ id:d.id }, d.data()))
+      .sort((x,y) => (x.ts||0) - (y.ts||0))
+      .forEach(s => { (byAct[s.activityId] = byAct[s.activityId] || []).push(s); });
+
+    let expired = 0, started = 0;
+    for (const actId in byAct){
+      const act = acts[actId];
+      if (!act) continue;
+      const file = byAct[actId].filter(s => !s.slotId);
+      // on amorce le chrono des joueurs qui viennent d'arriver en tete
+      const cap = Math.max(1, Math.round(Number(act.capacity)||1));
+      for (let i = 0; i < Math.min(cap, file.length); i++){
+        if (!file[i].readyAt){
+          await db.collection(COL.signups).doc(file[i].id).update({ readyAt: Date.now() });
+          started++;
+        }
+      }
+      // puis on perime ce qui a depasse
+      for (const s of byAct[actId]){
+        const dl = signupDeadline(s, act);
+        if (dl && Date.now() > dl){
+          await db.collection(COL.signups).doc(s.id)
+            .update({ status:'expired', closedAt: Date.now() });
+          expired++;
+        }
+      }
+    }
+    return { ok:true, expired, started };
+  }catch(e){ return { ok:false, error:e.message }; }
 }
 
 /** Paiement d'un peage : les parts tombent dans la cagnotte proprietaire. */

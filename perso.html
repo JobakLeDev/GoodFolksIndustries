@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="icon" href="img/favicon.png?v=8d9ee157" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png?v=daf01749">
-<link rel="stylesheet" href="common/style.css?v=a205dd57">
+<link rel="stylesheet" href="common/style.css?v=a42b8bc3">
 </head>
 <body class="has-tabbar">
 
@@ -45,13 +45,6 @@
     <div class="wallet-pct" id="w-pct"></div>
   </div>
   <div id="w-engaged"></div>
-
-  <div class="tok-note">
-    <span class="ic">&#127920;</span>
-    <div><strong>Jetons en main</strong> pour les paris, le beer pong et le casino&nbsp;:
-      ça circule sans trace. <strong>Parts en banque</strong> pour payer dans l&rsquo;app&nbsp;:
-      shop, péages, cagnotte. Le guichet convertit dans les deux sens.</div>
-  </div>
 
   <div class="pnl">
     <div class="pnl-h"><span class="ic">&#127974;</span> Guichet</div>
@@ -260,7 +253,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="common/config.js?v=a4393781"></script>
-<script src="common/app.js?v=2640d4fa"></script>
+<script src="common/app.js?v=869ba1ee"></script>
 <script>
 /* ============================================================
    perso.html — le hub du week-end. Tout est en temps réel.
@@ -406,6 +399,9 @@ document.getElementById('h-out').addEventListener('click', () => {
   setInterval(() => { tickCountdowns(); refreshVoteLive(); }, 1000);
   setInterval(sweepMotions, 20000);
   sweepMotions();
+  // les places non réclamées sautent toutes seules : la file ne se bloque pas
+  setInterval(sweepSignups, 20000);
+  sweepSignups();
 
   try{
     const t = localStorage.getItem('gpc_tab');
@@ -669,12 +665,13 @@ document.getElementById('tm-motion').addEventListener('click', async ev => {
 
 /** Les inscrits encore en attente sur une activité, dans l'ordre d'arrivée. */
 const waitingOn = (actId, slotId) => SIGNUPS.filter(s =>
-  s.activityId === actId && s.status === 'waiting' &&
+  s.activityId === actId && (s.status === 'waiting' || s.status === 'playing') &&
   (slotId === undefined || (s.slotId || null) === (slotId || null)));
 
 /** Mon inscription en cours sur une activité, s'il y en a une. */
 const mySignup = actId => SIGNUPS.find(s =>
-  s.activityId === actId && s.playerId === SESS.id && s.status === 'waiting');
+  s.activityId === actId && s.playerId === SESS.id &&
+  (s.status === 'waiting' || s.status === 'playing'));
 
 /** Places restantes sur un créneau. */
 function slotLeft(a, slot){
@@ -732,9 +729,12 @@ function renderTeamActs(){
                (((a.mode)||'free') === arr[k] ? ' selected' : '') + '>' +
                esc(arr[k+1]) + '</option>', '') +
           '</select></div>' +
-        '<div class="field" style="margin:0;flex:0 0 120px"><label>Joueurs / passage</label>' +
+        '<div class="field" style="margin:0;flex:0 0 110px"><label>Joueurs / passage</label>' +
           '<input class="f-cap" type="number" min="1" step="1" value="' +
           (Math.max(1, Number(a.capacity)||1)) + '"></div>' +
+        '<div class="field" style="margin:0;flex:0 0 110px"><label>Retard toléré (min)</label>' +
+          '<input class="f-grace" type="number" min="1" step="1" value="' +
+          graceOf(a) + '"></div>' +
         '<div style="flex:0 0 auto;display:flex;align-items:flex-end">' +
           '<button class="btn btn-sm btn-sec" data-cfg="' + esc(a.id) + '">Appliquer</button></div>' +
       '</div>' +
@@ -794,14 +794,27 @@ function actRosterHtml(a){
   if (!list.length) return '<div class="empty">Personne d’inscrit.</div>';
   return '<div class="qbox"><div class="q-h"><strong>À faire passer</strong>' +
     '<span class="lst-s">' + list.length + '</span></div><ul class="lst">' +
-    list.map((s,i) => '<li class="' + (i < cap ? 'q-up' : '') + '">' +
-      '<div class="lst-main"><div class="lst-t">' + (i < cap ? '▶ ' : (i+1) + '. ') +
-        esc(s.playerName) + '</div>' +
+    list.map((s,i) => {
+      const live = s.status === 'playing';
+      const up   = signupIsUp(s, a, i);
+      const dl   = signupDeadline(s, a);
+      return '<li class="' + (live ? 'q-live' : up ? 'q-up' : '') + '">' +
+      '<div class="lst-main"><div class="lst-t">' +
+        (live ? '● ' : up ? '▶ ' : (i+1) + '. ') + esc(s.playerName) +
+        (live ? ' <span class="cal-live">en cours</span>' : '') + '</div>' +
       '<div class="lst-s">' + (s.slotId ? esc(hhmm(s.startsAt)) : 'file') +
-        (s.fee ? ' · ' + num(s.fee) + ' payé' : '') + '</div></div>' +
-      '<button class="btn btn-sm btn-sec" data-sg="' + esc(s.id) + '" data-st="done">Passé</button>' +
+        (s.fee ? ' · ' + num(s.fee) + ' payé' : '') +
+        (!live && up && dl ? ' · <span class="q-dl" data-until="' + dl +
+          '">' + esc(countdown(dl)) + '</span> pour se présenter' : '') +
+        '</div></div>' +
+      (live
+        ? '<button class="btn btn-sm btn-sec" data-sg="' + esc(s.id) + '" data-st="done">Terminer</button>'
+        : '<button class="btn btn-sm btn-pri" data-go="' + esc(s.id) + '">Démarrer</button>') +
       '<button class="btn btn-sm btn-dng" data-sg="' + esc(s.id) + '" data-st="noshow">Absent</button>' +
-      '</li>').join('') + '</ul></div>';
+      '</li>';
+    }).join('') + '</ul>' +
+    '<p class="mini">Une place non démarrée saute au bout de ' + graceOf(a) +
+      ' min : la file avance sans toi. Les parts restent acquises.</p></div>';
 }
 
 document.getElementById('tm-acts').addEventListener('input', ev => {
@@ -824,7 +837,8 @@ document.getElementById('tm-acts').addEventListener('click', async ev => {
     cfg.disabled = true;
     const r = await setActivityConfig(cfg.dataset.cfg, {
       mode: w.querySelector('.f-mode').value,
-      capacity: w.querySelector('.f-cap').value
+      capacity: w.querySelector('.f-cap').value,
+      grace: w.querySelector('.f-grace').value
     }, mt);
     cfg.disabled = false;
     if (!r.ok) alert(r.error);
@@ -858,6 +872,15 @@ document.getElementById('tm-acts').addEventListener('click', async ev => {
     del.disabled = true;
     const r = await removeActivitySlot(del.dataset.delslot, del.dataset.slot, mt);
     del.disabled = false;
+    if (!r.ok) alert(r.error);
+    return;
+  }
+  // démarrer : la place est validée, le chrono s'arrête
+  const go = ev.target.closest('button[data-go]');
+  if (go){
+    go.disabled = true;
+    const r = await startSignup(go.dataset.go, SESS.id, mt);
+    go.disabled = false;
     if (!r.ok) alert(r.error);
     return;
   }
@@ -1007,9 +1030,7 @@ function renderTolls(){
       body =
         '<div class="lst-s">' + (open ? file.length + ' dans la file' : 'File fermée') + '</div>' +
         (mine
-          ? '<div class="msg msg-ok" style="margin:8px 0 0">' +
-            (pos <= cap ? '<strong>C’est à toi.</strong> Présente-toi.'
-                        : 'Tu es <strong>' + pos + 'ᵉ</strong> dans la file.') + '</div>'
+          ? myTurnHtml(mine, a, pos - 1)
           : open
             ? '<button class="btn btn-sm btn-pri" data-ticket="' + esc(a.id) + '">' +
               (fee > 0 ? 'Prendre un ticket · ' + num(fee) : 'Prendre un ticket') + '</button>'
@@ -1037,9 +1058,7 @@ function renderTolls(){
               '</li>';
           }).join('') + '</ul>'
         : '<div class="lst-s">Aucun créneau à venir.</div>';
-      if (mine && mine.slotId)
-        body += '<div class="msg msg-ok" style="margin:8px 0 0">Ta place est prise pour <strong>' +
-                esc(hhmm(mine.startsAt)) + '</strong>.</div>';
+      if (mine && mine.slotId) body += myTurnHtml(mine, a, 0);
     }
 
     return '<div class="act" style="border-left:3px solid ' + esc(col) + '">' +
@@ -1058,7 +1077,33 @@ function renderTolls(){
     ours.map(a => esc(a.name)).join(', ') + ') se gèrent dans l’onglet Équipe.</p>' : '');
 }
 
+/** Ce que voit le joueur sur sa propre place : attente, tour venu, ou en cours. */
+function myTurnHtml(s, a, rank){
+  if (s.status === 'playing')
+    return '<div class="msg msg-ok" style="margin:8px 0 0">' +
+      '<strong>C’est parti.</strong> Bonne chance.</div>';
+  const up = signupIsUp(s, a, rank);
+  if (!up)
+    return '<div class="msg msg-ok" style="margin:8px 0 0">' +
+      (s.slotId
+        ? 'Ta place est prise pour <strong>' + esc(hhmm(s.startsAt)) + '</strong>.'
+        : 'Tu es <strong>' + (rank + 1) + 'ᵉ</strong> dans la file.') + '</div>';
+  const dl = signupDeadline(s, a);
+  return '<div class="turn"><div class="turn-t">C’est à toi</div>' +
+    '<div class="turn-s">Valide en arrivant, sinon ta place saute' +
+      (dl ? ' dans <b data-until="' + dl + '">' + esc(countdown(dl)) + '</b>' : '') + '.</div>' +
+    '<button class="btn btn-sm btn-pri" data-iam="' + esc(s.id) + '">Je suis là</button></div>';
+}
+
 document.getElementById('s-tolls').addEventListener('click', async ev => {
+  const iam = ev.target.closest('button[data-iam]');
+  if (iam){
+    iam.disabled = true;
+    const r = await startSignup(iam.dataset.iam, SESS.id, (myTeam()||{}).id);
+    iam.disabled = false;
+    if (!r.ok) say('s-msg', r.error, 'err');
+    return;
+  }
   const b = ev.target.closest('button'); if (!b) return;
   const nom = () => ME.pseudo || SESS.id;
 

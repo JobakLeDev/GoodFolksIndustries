@@ -55,13 +55,43 @@ chaque appareil connecté.
 ### Posséder une activité, et la faire payer
 
 Un article du shop marqué **« activité »** s'achète sur la cagnotte et devient
-la propriété de l'équipe. Elle lui fixe alors un **tarif d'entrée** librement
-modifiable, et les autres joueurs paient depuis leur téléphone — les parts
-tombent directement dans la cagnotte propriétaire.
+la propriété de l'équipe, qui lui fixe un **tarif d'entrée** et choisit comment
+la tenir :
 
-Le tarif affiché est le **prix officiel** ; rien n'empêche un arrangement en
-jetons à côté. C'est voulu : la trace quand on la veut, la roublardise quand on
-la préfère.
+| Mode | Pour quoi | Ce que fait le joueur |
+|---|---|---|
+| **Paiement libre** | un baby-foot en libre accès | il paie, il joue |
+| **Planning** | un tournoi à créneaux | il réserve une place datée |
+| **File d'attente** | un casino ouvert 21h–2h | il prend un ticket et attend |
+
+**Payer, c'est s'inscrire, et ça ne se rembourse pas.** Une place réservée est
+une place payée : l'équipe n'a personne à courir après, et un absent a quand
+même garni la cagnotte.
+
+La capacité est **réellement atomique** : les places occupées vivent dans un
+champ du document d'activité (`counts`), pas dans une requête — une transaction
+Firestore sait incrémenter un champ, elle ne sait pas compter des documents.
+Deux joueurs sur la dernière place, un seul passe. L'identifiant d'inscription
+est déterministe (`activité__joueur__créneau`), ce qui interdit la double
+réservation et le spam de file.
+
+#### La validation au démarrage
+
+Une place ne vaut que si on se présente. Sinon un retardataire bloque quinze
+personnes derrière lui.
+
+Quand le tour arrive — l'heure du créneau, ou la tête de file — l'inscription
+doit être **démarrée**, par le joueur (« Je suis là ») ou par un membre de
+l'équipe qui tient l'activité. Un compte à rebours s'affiche des deux côtés.
+
+> Passé le **délai de grâce** (10 min par défaut, réglable par activité), la
+> place **se périme toute seule** et la file avance. Les parts restent acquises
+> à l'équipe : c'est le prix de l'absence.
+
+`sweepSignups()` tourne toutes les 15-20 s sur chaque écran ouvert : il amorce
+le chrono des nouvelles têtes de file et périme ce qui a dépassé. Comme
+`resolveMotion`, chaque écriture est gardée par une condition, donc la rejouer
+ne fait rien.
 
 ### Le vote : deux canaux, deux calendriers
 
@@ -307,7 +337,11 @@ firestore.rules       → règles à publier dans la console Firebase
 | `contributeToPot` / `creditPot` | Versement d'un membre / crédit de l'orga à une cagnotte |
 | `proposeSpend` / `voteMotion` / `motionTally` | Motion de dépense d'équipe |
 | `resolveMotion` / `sweepMotions` | Clôture à l'expiration, **idempotente** |
-| `setActivityFee` / `payToll` | Tarif d'une activité possédée / paiement du péage |
+| `setActivityFee` / `payToll` | Tarif d'une activité possédée / paiement direct |
+| `setActivityConfig` / `addActivitySlot` / `removeActivitySlot` | Mode, capacité, délai de grâce, créneaux |
+| `signUpActivity(pid, nom, actId, slotId)` | Réserve **et** paie, capacité atomique |
+| `startSignup` / `setSignupStatus` | Valide au démarrage / passé, absent, retiré |
+| `sweepSignups()` | Amorce les chronos et périme les places non réclamées |
 | `purchase(pid, itemId, qty)` | Achat perso : débite les parts **et** décrémente le stock |
 | `castBallot(pid, nom, alloc)` | Convertit des parts en voix, réparties ; un seul passage |
 | `setUrn(teamId, n)` | Comptage d'une urne physique, saisi par l'orga |
@@ -340,7 +374,18 @@ réinscriptible.
                        status:'open'|'approved'|'rejected'|'failed',
                        createdAt, expiresAt, resolvedAt?, failReason? }
 
-/activities/{auto}   { name, desc, icon, itemId, teamId, fee, revenue, plays }
+/activities/{auto}   { name, desc, icon, itemId, teamId, fee, revenue, plays,
+                       startsAt, endsAt,          ← sa fenêtre dans le Fil
+                       mode:'free'|'slots'|'queue', capacity, grace, open,
+                       slots:[{ id, startsAt, places }],
+                       counts:{ <slotId|__queue__>: nbPlacesPrises } }
+
+/signups/{act__joueur__créneau}
+                     { activityId, activityName, teamId, playerId, playerName,
+                       slotId, startsAt, fee, ts, readyAt?, startedAt?, closedAt?,
+                       status:'waiting'|'playing'|'done'|'noshow'
+                              |'expired'|'cancelled' }
+                     id déterministe : pas de double réservation
 
 /config/treasury     { issued, circulating, company }
 /ledger/{auto}       { type, shares, from, fromName, to, toName, label, ts }
@@ -442,6 +487,9 @@ et `/vote`.
       ce que tu distribues en sort
 - [ ] Catalogue du shop rempli : articles perso **et** articles d'équipe, dont
       quelques **activités à péage** (c'est le moteur économique du week-end)
+- [ ] Testé une file d'attente de bout en bout, **y compris la péremption** :
+      prendre un ticket, laisser filer le délai de grâce, vérifier que la place
+      saute et que le suivant passe en tête
 - [ ] Programme saisi dans l'onglet Fil
 - [ ] Question du vote rédigée, horaires d'ouverture et de fermeture saisis
 - [ ] Règles relues et adaptées — les passages entre `[crochets]` dans

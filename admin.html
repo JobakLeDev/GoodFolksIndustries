@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="icon" href="img/favicon.png?v=8d9ee157" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png?v=daf01749">
-<link rel="stylesheet" href="common/style.css?v=a205dd57">
+<link rel="stylesheet" href="common/style.css?v=a42b8bc3">
 </head>
 <body>
 
@@ -411,7 +411,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="common/config.js?v=a4393781"></script>
-<script src="common/app.js?v=2640d4fa"></script>
+<script src="common/app.js?v=869ba1ee"></script>
 <script>
 /* ============================================================
    admin.html — console orga.
@@ -531,6 +531,8 @@ async function boot(){
   setInterval(() => { renderMotions(); renderVoteAdmin(); }, 1000);
   setInterval(sweepMotions, 15000);
   sweepMotions();
+  setInterval(sweepSignups, 15000);
+  sweepSignups();
 }
 
 /* ============================================================
@@ -805,7 +807,8 @@ function renderActs(){
   const MODE = { free:'paiement libre', slots:'planning', queue:'file d’attente' };
   box.innerHTML = ACTS.map(a => {
     const mode = a.mode || 'free';
-    const file = SIGNUPS.filter(s => s.activityId === a.id && s.status === 'waiting');
+    const file = SIGNUPS.filter(s => s.activityId === a.id &&
+      (s.status === 'waiting' || s.status === 'playing'));
     const cap  = Math.max(1, Number(a.capacity)||1);
     return '<div class="ed" style="border-left:4px solid ' + esc(teamColor(a.teamId)) + '">' +
       '<div class="ed-h"><div class="lst-main">' +
@@ -822,14 +825,19 @@ function renderActs(){
       (file.length
         ? '<div class="qbox"><div class="q-h"><strong>En attente</strong>' +
           '<span class="lst-s">' + file.length + '</span></div><ul class="lst">' +
-          file.slice(0,20).map((s,i) => '<li class="' + (i < cap ? 'q-up' : '') + '">' +
+          file.slice(0,20).map((s,i) => {
+            const live = s.status === 'playing';
+            const dl = signupDeadline(s, a);
+            return '<li class="' + (live ? 'q-live' : i < cap ? 'q-up' : '') + '">' +
             '<div class="lst-main"><div class="lst-t">' + (i+1) + '. ' + esc(s.playerName) +
+            (live ? ' <span class="cal-live">en cours</span>' : '') +
             '</div><div class="lst-s">' + (s.slotId ? esc(hhmm(s.startsAt)) : 'file') +
-            (s.fee ? ' · ' + num(s.fee) + ' payé' : '') + '</div></div>' +
+            (s.fee ? ' · ' + num(s.fee) + ' payé' : '') +
+            (!live && dl ? ' · expire dans ' + esc(countdown(dl)) : '') + '</div></div>' +
             '<button class="btn btn-sm btn-sec" data-sg="' + esc(s.id) + '" data-st="done">Passé</button>' +
             '<button class="btn btn-sm" data-sg="' + esc(s.id) + '" data-st="noshow">Absent</button>' +
             '<button class="btn btn-sm btn-dng" data-sg="' + esc(s.id) + '" data-st="cancelled">Retirer</button>' +
-            '</li>').join('') + '</ul>' +
+            '</li>'; }).join('') + '</ul>' +
           '<p class="mini">Secours : normalement c’est l’équipe propriétaire qui tient sa file. ' +
             '« Retirer » libère la place ; les parts restent acquises à l’équipe.</p></div>'
         : (mode === 'free' ? '' : '<p class="mini">Personne d’inscrit.</p>')) +

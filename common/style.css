@@ -563,3 +563,21 @@ body.has-tabbar .fp-fail{bottom:calc(68px + env(safe-area-inset-bottom))}
 /* ceux dont c'est le tour */
 .q-up{background:#eef4f8;border-radius:var(--r-sm);padding-left:9px!important;padding-right:9px!important}
 .q-up .lst-t{color:var(--navy)}
+
+/* ---- une place dont le tour est venu, et qu'il faut valider ---- */
+.turn{
+  background:#fdf8ef;border:1.5px solid var(--gold);border-radius:var(--r-sm);
+  padding:12px 13px;margin:9px 0 0;
+}
+.turn-t{font-family:var(--fd);font-weight:600;font-size:1.05rem;color:#6d4e15;line-height:1.2}
+.turn-s{font-size:12.5px;color:#7d5c1c;margin:3px 0 10px;line-height:1.45}
+.turn-s b{font-variant-numeric:tabular-nums;color:var(--gold)}
+.turn .btn{width:100%}
+
+/* une partie en cours, dans un roster */
+.q-live{background:#f1f6f1;border-radius:var(--r-sm);
+  padding-left:9px!important;padding-right:9px!important}
+.q-live .lst-t{color:var(--sage-d)}
+.q-live .cal-live{background:var(--sage)}
+/* le compte à rebours avant qu'une place ne saute */
+.q-dl{color:var(--red);font-weight:700;font-variant-numeric:tabular-nums}
