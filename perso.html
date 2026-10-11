@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="icon" href="img/favicon.png?v=8d9ee157" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png?v=daf01749">
-<link rel="stylesheet" href="common/style.css?v=330ce4ff">
+<link rel="stylesheet" href="common/style.css?v=b0b7b89c">
 </head>
 <body class="has-tabbar">
 
@@ -260,7 +260,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="common/config.js?v=a4393781"></script>
-<script src="common/app.js?v=0d36190c"></script>
+<script src="common/app.js?v=82965137"></script>
 <script>
 /* ============================================================
    perso.html — le hub du week-end. Tout est en temps réel.
@@ -268,7 +268,11 @@
 const SESS = requireSession();
 let ME = null, PLAYERS = [], TEAMS = [], ACTS = [], MOTIONS = [], SHOP = [];
 let TRES = { issued:0, circulating:0, company:0 };
-let VOTE = null, MYBALLOT = null, ALLOC = {}, FEE_DRAFT = {};
+let VOTE = null, MYBALLOT = null, ALLOC = {}, FEE_DRAFT = {}, SLOT_DRAFT = {};
+/** ms -> valeur d'un <input type=datetime-local> (heure locale). */
+const dtLocal = ms => ms
+  ? new Date(Number(ms) - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16)
+  : '';
 let SCHEDULE = [], POIS = [];
 let MAP = null, meMarker = null, poiLayer = null;
 
@@ -289,6 +293,7 @@ function showSec(name){
   try{ localStorage.setItem('gpc_tab', name); }catch(e){}
   window.scrollTo(0,0);
   if (name === 'infos') initMap();     // Leaflet exige un conteneur visible
+  if (name === 'fil'){ _filScrolled = false; renderProgramme(); setTimeout(scrollCalendarToNow, 60); }
 }
 document.getElementById('goalbar').addEventListener('click', () => showSec('vote'));
 
@@ -342,7 +347,7 @@ document.getElementById('h-out').addEventListener('click', () => {
 
   watch(db.collection(COL.activities), 'activités', qs => {
     ACTS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()));
-    renderTeamActs(); renderTolls();
+    renderTeamActs(); renderTolls(); renderProgramme();
   });
 
   watch(db.collection(COL.motions).where('status','==','open'), 'motions', qs => {
@@ -678,13 +683,58 @@ function renderTeamActs(){
       '</div>' +
       '<p class="mini">Tarif 0 = gratuit, personne ne peut payer dans l’app. ' +
         'Rien ne t’empêche d’encaisser en jetons à côté.</p>' +
+      '<hr class="hr" style="margin:12px 0">' +
+      '<div class="row">' +
+        '<div class="field" style="margin:0"><label>Début</label>' +
+          '<input class="f-start" type="datetime-local" value="' +
+          (SLOT_DRAFT[a.id] ? esc(SLOT_DRAFT[a.id].s||'') : dtLocal(a.startsAt)) + '"></div>' +
+        '<div class="field" style="margin:0"><label>Fin (si c’est une plage)</label>' +
+          '<input class="f-end" type="datetime-local" value="' +
+          (SLOT_DRAFT[a.id] ? esc(SLOT_DRAFT[a.id].e||'') : dtLocal(a.endsAt)) + '"></div>' +
+      '</div>' +
+      '<div class="row" style="margin-top:9px">' +
+        '<button class="btn btn-sm btn-pri" data-slot="' + esc(a.id) + '">Mettre au programme</button>' +
+        (a.startsAt ? '<button class="btn btn-sm" data-unslot="' + esc(a.id) +
+          '">Retirer du programme</button>' : '') +
+      '</div>' +
+      '<p class="mini">' + (a.startsAt
+        ? 'Au programme : ' + esc(dayLabel(a.startsAt)) + ' à ' + esc(hhmm(a.startsAt)) +
+          (a.endsAt ? ' jusqu’à ' + esc(hhmm(a.endsAt)) : '') + '.'
+        : 'Sans créneau, l’activité n’apparaît pas dans le Fil. Laisse la fin vide ' +
+          'pour un tournoi à heure fixe, remplis-la pour une plage d’ouverture.') + '</p>' +
     '</div>').join('');
 }
 document.getElementById('tm-acts').addEventListener('input', ev => {
-  const i = ev.target.closest('.f-fee'); if (!i) return;
-  FEE_DRAFT[i.closest('.act').dataset.aid] = i.value;
+  const wrap = ev.target.closest('.act'); if (!wrap) return;
+  const id = wrap.dataset.aid;
+  if (ev.target.closest('.f-fee')) FEE_DRAFT[id] = ev.target.value;
+  if (ev.target.closest('.f-start') || ev.target.closest('.f-end')){
+    SLOT_DRAFT[id] = { s: wrap.querySelector('.f-start').value,
+                       e: wrap.querySelector('.f-end').value };
+  }
 });
 document.getElementById('tm-acts').addEventListener('click', async ev => {
+  const slot = ev.target.closest('button[data-slot]');
+  const un   = ev.target.closest('button[data-unslot]');
+  if (slot || un){
+    const id = (slot || un).dataset.slot || (slot || un).dataset.unslot;
+    const w  = (slot || un).closest('.act');
+    const btn = slot || un;
+    let s = null, e = null;
+    if (slot){
+      const sv = w.querySelector('.f-start').value;
+      const ev2 = w.querySelector('.f-end').value;
+      if (!sv){ alert('Indique au moins une heure de début.'); return; }
+      s = new Date(sv).getTime();
+      e = ev2 ? new Date(ev2).getTime() : null;
+    }
+    btn.disabled = true;
+    const r = await setActivitySlot(id, s, e, (myTeam()||{}).id);
+    btn.disabled = false;
+    if (!r.ok){ alert(r.error); return; }
+    delete SLOT_DRAFT[id];
+    return;
+  }
   const b = ev.target.closest('button[data-fee]'); if (!b) return;
   const wrap = b.closest('.act');
   const v = wrap.querySelector('.f-fee').value;
@@ -809,22 +859,105 @@ function renderOrders(rows){
 /* ============================================================
    Fil : programme + journal
    ============================================================ */
+/* ============================================================
+   Le calendrier
+
+   Une seule ligne de temps : le programme de l'orga et les créneaux posés
+   par les équipes sur leurs activités. Tout est trié sur un horodatage réel,
+   donc l'app sait ce qui est passé, ce qui tourne et ce qui arrive.
+   ============================================================ */
+
+/** Programme + activités datées, fondus en une liste triée. */
+function calendarEntries(){
+  const out = [];
+  SCHEDULE.forEach(s => out.push({
+    kind:'orga', id:s.id, title:s.title, place:s.place, desc:s.desc,
+    startsAt: Number(s.startsAt) || 0, endsAt: Number(s.endsAt) || null,
+    // tolérance : les entrées d'avant le passage à l'horodatage
+    legacy: !s.startsAt ? [s.day, s.time].filter(Boolean).join(' ') : ''
+  }));
+  ACTS.forEach(a => { if (a.startsAt) out.push({
+    kind:'act', id:a.id, title:a.name, desc:a.desc, icon:a.icon,
+    teamId:a.teamId, fee:Number(a.fee)||0,
+    startsAt: Number(a.startsAt), endsAt: Number(a.endsAt) || null
+  }); });
+  return out.sort((x,y) => (x.startsAt||Infinity) - (y.startsAt||Infinity));
+}
+
 function renderProgramme(){
   const box = document.getElementById('f-prog');
-  if (!SCHEDULE.length){ box.innerHTML = '<div class="empty">Programme à venir.</div>'; return; }
-  const rows = SCHEDULE.slice().sort((a,b) =>
-    String(a.day||'').localeCompare(String(b.day||''),'fr') ||
-    String(a.time||'').localeCompare(String(b.time||'')));
-  let day = null, h = '';
+  const rows = calendarEntries();
+  if (!rows.length){ box.innerHTML = '<div class="empty">Programme à venir.</div>'; return; }
+
+  const mt = (myTeam()||{}).id;
+  let day = null, h = '', undated = '';
+
   for (const it of rows){
-    if (it.day !== day){ day = it.day; h += '<div class="pg-day">' + esc(day || '') + '</div>'; }
-    h += '<div class="pg"><div class="pg-t">' + esc(it.time || '') + '</div>' +
-         '<div class="pg-b"><div class="pg-n">' + esc(it.title || '') + '</div>' +
-         (it.place ? '<div class="lst-s">&#128205; ' + esc(it.place) + '</div>' : '') +
-         (it.desc ? '<div class="lst-s">' + esc(it.desc) + '</div>' : '') + '</div></div>';
+    if (!it.startsAt){                       // entrée sans date : à part, en bas
+      undated += '<div class="cal past"><div class="cal-t">—</div>' +
+        '<div class="cal-b"><div class="cal-n">' + esc(it.title||'') + '</div>' +
+        (it.legacy ? '<div class="lst-s">' + esc(it.legacy) + '</div>' : '') +
+        '</div></div>';
+      continue;
+    }
+    const k = dayKey(it.startsAt);
+    if (k !== day){
+      day = k;
+      const today = dayKey(Date.now()) === k;
+      h += '<div class="cal-day' + (today ? ' today' : '') + '">' + esc(dayLabel(it.startsAt)) +
+           (today ? '<span>aujourd’hui</span>' : '') + '</div>';
+    }
+    const st  = slotState(it.startsAt, it.endsAt);
+    const act = it.kind === 'act';
+    const col = act ? teamColor(it.teamId) : '';
+    const payable = act && st !== 'past' && it.fee > 0 && it.teamId !== mt;
+
+    h += '<div class="cal ' + st + (act ? ' is-act' : '') + '"' +
+         (act ? ' style="--tc:' + esc(col) + '"' : '') + '>' +
+      '<div class="cal-t">' + esc(hhmm(it.startsAt)) +
+        (it.endsAt ? '<span>' + esc(hhmm(it.endsAt)) + '</span>' : '') + '</div>' +
+      '<div class="cal-b">' +
+        '<div class="cal-n">' + (it.icon ? esc(it.icon) + ' ' : '') + esc(it.title||'') +
+          (st === 'now' ? ' <span class="cal-live">en cours</span>' : '') + '</div>' +
+        (act ? '<div class="lst-s"><span class="tdot" style="background:' + esc(col) +
+               '"></span>' + esc(teamName(it.teamId)) +
+               (it.fee > 0 ? ' · entrée ' + num(it.fee) : ' · gratuit') + '</div>' : '') +
+        (it.place ? '<div class="lst-s">📍 ' + esc(it.place) + '</div>' : '') +
+        (it.desc ? '<div class="lst-s">' + esc(it.desc) + '</div>' : '') +
+        '<div class="cal-w">' + esc(slotWhen(it.startsAt, it.endsAt)) + '</div>' +
+      '</div>' +
+      (payable ? '<button class="btn btn-sm btn-pri cal-pay" data-toll="' +
+                 esc(it.id) + '">Payer</button>' : '') +
+    '</div>';
   }
-  box.innerHTML = h;
+
+  box.innerHTML = h + (undated
+    ? '<div class="cal-day">Sans horaire</div>' + undated : '');
 }
+
+/* on peut payer un péage depuis le créneau : c'est là qu'on le lit */
+document.getElementById('f-prog').addEventListener('click', async ev => {
+  const b = ev.target.closest('button[data-toll]'); if (!b) return;
+  const a = ACTS.find(x => x.id === b.dataset.toll); if (!a) return;
+  if (!confirm('Payer ' + parts(a.fee) + ' à ' + teamName(a.teamId) +
+               ' pour « ' + a.name + ' » ?')) return;
+  b.disabled = true;
+  const r = await payToll(SESS.id, a.id);
+  b.disabled = false;
+  if (!r.ok) alert(r.error);
+});
+
+/** À l'ouverture de l'onglet, on amène l'instant présent sous les yeux. */
+let _filScrolled = false;
+function scrollCalendarToNow(){
+  if (_filScrolled) return;
+  const el = document.querySelector('#f-prog .cal.now') ||
+             document.querySelector('#f-prog .cal.future');
+  if (!el) return;
+  _filScrolled = true;
+  el.scrollIntoView({ block:'center' });
+}
+
 
 function renderJournal(entries){
   const box = document.getElementById('f-journal');
@@ -1102,6 +1235,8 @@ function renderGoalBar(){
 
 function tickCountdowns(){
   renderGoalBar();
+  // le calendrier se réévalue en continu : « dans 20 min » devient « en cours »
+  if (document.getElementById('sec-fil').classList.contains('on')) renderProgramme();
   document.querySelectorAll('[data-until]').forEach(el => {
     el.textContent = countdown(Number(el.dataset.until));
   });

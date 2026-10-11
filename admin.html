@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="icon" href="img/favicon.png?v=8d9ee157" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png?v=daf01749">
-<link rel="stylesheet" href="common/style.css?v=330ce4ff">
+<link rel="stylesheet" href="common/style.css?v=b0b7b89c">
 </head>
 <body>
 
@@ -238,8 +238,12 @@
       <div class="pnl-b">
         <div id="sch-msg"></div>
         <div class="row">
-          <div class="field"><label>Jour</label><input id="sch-day" placeholder="Samedi"></div>
-          <div class="field" style="flex:0 0 120px"><label>Heure</label><input id="sch-time" placeholder="14:30"></div>
+          <div class="field"><label>D&eacute;but</label>
+            <input id="sch-start" type="datetime-local"></div>
+          <div class="field"><label>Fin (si c&rsquo;est une plage)</label>
+            <input id="sch-end" type="datetime-local"></div>
+        </div>
+        <div class="row">
           <div class="field"><label>Intitul&eacute;</label><input id="sch-title" placeholder="Tournoi de beer pong"></div>
           <div class="field"><label>Lieu</label><input id="sch-place" placeholder="Grange"></div>
         </div>
@@ -407,7 +411,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="common/config.js?v=a4393781"></script>
-<script src="common/app.js?v=0d36190c"></script>
+<script src="common/app.js?v=82965137"></script>
 <script>
 /* ============================================================
    admin.html — console orga.
@@ -1084,29 +1088,36 @@ document.getElementById('sch-go').addEventListener('click', async () => {
   const title = document.getElementById('sch-title').value.trim();
   say('sch-msg','');
   if (!title){ say('sch-msg','Il faut un intitulé.','err'); return; }
+  const sv = document.getElementById('sch-start').value;
+  if (!sv){ say('sch-msg','Indique une date et une heure de début.','err'); return; }
+  const ev2 = document.getElementById('sch-end').value;
   const it = {
     id: 's' + Date.now(),
-    day:   document.getElementById('sch-day').value.trim(),
-    time:  document.getElementById('sch-time').value.trim(),
+    startsAt: new Date(sv).getTime(),
+    endsAt:   ev2 ? new Date(ev2).getTime() : null,
     title, place: document.getElementById('sch-place').value.trim(),
     desc:  document.getElementById('sch-desc').value.trim()
   };
   try{
     await saveSchedule(SCHEDULE.concat([it]));
     say('sch-msg','Ajouté.','ok');
-    ['sch-title','sch-place','sch-desc'].forEach(k => document.getElementById(k).value='');
+    ['sch-title','sch-place','sch-desc','sch-end'].forEach(k => document.getElementById(k).value='');
   }catch(e){ say('sch-msg', e.message, 'err'); }
 });
 
 function renderSchedule(){
   const box = document.getElementById('sch-list');
   if (!SCHEDULE.length){ box.innerHTML = '<div class="empty">Programme vide.</div>'; return; }
+  // tri sur l'horodatage : « Dimanche » ne passe plus avant « Samedi »
   const rows = SCHEDULE.slice().sort((a,b) =>
-    String(a.day||'').localeCompare(String(b.day||''),'fr') ||
-    String(a.time||'').localeCompare(String(b.time||'')));
+    (Number(a.startsAt)||Infinity) - (Number(b.startsAt)||Infinity));
   box.innerHTML = '<ul class="lst">' + rows.map(s =>
-    '<li><div class="lst-main"><div class="lst-t">' + esc(s.time||'') + ' — ' + esc(s.title||'') +
-      '</div><div class="lst-s">' + esc(s.day||'') + (s.place ? ' · ' + esc(s.place) : '') +
+    '<li><div class="lst-main"><div class="lst-t">' +
+      (s.startsAt ? esc(hhmm(s.startsAt)) + (s.endsAt ? '–' + esc(hhmm(s.endsAt)) : '')
+                  : esc([s.day,s.time].filter(Boolean).join(' ') || 'sans date')) +
+      ' — ' + esc(s.title||'') + '</div><div class="lst-s">' +
+      (s.startsAt ? esc(dayLabel(s.startsAt)) : '<span class="amt-out">à redater</span>') +
+      (s.place ? ' · ' + esc(s.place) : '') +
       (s.desc ? ' · ' + esc(s.desc) : '') + '</div></div>' +
       '<button class="btn btn-sm btn-dng" data-sdel="' + esc(s.id) + '">Retirer</button></li>'
     ).join('') + '</ul>';

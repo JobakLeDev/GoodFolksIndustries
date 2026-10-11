@@ -494,3 +494,55 @@ body.has-tabbar .fp-fail{bottom:calc(68px + env(safe-area-inset-bottom))}
 .step.on b{background:var(--teal)}
 .step.done{color:var(--sage-d);border-color:#b9cdbb;background:#f1f6f1}
 .step.done b{background:var(--sage)}
+
+/* ---- calendrier vivant (onglet Fil) ---- */
+.cal-day{
+  display:flex;align-items:baseline;gap:9px;
+  font-family:var(--fd);font-weight:600;color:var(--navy);font-size:.95rem;
+  margin:20px 0 9px;padding-bottom:6px;border-bottom:2px solid var(--b);
+  text-transform:capitalize;
+}
+.cal-day:first-child{margin-top:0}
+.cal-day span{
+  font-family:var(--ff);font-size:10.5px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:#fff;background:var(--teal);
+  padding:2px 8px;border-radius:999px;
+}
+.cal{
+  display:flex;gap:13px;align-items:flex-start;
+  padding:11px 0;border-bottom:1px solid var(--b);
+}
+.cal:last-child{border-bottom:0}
+.cal-t{
+  flex:0 0 52px;font-family:var(--fd);font-weight:600;font-size:.95rem;
+  color:var(--teal);font-variant-numeric:tabular-nums;line-height:1.3;
+}
+.cal-t span{display:block;font-size:11px;font-weight:500;color:var(--tf)}
+.cal-b{flex:1;min-width:0}
+.cal-n{font-weight:650;line-height:1.3}
+.cal-w{font-size:11.5px;color:var(--tf);margin-top:4px;font-weight:600}
+.cal-pay{flex:0 0 auto;align-self:center}
+
+/* une activité d'équipe porte sa couleur */
+.cal.is-act{
+  border-left:3px solid var(--tc);padding-left:11px;
+  background:linear-gradient(90deg, color-mix(in srgb, var(--tc) 7%, transparent), transparent 60%);
+}
+
+/* ce qui tourne maintenant doit sauter aux yeux */
+.cal.now{background:#eef4f8;border-left:3px solid var(--teal);padding-left:11px;
+  border-radius:0 var(--r-sm) var(--r-sm) 0}
+.cal.now .cal-t{color:var(--navy)}
+.cal.now .cal-w{color:var(--teal)}
+.cal-live{
+  display:inline-block;margin-left:6px;vertical-align:1px;
+  font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+  color:#fff;background:var(--teal);padding:2px 7px;border-radius:999px;
+  animation:calpulse 2s ease-in-out infinite;
+}
+@keyframes calpulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+/* ce qui est passé s'efface sans disparaître */
+.cal.past{opacity:.45}
+.cal.past .cal-live{display:none}
+@media (prefers-reduced-motion:reduce){ .cal-live{animation:none} }

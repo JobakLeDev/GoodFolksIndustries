@@ -205,6 +205,55 @@ function countdown(toMs){
   return Math.max(0, Math.floor(d/1000)) + ' s';
 }
 
+/* ---------- Le calendrier ----------
+   Une entree du programme porte un VRAI horodatage (startsAt, et endsAt
+   facultatif pour une plage). Sans ca, rien ne peut etre automatique : on ne
+   sait ni ce qui est en cours, ni ce qui est passe — et un tri sur « Samedi »
+   / « Dimanche » se fait alphabetiquement, donc a l'envers. */
+
+/** Au-dela de ce delai, un evenement ponctuel (sans fin) est considere passe. */
+const SLOT_POINT_MS = 45 * 60 * 1000;
+
+/** Cle de regroupement par jour : « 2026-10-11 ». */
+function dayKey(ms){
+  const d = new Date(Number(ms)||0);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') +
+         '-' + String(d.getDate()).padStart(2,'0');
+}
+
+/** « samedi 11 octobre » */
+function dayLabel(ms){
+  if (!ms) return 'Sans date';
+  return new Date(Number(ms)).toLocaleDateString('fr-FR',
+    { weekday:'long', day:'numeric', month:'long' });
+}
+
+/** « 14:30 » */
+function hhmm(ms){
+  if (!ms) return '';
+  return new Date(Number(ms)).toLocaleTimeString('fr-FR',
+    { hour:'2-digit', minute:'2-digit' });
+}
+
+/** Ou en est un creneau : 'past' | 'now' | 'future'. */
+function slotState(startsAt, endsAt, now){
+  const s = Number(startsAt)||0;
+  if (!s) return 'future';
+  const t = now || Date.now();
+  const e = Number(endsAt) || (s + SLOT_POINT_MS);
+  if (t >= e) return 'past';
+  if (t >= s) return 'now';
+  return 'future';
+}
+
+/** Ce qu'on affiche a droite d'un creneau : « en cours », « dans 20 min »… */
+function slotWhen(startsAt, endsAt){
+  const st = slotState(startsAt, endsAt);
+  if (st === 'now')  return Number(endsAt) ? 'en cours \u00b7 jusqu\u2019\u00e0 ' + hhmm(endsAt) : 'en cours';
+  if (st === 'past') return 'termin\u00e9';
+  return 'dans ' + countdown(startsAt);
+}
+
 /** Nom affichable d'une contrepartie de mouvement. */
 function partyName(id, fallback, teams){
   if (PARTY_NAME[id]) return PARTY_NAME[id];
@@ -645,6 +694,25 @@ async function setActivityFee(activityId, fee, playerId, playerTeam){
     await ref.update({ fee:f, feeBy:playerId, feeAt:Date.now() });
     return { ok:true };
   }catch(e){ return { ok:false, error:e.message }; }
+}
+
+/**
+ * L'equipe proprietaire pose le creneau de son activite.
+ * endsAt facultatif : absent = evenement ponctuel, present = plage d'ouverture.
+ */
+async function setActivitySlot(activityId, startsAt, endsAt, playerTeam){
+  const s = Number(startsAt) || null;
+  const e = Number(endsAt)   || null;
+  if (e && s && e <= s) return { ok:false, error:'La fin doit tomber apr\u00e8s le d\u00e9but.' };
+  try{
+    const ref = db.collection(COL.activities).doc(activityId);
+    const snap = await ref.get();
+    if (!snap.exists) return { ok:false, error:'Activit\u00e9 introuvable.' };
+    if (snap.data().teamId !== playerTeam)
+      return { ok:false, error:'Cette activit\u00e9 n\u2019est pas \u00e0 ton \u00e9quipe.' };
+    await ref.update({ startsAt: s, endsAt: e, slotAt: Date.now() });
+    return { ok:true };
+  }catch(err){ return { ok:false, error: err.message }; }
 }
 
 /** Paiement d'un peage : les parts tombent dans la cagnotte proprietaire. */
