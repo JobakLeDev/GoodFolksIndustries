@@ -458,3 +458,39 @@ body.has-tabbar .fp-fail{bottom:calc(68px + env(safe-area-inset-bottom))}
   display:inline-block;padding:5px 12px;border-radius:999px;
   background:var(--tc);color:#fff;font-size:12.5px;font-weight:650;
 }
+
+/* ---- bandeau d'enjeu : l'objectif du week-end, sur tous les onglets ---- */
+.goalbar{
+  position:sticky;top:var(--topbar-h,55px);z-index:490;width:100%;
+  display:flex;align-items:center;gap:9px;
+  padding:9px 15px;border:0;border-bottom:1px solid var(--navy-d);
+  background:var(--navy);color:#fff;font:inherit;font-size:12.5px;
+  text-align:left;cursor:pointer;
+}
+.goalbar:active{filter:brightness(1.15)}
+.gb-ic{font-size:1.05rem;line-height:1;flex:none}
+.gb-t{flex:1;min-width:0;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gb-v{flex:none;font-weight:600;opacity:.82;font-variant-numeric:tabular-nums}
+@media (max-width:420px){
+  .goalbar{flex-wrap:wrap;gap:2px 9px}
+  .gb-t{flex:1 1 100%;white-space:normal}
+  .gb-v{flex:1 1 100%;opacity:.75}
+}
+
+/* ---- frise des trois étapes du vote ---- */
+.steps{display:flex;gap:8px;margin:0 0 14px}
+.step{
+  flex:1;min-width:0;background:var(--bg2);border:1px solid var(--b);
+  border-radius:var(--r-sm);padding:10px 9px;text-align:center;
+  font-size:11.5px;font-weight:650;color:var(--tf);line-height:1.25;
+}
+.step b{
+  display:block;width:22px;height:22px;margin:0 auto 6px;border-radius:50%;
+  background:var(--b2);color:#fff;font-family:var(--fd);font-size:12px;
+  font-weight:600;line-height:22px;
+}
+.step span{display:block;font-weight:500;font-size:10.5px;margin-top:3px;opacity:.85}
+.step.on{background:#eef4f8;border-color:var(--teal);color:var(--navy)}
+.step.on b{background:var(--teal)}
+.step.done{color:var(--sage-d);border-color:#b9cdbb;background:#f1f6f1}
+.step.done b{background:var(--sage)}

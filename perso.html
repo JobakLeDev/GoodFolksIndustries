@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="icon" href="img/favicon.png?v=8d9ee157" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png?v=daf01749">
-<link rel="stylesheet" href="common/style.css?v=19190eb9">
+<link rel="stylesheet" href="common/style.css?v=330ce4ff">
 </head>
 <body class="has-tabbar">
 
@@ -27,6 +27,12 @@
   </div>
   <button class="btn btn-sm" id="h-out" title="Se d&eacute;connecter">&#9094;</button>
 </div>
+
+<button class="goalbar" id="goalbar" type="button">
+  <span class="gb-ic">&#128499;</span>
+  <span class="gb-t" id="gb-t">Le vote de fin de week-end</span>
+  <span class="gb-v" id="gb-v"></span>
+</button>
 
 <div class="wrap">
 
@@ -284,6 +290,18 @@ function showSec(name){
   window.scrollTo(0,0);
   if (name === 'infos') initMap();     // Leaflet exige un conteneur visible
 }
+document.getElementById('goalbar').addEventListener('click', () => showSec('vote'));
+
+/* Le bandeau d'enjeu colle sous l'en-tête : on MESURE celui-ci plutôt que de
+   coder une hauteur en dur, qui casserait au moindre changement de police. */
+function syncTopbarHeight(){
+  const bar = document.querySelector('.topbar');
+  if (bar) document.documentElement.style.setProperty('--topbar-h', bar.offsetHeight + 'px');
+}
+addEventListener('resize', syncTopbarHeight);
+addEventListener('load', syncTopbarHeight);
+syncTopbarHeight();
+
 document.getElementById('h-out').addEventListener('click', () => {
   clearSession(); location.href = 'index.html?logout=1';
 });
@@ -840,6 +858,18 @@ function buildVoteBody(){
      Le vote physique ne dépend pas de l'état du scrutin dans l'app : on peut
      aller sceller une alliance dans une urne dès le vendredi soir. C'est
      irréversible, et c'est précisément ce qui en fait une preuve. */
+  /* Où en est-on, des urnes au dépouillement. Affiché dans tous les états :
+     l'enjeu du week-end ne se découvre pas le dimanche matin. */
+  const etape = st === 'closed' ? 3 : st === 'open' ? 2 : 1;
+  const frise =
+    '<div class="steps">' +
+      ['Les urnes<span>ouvertes en continu</span>',
+       'Le vote dans l’app<span>dimanche 00:00</span>',
+       'Dépouillement<span>dimanche 12:00</span>'
+      ].map((s,k) => '<div class="step' + (k+1 === etape ? ' on' : '') +
+        (k+1 < etape ? ' done' : '') + '"><b>' + (k+1) + '</b><div>' + s + '</div></div>').join('') +
+    '</div>';
+
   const urnes =
     '<div class="urnes"><div class="u-h"><span class="u-ic">&#127891;</span>' +
       '<div><div class="u-t">Les urnes sont ouvertes</div>' +
@@ -868,15 +898,18 @@ function buildVoteBody(){
   /* ---- pas encore publié : les urnes tournent quand même ---- */
   if (st === 'draft'){
     status.textContent = 'urnes ouvertes'; status.className = 'bdg bdg-warn';
-    body.innerHTML = urnes + appNote +
-      '<div class="empty">Le vote dans l’app ouvrira <strong>dimanche à partir de ' +
-      'minuit</strong>. D’ici là, seules les urnes comptent.</div>';
+    body.innerHTML =
+      '<div class="vote-q">' + esc((VOTE && VOTE.question) ||
+        'Quelle équipe prend les rênes de Goodfolks ?') + '</div>' +
+      '<div class="vote-d">C’est la question du week-end. Tout ce que vous gagnez, ' +
+        'misez et négociez d’ici dimanche midi ne sert qu’à y peser.</div>' +
+      frise + urnes + appNote;
     return;
   }
 
   let h = '<div class="vote-q">' + esc(VOTE.question || 'L’avenir de l’entreprise') + '</div>';
   if (VOTE.detail) h += '<div class="vote-d">' + esc(VOTE.detail) + '</div>';
-  h += urnes;
+  h += frise + urnes;
 
   /* ---- annoncé ---- */
   if (st === 'announced'){
@@ -1049,7 +1082,26 @@ document.getElementById('v-body').addEventListener('click', async ev => {
 });
 
 /* ---------- Comptes à rebours ---------- */
+/** Le bandeau d'enjeu : visible sur tous les onglets, tout le week-end. */
+function renderGoalBar(){
+  const t = document.getElementById('gb-t');
+  const v = document.getElementById('gb-v');
+  if (!t) return;
+  const st = (VOTE && VOTE.status) || 'draft';
+  if (st === 'closed'){
+    t.textContent = 'Le vote est dépouillé';
+    const w = VOTE.results && (VOTE.results.ranked||[]).find(o => o.id === VOTE.results.winnerId);
+    v.textContent = w ? w.name + ' l’emporte' : 'résultat publié';
+    return;
+  }
+  t.textContent = (VOTE && VOTE.question) ? VOTE.question : 'Quelle équipe prend les rênes ?';
+  v.textContent = VOTE && VOTE.closesAt
+    ? 'dépouillement dans ' + countdown(VOTE.closesAt)
+    : 'dépouillement dimanche midi';
+}
+
 function tickCountdowns(){
+  renderGoalBar();
   document.querySelectorAll('[data-until]').forEach(el => {
     el.textContent = countdown(Number(el.dataset.until));
   });

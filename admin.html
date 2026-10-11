@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="icon" href="img/favicon.png?v=8d9ee157" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png?v=daf01749">
-<link rel="stylesheet" href="common/style.css?v=19190eb9">
+<link rel="stylesheet" href="common/style.css?v=330ce4ff">
 </head>
 <body>
 
@@ -287,7 +287,7 @@
             <input id="v-close" type="datetime-local"></div>
         </div>
         <div class="row">
-          <button class="btn" id="v-save">Enregistrer</button>
+          <button class="btn btn-sec" id="v-save">Enregistrer et annoncer</button>
           <button class="btn btn-gold" id="v-announce">&#128276; Annoncer</button>
           <button class="btn btn-pri" id="v-go">&#9654; Ouvrir</button>
           <button class="btn btn-dng" id="v-tally">&#9633; Clore et d&eacute;pouiller</button>
@@ -1207,8 +1207,10 @@ async function saveVote(status, confirmMsg){
   }catch(e){ say('v-msg', e.message, 'err'); }
 }
 
+// Par défaut on publie en « annoncé » : l'enjeu du week-end doit être connu
+// dès le premier jour, pas découvert le dimanche matin.
 document.getElementById('v-save').addEventListener('click',
-  () => saveVote((VOTE && VOTE.status) || VOTE_STATUS.draft));
+  () => saveVote((VOTE && VOTE.status) || VOTE_STATUS.announced));
 document.getElementById('v-announce').addEventListener('click',
   () => saveVote(VOTE_STATUS.announced,
     'Annoncer le vote à tous ?\n\nIls verront la question et les équipes en lice, ' +
