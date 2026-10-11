@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="icon" href="img/favicon.png?v=8d9ee157" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png?v=daf01749">
-<link rel="stylesheet" href="common/style.css?v=b0b7b89c">
+<link rel="stylesheet" href="common/style.css?v=a205dd57">
 </head>
 <body>
 
@@ -411,7 +411,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="common/config.js?v=a4393781"></script>
-<script src="common/app.js?v=82965137"></script>
+<script src="common/app.js?v=2640d4fa"></script>
 <script>
 /* ============================================================
    admin.html — console orga.
@@ -421,6 +421,7 @@
 const GATE_KEY = 'gpc_admin';
 let PLAYERS = [], TEAMS = [], MOTIONS = [], ACTS = [], ITEMS = [], REQS = [],
     POIS = [], BALLOTS = [], JENTRIES = [], SCHEDULE = [];
+let SIGNUPS = [];
 let VOTE = null, TRES = { issued:0, circulating:0, company:0 };
 let AMAP = null, poiLayer = null, URN_DRAFT = {};
 
@@ -485,6 +486,11 @@ async function boot(){
   });
   watch(db.collection(COL.activities), 'activités', qs => {
     ACTS = qs.docs.map(d => Object.assign({ id:d.id }, d.data())); renderActs();
+  });
+  watch(db.collection(COL.signups), 'inscriptions', qs => {
+    SIGNUPS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()))
+      .sort((x,y) => (x.ts||0) - (y.ts||0));
+    renderActs();
   });
   watch(db.collection(COL.config).doc('treasury'), 'réglages', s => {
     const d = s.exists ? s.data() : {};
@@ -796,16 +802,50 @@ document.getElementById('mo-list').addEventListener('click', async ev => {
 function renderActs(){
   const box = document.getElementById('ac-list');
   if (!ACTS.length){ box.innerHTML = '<div class="empty">Aucune activité.</div>'; return; }
-  box.innerHTML = '<ul class="lst">' + ACTS.map(a =>
-    '<li><div class="lst-main"><div class="lst-t">' + (a.icon ? esc(a.icon)+' ' : '') +
-      esc(a.name) + '</div><div class="lst-s"><span class="tdot" style="background:' +
-      esc(teamColor(a.teamId)) + '"></span>' + esc(teamName(a.teamId)) +
-      ' · tarif ' + num(a.fee) + ' · ' + num(a.plays) + ' passage(s) · ' +
-      num(a.revenue) + ' encaiss&eacute;</div></div>' +
-      '<button class="btn btn-sm btn-dng" data-adel="' + esc(a.id) + '">Retirer</button></li>'
-    ).join('') + '</ul>';
+  const MODE = { free:'paiement libre', slots:'planning', queue:'file d’attente' };
+  box.innerHTML = ACTS.map(a => {
+    const mode = a.mode || 'free';
+    const file = SIGNUPS.filter(s => s.activityId === a.id && s.status === 'waiting');
+    const cap  = Math.max(1, Number(a.capacity)||1);
+    return '<div class="ed" style="border-left:4px solid ' + esc(teamColor(a.teamId)) + '">' +
+      '<div class="ed-h"><div class="lst-main">' +
+        '<div class="lst-t">' + (a.icon ? esc(a.icon)+' ' : '') + esc(a.name) +
+          ' <span class="bdg">' + MODE[mode] + '</span>' +
+          (mode === 'queue' && a.open === false ? ' <span class="bdg bdg-dng">fermée</span>' : '') +
+        '</div>' +
+        '<div class="lst-s"><span class="tdot" style="background:' + esc(teamColor(a.teamId)) +
+          '"></span>' + esc(teamName(a.teamId)) + ' · tarif ' + num(a.fee) +
+          ' · ' + num(a.plays) + ' passage(s) · ' + num(a.revenue) + ' encaissé' +
+          (mode === 'slots' ? ' · ' + ((a.slots||[]).length) + ' créneau(x)' : '') +
+        '</div></div>' +
+        '<button class="btn btn-sm btn-dng" data-adel="' + esc(a.id) + '">Retirer</button></div>' +
+      (file.length
+        ? '<div class="qbox"><div class="q-h"><strong>En attente</strong>' +
+          '<span class="lst-s">' + file.length + '</span></div><ul class="lst">' +
+          file.slice(0,20).map((s,i) => '<li class="' + (i < cap ? 'q-up' : '') + '">' +
+            '<div class="lst-main"><div class="lst-t">' + (i+1) + '. ' + esc(s.playerName) +
+            '</div><div class="lst-s">' + (s.slotId ? esc(hhmm(s.startsAt)) : 'file') +
+            (s.fee ? ' · ' + num(s.fee) + ' payé' : '') + '</div></div>' +
+            '<button class="btn btn-sm btn-sec" data-sg="' + esc(s.id) + '" data-st="done">Passé</button>' +
+            '<button class="btn btn-sm" data-sg="' + esc(s.id) + '" data-st="noshow">Absent</button>' +
+            '<button class="btn btn-sm btn-dng" data-sg="' + esc(s.id) + '" data-st="cancelled">Retirer</button>' +
+            '</li>').join('') + '</ul>' +
+          '<p class="mini">Secours : normalement c’est l’équipe propriétaire qui tient sa file. ' +
+            '« Retirer » libère la place ; les parts restent acquises à l’équipe.</p></div>'
+        : (mode === 'free' ? '' : '<p class="mini">Personne d’inscrit.</p>')) +
+    '</div>';
+  }).join('');
 }
+
 document.getElementById('ac-list').addEventListener('click', async ev => {
+  const sg = ev.target.closest('button[data-sg]');
+  if (sg){
+    sg.disabled = true;
+    const r = await setSignupStatus(sg.dataset.sg, sg.dataset.st, null);  // null = orga, pas de garde d'équipe
+    sg.disabled = false;
+    if (!r.ok) alert(r.error);
+    return;
+  }
   const b = ev.target.closest('button[data-adel]'); if (!b) return;
   if (!confirm('Retirer cette activité ? Les parts déjà encaissées restent acquises.')) return;
   try{ await db.collection(COL.activities).doc(b.dataset.adel).delete(); }

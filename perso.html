@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="icon" href="img/favicon.png?v=8d9ee157" type="image/png">
 <link rel="apple-touch-icon" href="img/apple-touch-icon.png?v=daf01749">
-<link rel="stylesheet" href="common/style.css?v=b0b7b89c">
+<link rel="stylesheet" href="common/style.css?v=a205dd57">
 </head>
 <body class="has-tabbar">
 
@@ -260,7 +260,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="common/config.js?v=a4393781"></script>
-<script src="common/app.js?v=82965137"></script>
+<script src="common/app.js?v=2640d4fa"></script>
 <script>
 /* ============================================================
    perso.html — le hub du week-end. Tout est en temps réel.
@@ -269,6 +269,7 @@ const SESS = requireSession();
 let ME = null, PLAYERS = [], TEAMS = [], ACTS = [], MOTIONS = [], SHOP = [];
 let TRES = { issued:0, circulating:0, company:0 };
 let VOTE = null, MYBALLOT = null, ALLOC = {}, FEE_DRAFT = {}, SLOT_DRAFT = {};
+let SIGNUPS = [];            // toutes les inscriptions, pour les files et mes places
 /** ms -> valeur d'un <input type=datetime-local> (heure locale). */
 const dtLocal = ms => ms
   ? new Date(Number(ms) - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16)
@@ -347,6 +348,12 @@ document.getElementById('h-out').addEventListener('click', () => {
 
   watch(db.collection(COL.activities), 'activités', qs => {
     ACTS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()));
+    renderTeamActs(); renderTolls(); renderProgramme();
+  });
+
+  watch(db.collection(COL.signups), 'inscriptions', qs => {
+    SIGNUPS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()))
+      .sort((a,b) => (a.ts||0) - (b.ts||0));
     renderTeamActs(); renderTolls(); renderProgramme();
   });
 
@@ -658,6 +665,23 @@ document.getElementById('tm-motion').addEventListener('click', async ev => {
   if (!r.ok) alert(r.error);
 });
 
+/* ---------- Inscriptions : files et créneaux ---------- */
+
+/** Les inscrits encore en attente sur une activité, dans l'ordre d'arrivée. */
+const waitingOn = (actId, slotId) => SIGNUPS.filter(s =>
+  s.activityId === actId && s.status === 'waiting' &&
+  (slotId === undefined || (s.slotId || null) === (slotId || null)));
+
+/** Mon inscription en cours sur une activité, s'il y en a une. */
+const mySignup = actId => SIGNUPS.find(s =>
+  s.activityId === actId && s.playerId === SESS.id && s.status === 'waiting');
+
+/** Places restantes sur un créneau. */
+function slotLeft(a, slot){
+  const cap = Math.max(1, Math.round(Number(slot.places) || Number(a.capacity) || 1));
+  return Math.max(0, cap - (Number((a.counts||{})[slot.id]) || 0));
+}
+
 /* ---------- Nos activités ---------- */
 function renderTeamActs(){
   const t = myTeam();
@@ -697,6 +721,25 @@ function renderTeamActs(){
         (a.startsAt ? '<button class="btn btn-sm" data-unslot="' + esc(a.id) +
           '">Retirer du programme</button>' : '') +
       '</div>' +
+      '<hr class="hr" style="margin:12px 0">' +
+      '<div class="row">' +
+        '<div class="field" style="margin:0"><label>Comment ça tourne</label>' +
+          '<select class="f-mode">' +
+            ['free','Paiement libre, pas de liste',
+             'slots','Planning : créneaux réservables',
+             'queue','File d’attente'].reduce((h,v,k,arr) => k%2 ? h :
+               h + '<option value="' + arr[k] + '"' +
+               (((a.mode)||'free') === arr[k] ? ' selected' : '') + '>' +
+               esc(arr[k+1]) + '</option>', '') +
+          '</select></div>' +
+        '<div class="field" style="margin:0;flex:0 0 120px"><label>Joueurs / passage</label>' +
+          '<input class="f-cap" type="number" min="1" step="1" value="' +
+          (Math.max(1, Number(a.capacity)||1)) + '"></div>' +
+        '<div style="flex:0 0 auto;display:flex;align-items:flex-end">' +
+          '<button class="btn btn-sm btn-sec" data-cfg="' + esc(a.id) + '">Appliquer</button></div>' +
+      '</div>' +
+      actPlanningHtml(a) +
+      actRosterHtml(a) +
       '<p class="mini">' + (a.startsAt
         ? 'Au programme : ' + esc(dayLabel(a.startsAt)) + ' à ' + esc(hhmm(a.startsAt)) +
           (a.endsAt ? ' jusqu’à ' + esc(hhmm(a.endsAt)) : '') + '.'
@@ -704,6 +747,63 @@ function renderTeamActs(){
           'pour un tournoi à heure fixe, remplis-la pour une plage d’ouverture.') + '</p>' +
     '</div>').join('');
 }
+/** Le planning fermé (créneaux) ou l'état de la file, côté propriétaire. */
+function actPlanningHtml(a){
+  const mode = a.mode || 'free';
+  if (mode === 'queue'){
+    const open = a.open !== false;
+    return '<div class="qbox"><div class="q-h">' +
+      '<span class="bdg ' + (open ? 'bdg-ok' : 'bdg-dng') + '">' +
+        (open ? 'File ouverte' : 'File fermée') + '</span>' +
+      '<span class="lst-s">' + waitingOn(a.id).length + ' en attente</span>' +
+      '<button class="btn btn-sm" data-open="' + esc(a.id) + '" data-to="' +
+        (open ? '0' : '1') + '">' + (open ? 'Fermer' : 'Ouvrir') + '</button>' +
+      '</div></div>';
+  }
+  if (mode !== 'slots') return '';
+  const slots = (a.slots || []).slice().sort((x,y) => x.startsAt - y.startsAt);
+  return '<div class="qbox">' +
+    '<div class="q-h"><strong>Planning</strong><span class="lst-s">' +
+      slots.length + ' créneau(x)</span></div>' +
+    (slots.length ? '<ul class="lst">' + slots.map(s => {
+      const left = slotLeft(a, s);
+      const st = slotState(s.startsAt, null);
+      return '<li><div class="lst-main"><div class="lst-t">' + esc(hhmm(s.startsAt)) +
+        ' <span class="lst-s">' + esc(dayLabel(s.startsAt)) + '</span></div>' +
+        '<div class="lst-s">' + (left ? left + ' place(s) libre(s)' : 'complet') +
+        (st === 'past' ? ' · passé' : '') + '</div></div>' +
+        '<button class="btn btn-sm btn-dng" data-delslot="' + esc(a.id) +
+          '" data-slot="' + esc(s.id) + '">Retirer</button></li>';
+    }).join('') + '</ul>' : '<div class="empty">Aucun créneau.</div>') +
+    '<div class="row" style="margin-top:9px">' +
+      '<div class="field" style="margin:0"><label>Nouveau créneau</label>' +
+        '<input class="f-newslot" type="datetime-local"></div>' +
+      '<div class="field" style="margin:0;flex:0 0 110px"><label>Places</label>' +
+        '<input class="f-newplaces" type="number" min="1" step="1" placeholder="capacité"></div>' +
+      '<div style="flex:0 0 auto;display:flex;align-items:flex-end">' +
+        '<button class="btn btn-sm btn-pri" data-addslot="' + esc(a.id) + '">Ajouter</button></div>' +
+    '</div></div>';
+}
+
+/** Qui attend, et les boutons pour faire avancer. */
+function actRosterHtml(a){
+  const mode = a.mode || 'free';
+  if (mode === 'free') return '';
+  const cap = Math.max(1, Number(a.capacity)||1);
+  const list = waitingOn(a.id).slice(0, 30);
+  if (!list.length) return '<div class="empty">Personne d’inscrit.</div>';
+  return '<div class="qbox"><div class="q-h"><strong>À faire passer</strong>' +
+    '<span class="lst-s">' + list.length + '</span></div><ul class="lst">' +
+    list.map((s,i) => '<li class="' + (i < cap ? 'q-up' : '') + '">' +
+      '<div class="lst-main"><div class="lst-t">' + (i < cap ? '▶ ' : (i+1) + '. ') +
+        esc(s.playerName) + '</div>' +
+      '<div class="lst-s">' + (s.slotId ? esc(hhmm(s.startsAt)) : 'file') +
+        (s.fee ? ' · ' + num(s.fee) + ' payé' : '') + '</div></div>' +
+      '<button class="btn btn-sm btn-sec" data-sg="' + esc(s.id) + '" data-st="done">Passé</button>' +
+      '<button class="btn btn-sm btn-dng" data-sg="' + esc(s.id) + '" data-st="noshow">Absent</button>' +
+      '</li>').join('') + '</ul></div>';
+}
+
 document.getElementById('tm-acts').addEventListener('input', ev => {
   const wrap = ev.target.closest('.act'); if (!wrap) return;
   const id = wrap.dataset.aid;
@@ -714,7 +814,64 @@ document.getElementById('tm-acts').addEventListener('input', ev => {
   }
 });
 document.getElementById('tm-acts').addEventListener('click', async ev => {
-  const slot = ev.target.closest('button[data-slot]');
+  const mt = (myTeam()||{}).id;
+  const btn = ev.target.closest('button');
+
+  // mode + capacité
+  const cfg = ev.target.closest('button[data-cfg]');
+  if (cfg){
+    const w = cfg.closest('.act');
+    cfg.disabled = true;
+    const r = await setActivityConfig(cfg.dataset.cfg, {
+      mode: w.querySelector('.f-mode').value,
+      capacity: w.querySelector('.f-cap').value
+    }, mt);
+    cfg.disabled = false;
+    if (!r.ok) alert(r.error);
+    return;
+  }
+  // ouvrir / fermer la file
+  const op = ev.target.closest('button[data-open]');
+  if (op){
+    op.disabled = true;
+    const r = await setActivityConfig(op.dataset.open, { open: op.dataset.to === '1' }, mt);
+    op.disabled = false;
+    if (!r.ok) alert(r.error);
+    return;
+  }
+  // ajouter un créneau
+  const add = ev.target.closest('button[data-addslot]');
+  if (add){
+    const w = add.closest('.act');
+    const v = w.querySelector('.f-newslot').value;
+    if (!v){ alert('Indique une heure.'); return; }
+    add.disabled = true;
+    const r = await addActivitySlot(add.dataset.addslot, new Date(v).getTime(),
+      w.querySelector('.f-newplaces').value, mt);
+    add.disabled = false;
+    if (!r.ok) alert(r.error); else w.querySelector('.f-newslot').value = '';
+    return;
+  }
+  // retirer un créneau
+  const del = ev.target.closest('button[data-delslot]');
+  if (del){
+    del.disabled = true;
+    const r = await removeActivitySlot(del.dataset.delslot, del.dataset.slot, mt);
+    del.disabled = false;
+    if (!r.ok) alert(r.error);
+    return;
+  }
+  // faire avancer la file
+  const sg = ev.target.closest('button[data-sg]');
+  if (sg){
+    sg.disabled = true;
+    const r = await setSignupStatus(sg.dataset.sg, sg.dataset.st, mt);
+    sg.disabled = false;
+    if (!r.ok) alert(r.error);
+    return;
+  }
+
+  const slot = ev.target.closest('button[data-slot]:not([data-delslot])');
   const un   = ev.target.closest('button[data-unslot]');
   if (slot || un){
     const id = (slot || un).dataset.slot || (slot || un).dataset.unslot;
@@ -813,36 +970,139 @@ document.getElementById('s-team').addEventListener('click', async ev => {
   else say('s-msg', r.error, 'err');
 });
 
+/* ============================================================
+   Les activités des autres équipes : payer, réserver, faire la queue
+   ============================================================ */
 function renderTolls(){
   const box = document.getElementById('s-tolls');
   const mt = (myTeam()||{}).id;
-  const open = ACTS.filter(a => Number(a.fee) > 0 && a.teamId !== mt);
-  const ours = ACTS.filter(a => a.teamId === mt);
-  if (!open.length && !ours.length){
-    box.innerHTML = '<div class="empty">Aucune activité ouverte.</div>'; return;
+  const others = ACTS.filter(a => a.teamId !== mt);
+  const ours   = ACTS.filter(a => a.teamId === mt);
+
+  if (!others.length){
+    box.innerHTML = '<div class="empty">Aucune activité des autres équipes.</div>' +
+      (ours.length ? '<p class="mini">Les vôtres se gèrent dans l’onglet Équipe.</p>' : '');
+    return;
   }
-  box.innerHTML =
-    (open.length ? '<ul class="lst">' + open.map(a =>
-      '<li><div class="lst-main"><div class="lst-t">' + (a.icon ? esc(a.icon) + ' ' : '') +
-        esc(a.name) + '</div><div class="lst-s"><span class="tdot" style="background:' +
-        esc(teamColor(a.teamId)) + '"></span>' + esc(teamName(a.teamId)) + '</div></div>' +
-        '<span class="price" style="margin-right:8px">' + num(a.fee) + '</span>' +
-        '<button class="btn btn-sm btn-pri" data-toll="' + esc(a.id) + '">Payer</button></li>'
-      ).join('') + '</ul>' : '<div class="empty">Aucune activité des autres équipes.</div>') +
-    (ours.length ? '<hr class="hr"><p class="mini" style="margin:0">Les vôtres (' +
-      ours.map(a => esc(a.name)).join(', ') + ') se gèrent dans l’onglet Équipe.</p>' : '');
+
+  box.innerHTML = others.map(a => {
+    const mode = a.mode || 'free';
+    const fee  = Math.max(0, Number(a.fee)||0);
+    const mine = mySignup(a.id);
+    const col  = teamColor(a.teamId);
+
+    let body = '';
+
+    if (mode === 'free'){
+      body = fee > 0
+        ? '<button class="btn btn-sm btn-pri" data-toll="' + esc(a.id) + '">Payer ' + num(fee) + '</button>'
+        : '<span class="lst-s">Gratuit, sers-toi.</span>';
+    }
+
+    else if (mode === 'queue'){
+      const file = waitingOn(a.id);
+      const open = a.open !== false;
+      const pos  = mine ? file.findIndex(s => s.id === mine.id) + 1 : 0;
+      const cap  = Math.max(1, Number(a.capacity)||1);
+      body =
+        '<div class="lst-s">' + (open ? file.length + ' dans la file' : 'File fermée') + '</div>' +
+        (mine
+          ? '<div class="msg msg-ok" style="margin:8px 0 0">' +
+            (pos <= cap ? '<strong>C’est à toi.</strong> Présente-toi.'
+                        : 'Tu es <strong>' + pos + 'ᵉ</strong> dans la file.') + '</div>'
+          : open
+            ? '<button class="btn btn-sm btn-pri" data-ticket="' + esc(a.id) + '">' +
+              (fee > 0 ? 'Prendre un ticket · ' + num(fee) : 'Prendre un ticket') + '</button>'
+            : '');
+    }
+
+    else {   // planning fermé
+      const slots = (a.slots||[]).slice()
+        .filter(s => slotState(s.startsAt, null) !== 'past')
+        .sort((x,y) => x.startsAt - y.startsAt).slice(0, 8);
+      body = slots.length
+        ? '<ul class="lst">' + slots.map(s => {
+            const left = slotLeft(a, s);
+            const booked = mine && mine.slotId === s.id;
+            return '<li><div class="lst-main"><div class="lst-t">' + esc(hhmm(s.startsAt)) +
+              '</div><div class="lst-s">' + esc(dayLabel(s.startsAt)) + ' · ' +
+              (left ? left + ' place(s)' : 'complet') + '</div></div>' +
+              (booked
+                ? '<span class="bdg bdg-ok">réservé</span>'
+                : left && !mine
+                  ? '<button class="btn btn-sm btn-pri" data-book="' + esc(a.id) +
+                    '" data-slot="' + esc(s.id) + '">' +
+                    (fee > 0 ? num(fee) : 'Réserver') + '</button>'
+                  : '<span class="lst-s">—</span>') +
+              '</li>';
+          }).join('') + '</ul>'
+        : '<div class="lst-s">Aucun créneau à venir.</div>';
+      if (mine && mine.slotId)
+        body += '<div class="msg msg-ok" style="margin:8px 0 0">Ta place est prise pour <strong>' +
+                esc(hhmm(mine.startsAt)) + '</strong>.</div>';
+    }
+
+    return '<div class="act" style="border-left:3px solid ' + esc(col) + '">' +
+      '<div class="act-h"><span class="act-ic">' + (a.icon ? esc(a.icon) : '🎲') + '</span>' +
+        '<div class="lst-main"><div class="lst-t">' + esc(a.name) + '</div>' +
+        '<div class="lst-s"><span class="tdot" style="background:' + esc(col) + '"></span>' +
+          esc(teamName(a.teamId)) +
+          (fee > 0 ? ' · entrée ' + num(fee) : ' · gratuit') + '</div></div></div>' +
+      '<div style="margin-top:9px">' + body + '</div>' +
+      (mode !== 'free' && fee > 0
+        ? '<p class="mini">On paie en s’inscrivant, et ça ne se rembourse pas. ' +
+          'Ne réserve que si tu comptes y aller.</p>' : '') +
+    '</div>';
+  }).join('') +
+  (ours.length ? '<hr class="hr"><p class="mini" style="margin:0">Les vôtres (' +
+    ours.map(a => esc(a.name)).join(', ') + ') se gèrent dans l’onglet Équipe.</p>' : '');
 }
+
 document.getElementById('s-tolls').addEventListener('click', async ev => {
-  const b = ev.target.closest('button[data-toll]'); if (!b) return;
-  const a = ACTS.find(x => x.id === b.dataset.toll); if (!a) return;
-  if (!confirm('Payer ' + parts(a.fee) + ' à ' + teamName(a.teamId) +
-               ' pour « ' + a.name + ' » ?')) return;
-  b.disabled = true;
-  const r = await payToll(SESS.id, a.id);
-  b.disabled = false;
-  if (r.ok) say('s-msg','Payé. Amuse-toi bien.','ok');
-  else say('s-msg', r.error, 'err');
+  const b = ev.target.closest('button'); if (!b) return;
+  const nom = () => ME.pseudo || SESS.id;
+
+  const toll = b.closest('button[data-toll]');
+  if (toll){
+    const a = ACTS.find(x => x.id === toll.dataset.toll); if (!a) return;
+    if (!confirm('Payer ' + parts(a.fee) + ' à ' + teamName(a.teamId) +
+                 ' pour « ' + a.name + ' » ?')) return;
+    b.disabled = true;
+    const r = await payToll(SESS.id, a.id);
+    b.disabled = false;
+    say('s-msg', r.ok ? 'Payé. Amuse-toi bien.' : r.error, r.ok ? 'ok' : 'err');
+    return;
+  }
+
+  const tk = b.closest('button[data-ticket]');
+  if (tk){
+    const a = ACTS.find(x => x.id === tk.dataset.ticket); if (!a) return;
+    const fee = Number(a.fee)||0;
+    if (!confirm('Prendre un ticket pour « ' + a.name + ' » ?' +
+      (fee ? '\n\n' + parts(fee) + ' sont prélevées maintenant, et ne reviendront pas.' : ''))) return;
+    b.disabled = true;
+    const r = await signUpActivity(SESS.id, nom(), a.id, null);
+    b.disabled = false;
+    say('s-msg', r.ok ? 'Tu es dans la file.' : r.error, r.ok ? 'ok' : 'err');
+    return;
+  }
+
+  const bk = b.closest('button[data-book]');
+  if (bk){
+    const a = ACTS.find(x => x.id === bk.dataset.book); if (!a) return;
+    const s = (a.slots||[]).find(x => x.id === bk.dataset.slot); if (!s) return;
+    const fee = Number(a.fee)||0;
+    if (!confirm('Réserver « ' + a.name + ' » à ' + hhmm(s.startsAt) + ' ?' +
+      (fee ? '\n\n' + parts(fee) + ' sont prélevées maintenant. Si tu ne viens pas, ' +
+             'elles restent à l’équipe.' : ''))) return;
+    b.disabled = true;
+    const r = await signUpActivity(SESS.id, nom(), a.id, s.id);
+    b.disabled = false;
+    say('s-msg', r.ok ? 'Place réservée.' : r.error, r.ok ? 'ok' : 'err');
+    return;
+  }
 });
+
 
 function renderOrders(rows){
   const ul = document.getElementById('s-orders');
@@ -876,9 +1136,15 @@ function calendarEntries(){
     // tolérance : les entrées d'avant le passage à l'horodatage
     legacy: !s.startsAt ? [s.day, s.time].filter(Boolean).join(' ') : ''
   }));
+  // mes places réservées : elles me concernent, elles sont dans mon fil
+  SIGNUPS.filter(s => s.playerId === SESS.id && s.status === 'waiting' && s.startsAt)
+    .forEach(s => out.push({
+      kind:'mine', id:s.id, title:s.activityName, teamId:s.teamId,
+      desc:'Ta place est réservée', startsAt:Number(s.startsAt), endsAt:null
+    }));
   ACTS.forEach(a => { if (a.startsAt) out.push({
     kind:'act', id:a.id, title:a.name, desc:a.desc, icon:a.icon,
-    teamId:a.teamId, fee:Number(a.fee)||0,
+    teamId:a.teamId, fee:Number(a.fee)||0, mode:a.mode||'free',
     startsAt: Number(a.startsAt), endsAt: Number(a.endsAt) || null
   }); });
   return out.sort((x,y) => (x.startsAt||Infinity) - (y.startsAt||Infinity));
@@ -908,9 +1174,10 @@ function renderProgramme(){
            (today ? '<span>aujourd’hui</span>' : '') + '</div>';
     }
     const st  = slotState(it.startsAt, it.endsAt);
-    const act = it.kind === 'act';
+    const act = it.kind === 'act' || it.kind === 'mine';
     const col = act ? teamColor(it.teamId) : '';
-    const payable = act && st !== 'past' && it.fee > 0 && it.teamId !== mt;
+    const payable = it.kind === 'act' && st !== 'past' &&
+                    (it.fee > 0) && it.teamId !== mt && (it.mode||'free') === 'free';
 
     h += '<div class="cal ' + st + (act ? ' is-act' : '') + '"' +
          (act ? ' style="--tc:' + esc(col) + '"' : '') + '>' +
@@ -919,7 +1186,10 @@ function renderProgramme(){
       '<div class="cal-b">' +
         '<div class="cal-n">' + (it.icon ? esc(it.icon) + ' ' : '') + esc(it.title||'') +
           (st === 'now' ? ' <span class="cal-live">en cours</span>' : '') + '</div>' +
-        (act ? '<div class="lst-s"><span class="tdot" style="background:' + esc(col) +
+        (it.kind === 'mine'
+          ? '<div class="lst-s"><span class="tdot" style="background:' + esc(col) +
+            '"></span>' + esc(teamName(it.teamId)) + ' · <strong>ta place</strong></div>'
+          : act ? '<div class="lst-s"><span class="tdot" style="background:' + esc(col) +
                '"></span>' + esc(teamName(it.teamId)) +
                (it.fee > 0 ? ' · entrée ' + num(it.fee) : ' · gratuit') + '</div>' : '') +
         (it.place ? '<div class="lst-s">📍 ' + esc(it.place) + '</div>' : '') +

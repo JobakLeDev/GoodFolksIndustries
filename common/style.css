@@ -546,3 +546,20 @@ body.has-tabbar .fp-fail{bottom:calc(68px + env(safe-area-inset-bottom))}
 .cal.past{opacity:.45}
 .cal.past .cal-live{display:none}
 @media (prefers-reduced-motion:reduce){ .cal-live{animation:none} }
+
+/* ---- planning et file d'une activité ---- */
+.qbox{
+  background:#fff;border:1px solid var(--b);border-radius:var(--r-sm);
+  padding:11px 12px;margin:11px 0 0;
+}
+.q-h{
+  display:flex;align-items:center;gap:10px;margin-bottom:7px;
+  font-size:12.5px;color:var(--td);
+}
+.q-h strong{color:var(--navy);font-size:.92rem}
+.q-h .lst-s{flex:1}
+.q-h .btn{margin-left:auto}
+.qbox .lst li{padding:8px 0}
+/* ceux dont c'est le tour */
+.q-up{background:#eef4f8;border-radius:var(--r-sm);padding-left:9px!important;padding-right:9px!important}
+.q-up .lst-t{color:var(--navy)}

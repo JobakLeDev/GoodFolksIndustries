@@ -71,6 +71,7 @@ const COL = {
   teams:      'teams',       // /teams/{id}           equipe : cagnotte, objectif secret, urne
   motions:    'motions',     // /motions/{auto}       depense d'equipe soumise aux membres
   activities: 'activities',  // /activities/{auto}    activite possedee par une equipe (peage)
+  signups:    'signups',     // /signups/{id}         inscription a un creneau ou a une file
   ledger:     'ledger',      // /ledger/{auto}        un mouvement de parts
   requests:   'requests',    // /requests/{auto}      demande de retrait/depot au guichet
   ballots:    'ballots',     // /ballots/{playerId}   bulletin : { alloc:{teamId:n}, total }
@@ -125,6 +126,15 @@ const VOTE_STATUS = {
 
 /** Couleurs d'equipe par defaut, prises dans la palette du logo. */
 const TEAM_COLORS = ['#2b6cb0','#cf4a7e','#cf7318','#7c4dbd','#3f8f54','#1b3a57'];
+
+/* Comment une equipe tient son activite :
+     free  — on paie, on joue, personne ne tient de liste (defaut) ;
+     slots — planning ferme : une liste de creneaux, chacun avec ses places ;
+     queue — plage ouverte : on prend un ticket et on attend son tour. */
+const ACT_MODE = { free:'free', slots:'slots', queue:'queue' };
+
+/** Cle de comptage des places pour la file (par opposition a un creneau). */
+const QUEUE_KEY = '__queue__';
 
 /** Duree d'une motion de depense : le silence vaut accord au bout de ce delai. */
 const MOTION_MS = 5 * 60 * 1000;
@@ -713,6 +723,182 @@ async function setActivitySlot(activityId, startsAt, endsAt, playerTeam){
     await ref.update({ startsAt: s, endsAt: e, slotAt: Date.now() });
     return { ok:true };
   }catch(err){ return { ok:false, error: err.message }; }
+}
+
+/* ============================================================
+   CRENEAUX, FILES ET INSCRIPTIONS
+
+   Payer, c'est s'inscrire : les parts partent a la reservation et ne
+   reviennent pas. Une place reservee est une place payee — l'equipe n'a
+   personne a courir apres, et un joueur qui ne se presente pas a quand meme
+   garni la cagnotte. Ca rend les reservations serieuses.
+
+   Les places occupees sont comptees SUR LE DOCUMENT de l'activite
+   (activity.counts), pas par une requete : une transaction Firestore ne sait
+   pas compter des documents, mais elle sait lire et incrementer un champ.
+   C'est ce qui rend la limite de capacite reellement atomique.
+   ============================================================ */
+
+/** Identifiant deterministe : un joueur ne peut pas prendre deux fois la meme place. */
+const signupId = (activityId, playerId, slotId) =>
+  activityId + '__' + playerId + '__' + (slotId || 'q');
+
+/** L'equipe proprietaire regle le mode, la capacite, l'ouverture de la file. */
+async function setActivityConfig(activityId, patch, playerTeam){
+  try{
+    const ref = db.collection(COL.activities).doc(activityId);
+    const s = await ref.get();
+    if (!s.exists) return { ok:false, error:'Activit\u00e9 introuvable.' };
+    if (s.data().teamId !== playerTeam)
+      return { ok:false, error:'Cette activit\u00e9 n\u2019est pas \u00e0 ton \u00e9quipe.' };
+    const clean = {};
+    if (patch.mode) clean.mode = patch.mode;
+    if (patch.capacity !== undefined)
+      clean.capacity = Math.max(1, Math.round(Number(patch.capacity)||1));
+    if (patch.open !== undefined) clean.open = !!patch.open;
+    await ref.update(clean);
+    return { ok:true };
+  }catch(e){ return { ok:false, error:e.message }; }
+}
+
+/** Ajoute un creneau au planning ferme d'une activite. */
+async function addActivitySlot(activityId, startsAt, places, playerTeam){
+  const t = Number(startsAt)||0;
+  if (!t) return { ok:false, error:'Indique une heure.' };
+  try{
+    const ref = db.collection(COL.activities).doc(activityId);
+    const s = await ref.get();
+    if (!s.exists) return { ok:false, error:'Activit\u00e9 introuvable.' };
+    if (s.data().teamId !== playerTeam)
+      return { ok:false, error:'Cette activit\u00e9 n\u2019est pas \u00e0 ton \u00e9quipe.' };
+    const slots = (s.data().slots || []).slice();
+    if (slots.some(x => Number(x.startsAt) === t))
+      return { ok:false, error:'Un cr\u00e9neau existe d\u00e9j\u00e0 \u00e0 cette heure.' };
+    slots.push({ id:'k'+Date.now(), startsAt:t,
+                 places: Math.max(1, Math.round(Number(places)||0)) || null });
+    slots.sort((x,y) => x.startsAt - y.startsAt);
+    await ref.update({ slots });
+    return { ok:true };
+  }catch(e){ return { ok:false, error:e.message }; }
+}
+
+/** Retire un creneau — refuse s'il a deja des inscrits, qui ont paye. */
+async function removeActivitySlot(activityId, slotId, playerTeam){
+  try{
+    const ref = db.collection(COL.activities).doc(activityId);
+    const s = await ref.get();
+    if (!s.exists) return { ok:false, error:'Activit\u00e9 introuvable.' };
+    const d = s.data();
+    if (d.teamId !== playerTeam)
+      return { ok:false, error:'Cette activit\u00e9 n\u2019est pas \u00e0 ton \u00e9quipe.' };
+    if (Number((d.counts||{})[slotId]) > 0)
+      return { ok:false, error:'Des joueurs ont pay\u00e9 pour ce cr\u00e9neau. Tiens-le, ou rembourse-les en jetons.' };
+    await ref.update({ slots: (d.slots||[]).filter(x => x.id !== slotId) });
+    return { ok:true };
+  }catch(e){ return { ok:false, error:e.message }; }
+}
+
+/**
+ * S'inscrire : la place est prise ET payee dans la meme transaction.
+ * @param {string|null} slotId  un creneau, ou null pour la file d'attente
+ */
+async function signUpActivity(playerId, playerName, activityId, slotId){
+  const aRef = db.collection(COL.activities).doc(activityId);
+  const pRef = db.collection(COL.players).doc(playerId);
+  const sRef = db.collection(COL.signups).doc(signupId(activityId, playerId, slotId));
+  try{
+    await db.runTransaction(async tx => {
+      const [as_, ps, ss] = await Promise.all([tx.get(aRef), tx.get(pRef), tx.get(sRef)]);
+      if (!as_.exists) throw new Error('Activit\u00e9 introuvable.');
+      if (!ps.exists)  throw new Error('Compte introuvable.');
+      const a = as_.data();
+      if (ps.data().team === a.teamId) throw new Error('C\u2019est l\u2019activit\u00e9 de ton \u00e9quipe.');
+      if (ss.exists && ss.data().status === 'waiting')
+        throw new Error(slotId ? 'Tu as d\u00e9j\u00e0 r\u00e9serv\u00e9 ce cr\u00e9neau.'
+                               : 'Tu es d\u00e9j\u00e0 dans la file.');
+
+      const mode = a.mode || ACT_MODE.free;
+      const cap  = Math.max(1, Math.round(Number(a.capacity)||1));
+      const counts = Object.assign({}, a.counts || {});
+      let key, startsAt = null;
+
+      if (slotId){
+        if (mode !== ACT_MODE.slots) throw new Error('Cette activit\u00e9 n\u2019a pas de planning.');
+        const slot = (a.slots||[]).find(x => x.id === slotId);
+        if (!slot) throw new Error('Cr\u00e9neau introuvable.');
+        const places = Math.max(1, Math.round(Number(slot.places) || cap));
+        if ((Number(counts[slotId])||0) >= places) throw new Error('Ce cr\u00e9neau est complet.');
+        key = slotId; startsAt = Number(slot.startsAt)||null;
+      } else {
+        if (mode !== ACT_MODE.queue) throw new Error('Cette activit\u00e9 n\u2019a pas de file.');
+        if (a.open === false) throw new Error('La file est ferm\u00e9e pour le moment.');
+        key = QUEUE_KEY;
+      }
+
+      const fee = Math.max(0, Math.round(Number(a.fee)||0));
+      const bal = Number(ps.data().shares)||0;
+      if (fee > bal) throw new Error('Tu n\u2019as que ' + bal + ' part(s) en banque.');
+
+      counts[key] = (Number(counts[key])||0) + 1;
+      tx.update(aRef, { counts,
+        revenue: (Number(a.revenue)||0) + fee,
+        plays:   (Number(a.plays)||0) + 1 });
+
+      if (fee > 0){
+        const tRef = db.collection(COL.teams).doc(a.teamId);
+        const ts = await tx.get(tRef);
+        if (!ts.exists) throw new Error('\u00c9quipe propri\u00e9taire introuvable.');
+        tx.update(pRef, { shares: bal - fee });
+        tx.update(tRef, { pot: (Number(ts.data().pot)||0) + fee });
+        ledgerEntry(tx, {
+          type: MV.toll, shares: fee,
+          from: playerId, fromName: playerName || playerId,
+          to: potParty(a.teamId), toName: 'Cagnotte ' + (ts.data().name || a.teamId),
+          label: (slotId ? 'R\u00e9servation' : 'Ticket') + ' \u2014 ' + (a.name || 'activit\u00e9')
+        });
+      }
+
+      tx.set(sRef, {
+        activityId, activityName: a.name || '', teamId: a.teamId,
+        playerId, playerName: playerName || playerId,
+        slotId: slotId || null, startsAt, fee,
+        status: 'waiting', ts: Date.now()
+      });
+    });
+    return { ok:true };
+  }catch(e){ return { ok:false, error: e.message || 'Inscription refus\u00e9e.' }; }
+}
+
+/**
+ * L'equipe fait avancer sa file : 'done' (pass\u00e9), 'noshow' (absent),
+ * 'cancelled' (retir\u00e9 — la place se lib\u00e8re, les parts restent acquises).
+ */
+async function setSignupStatus(id, status, byTeam){
+  if (!['done','noshow','cancelled'].includes(status))
+    return { ok:false, error:'Statut inconnu.' };
+  const sRef = db.collection(COL.signups).doc(id);
+  try{
+    await db.runTransaction(async tx => {
+      const ss = await tx.get(sRef);
+      if (!ss.exists) throw new Error('Inscription introuvable.');
+      const s = ss.data();
+      if (byTeam && s.teamId !== byTeam) throw new Error('Ce n\u2019est pas ton activit\u00e9.');
+      if (s.status !== 'waiting') throw new Error('D\u00e9j\u00e0 trait\u00e9e.');
+      tx.update(sRef, { status, closedAt: Date.now() });
+      // retirer quelqu'un libere sa place ; passe ou absent la consomme
+      if (status === 'cancelled'){
+        const aRef = db.collection(COL.activities).doc(s.activityId);
+        const as_ = await tx.get(aRef);
+        if (as_.exists){
+          const counts = Object.assign({}, as_.data().counts || {});
+          const key = s.slotId || QUEUE_KEY;
+          counts[key] = Math.max(0, (Number(counts[key])||0) - 1);
+          tx.update(aRef, { counts });
+        }
+      }
+    });
+    return { ok:true };
+  }catch(e){ return { ok:false, error: e.message }; }
 }
 
 /** Paiement d'un peage : les parts tombent dans la cagnotte proprietaire. */

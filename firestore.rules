@@ -75,6 +75,11 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    // Inscriptions : une place sur un créneau, ou un ticket dans une file.
+    match /signups/{signupId} {
+      allow read, write: if true;
+    }
+
     // Programme du week-end : /schedule/data = { items: [...] }
     match /schedule/{docId} {
       allow read, write: if true;
