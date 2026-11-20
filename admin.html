@@ -515,7 +515,9 @@ document.getElementById('g-form').addEventListener('submit', ev => {
     unlock();
   } else say('g-msg','Code incorrect.','err');
 });
-try{ if (sessionStorage.getItem(GATE_KEY) === '1') unlock(); }catch(e){}
+/* Le déverrouillage automatique (session déjà ouverte) est fait en fin de
+   script : appelé ici, boot() lisait des variables pas encore déclarées
+   (`let booted`…) et la console restait vide au rechargement. */
 function unlock(){
   document.getElementById('gate').style.display = 'none';
   document.getElementById('console').style.display = '';
@@ -1990,6 +1992,12 @@ document.getElementById('c-go').addEventListener('click', async () => {
     say('cfg-msg','Enregistré. Les joueurs le reçoivent au prochain chargement.','ok');
   }catch(e){ say('cfg-msg', e.message, 'err'); }
 });
+
+/* Session déjà déverrouillée (rechargement de la page) : on démarre
+   seulement maintenant, quand toutes les déclarations du script existent. */
+let gateRemembered = false;
+try{ gateRemembered = sessionStorage.getItem(GATE_KEY) === '1'; }catch(e){}
+if (gateRemembered) unlock();
 </script>
 </body>
 </html>
