@@ -233,9 +233,20 @@ les réponses.
 **Prix.** Menu (Vegan / Végétarien / Viande) et boissons (Sans alcool /
 Bière & vin / Bière, vin & alcool fort) sont choisis séparément :
 `prix = prix du menu + supplément boissons`. Défauts 40 / 45 / 50 € et
-+0 / +0 / +10 €, ce qui redonne les anciens packs du classeur. Tout est
-réglable dans l'onglet (doc `/config/inscription`) ; les **identifiants** des
-menus et boissons restent fixes (règles Firestore et export s'y appuient).
+−5 / +0 / +10 € : les softs seuls coûtent moins cher (un supplément négatif
+est une réduction ; la console refuse une combinaison sous 0 €). Bière & vin
+et alcool fort redonnent les anciens packs du classeur. Tout est réglable dans
+l'onglet (doc `/config/inscription`) ; les **identifiants** des menus et
+boissons restent fixes (règles Firestore et export s'y appuient).
+
+**Champs libres.** En plus des allergies : « Tes attentes pour ce week-end »
+(`expectations`) et, sous les boissons, « Ma préférence à moi » (`drinkPref`),
+ce que chacun aime boire précisément, pour les courses. Le pseudo est présenté
+comme l'identifiant de connexion au jeu (sans pseudo : « Prénom Nom »).
+
+**Présence.** Une ligne par jour (`DAYS` dans `common/inscription.js`) : ses
+repas puis sa nuit, tout coché par défaut. Sur téléphone, les cases tiennent
+sur une ligne et une case décochée est barrée.
 
 **Repas.** Base vegan commune, protéines animales servies à part. Le sandwich
 du samedi midi est filtré par le menu, selon l'ordre Vegan < Végétarien <
@@ -251,7 +262,8 @@ des sandwiches dans les réglages, un par ligne : `Nom;régime;description`.
 
 **Export vers le classeur** `Goodfolks_Orga_WE.xlsx`, onglet Participants :
 CSV UTF-8 avec BOM, séparateur `;`, colonnes **A → AC** dans l'ordre du
-classeur, puis **AD** Boissons et **AE** Inscrit le. Les colonnes **S, U et
+classeur, puis **AD** Boissons, **AE** Inscrit le, **AF** Préférence boissons
+et **AG** Attentes. Les colonnes **S, U et
 V → AC** sont laissées vides (formules et saisies du classeur). Les
 inscriptions annulées sont exclues.
 
@@ -492,6 +504,7 @@ Pures (ni Firestore ni DOM), vérifiables avec `node -e "const I = require('./co
                        registryTop, mapCenter:[lat,lng], mapZoom, rules }
 
 /inscriptions/{auto} { firstName, lastName, pseudo, phone, email, notes,
+                       expectations, drinkPref,
                        menu:'vegan'|'vegetarien'|'viande',
                        drinks:'sans'|'biere_vin'|'fort',
                        meals:{friDinner,satBreakfast,satLunch,satDinner,sunBrunch: bool},

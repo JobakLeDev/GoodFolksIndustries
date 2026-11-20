@@ -481,9 +481,9 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="common/config.js?v=ab4013ff"></script>
+<script src="common/config.js?v=4fd517c8"></script>
 <script src="common/app.js?v=a74c2736"></script>
-<script src="common/inscription.js?v=978d98b2"></script>
+<script src="common/inscription.js?v=fd2eaf3a"></script>
 <script>
 /* ============================================================
    admin.html — console orga.
@@ -1791,6 +1791,8 @@ function renderInscriptions(){
           ? '<div class="lst-s" title="Prix avec les réglages actuels">actuel ' + esc(euros(priceNow)) + '</div>' : '') +
       '</div></div>' +
       (i.notes ? '<p class="mini" style="margin:0 0 8px;white-space:pre-wrap;color:var(--td)">&#9888; ' + esc(i.notes) + '</p>' : '') +
+      (i.drinkPref ? '<p class="mini" style="margin:0 0 8px;white-space:pre-wrap">&#127867; ' + esc(i.drinkPref) + '</p>' : '') +
+      (i.expectations ? '<p class="mini" style="margin:0 0 8px;white-space:pre-wrap">&#128172; <i>' + esc(i.expectations) + '</i></p>' : '') +
       '<p class="mini" style="margin:0 0 8px">' +
         (missed.length ? 'Absent&nbsp;: ' + esc(missed.join(', ')) : 'Présent à tout') + '</p>' +
       '<div class="row" style="align-items:flex-end;margin:0 0 8px">' +
@@ -1914,8 +1916,10 @@ function fillInsCfg(){
         '<input class="f-lb" maxlength="60" value="' + esc(o.label || '') + '"></div>' +
       '<div class="field" style="flex:2 1 220px"><label>Description</label>' +
         '<input class="f-desc" maxlength="200" value="' + esc(o.desc || '') + '"></div>' +
-      '<div class="field" style="flex:0 0 100px"><label>' + (priceKey === 'price' ? 'Prix' : 'Supplément') + '</label>' +
-        '<input class="f-price" type="number" min="0" step="1" value="' + esc(Number(o[priceKey])||0) + '"></div>' +
+      '<div class="field" style="flex:0 0 120px"><label>' +
+          (priceKey === 'price' ? 'Prix' : 'Supplément <span class="mini">(− = réduction)</span>') + '</label>' +
+        '<input class="f-price" type="number"' + (priceKey === 'price' ? ' min="0"' : '') +
+          ' step="1" value="' + esc(Number(o[priceKey])||0) + '"></div>' +
     '</div>';
   document.getElementById('ic-menus').innerHTML  = c.menus.map(m => line('menu', m, 'price')).join('');
   document.getElementById('ic-drinks').innerHTML = c.drinks.map(d => line('drink', d, 'extra')).join('');
@@ -1929,7 +1933,9 @@ document.getElementById('ic-go').addEventListener('click', async () => {
     const o = { id: r.dataset[kind],
       label: r.querySelector('.f-lb').value.trim(),
       desc:  r.querySelector('.f-desc').value.trim() };
-    o[priceKey] = Math.max(0, Number(r.querySelector('.f-price').value) || 0);
+    // un prix de menu est positif ; un supplément de boissons peut être négatif (réduction)
+    const v = Math.round(Number(r.querySelector('.f-price').value) || 0);
+    o[priceKey] = priceKey === 'price' ? Math.max(0, v) : v;
     if (!o.label) throw new Error('Libellé vide pour « ' + o.id + ' ».');
     return o;
   });
@@ -1951,6 +1957,8 @@ document.getElementById('ic-go').addEventListener('click', async () => {
     });
     const maxPrice = Math.max(...menus.map(m => m.price)) + Math.max(...drinks.map(d => d.extra));
     if (maxPrice > 1000) throw new Error('Prix total au-delà de 1000 € : les règles Firestore le refuseraient.');
+    const minPrice = Math.min(...menus.map(m => m.price)) + Math.min(...drinks.map(d => d.extra));
+    if (minPrice < 0) throw new Error('Une combinaison menu + boissons tombe sous 0 € : réduis la réduction.');
     await db.collection(COL.config).doc('inscription').set({
       open: document.getElementById('ic-open').checked,
       intro: document.getElementById('ic-intro').value.trim(),

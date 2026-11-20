@@ -72,13 +72,16 @@ service cloud.firestore {
     // Les longueurs maximales sont celles de INSCRIPTION_MAX (common/inscription.js).
     function validInscription(d) {
       return d.keys().hasOnly(['firstName', 'lastName', 'pseudo', 'phone', 'email', 'notes',
+                               'expectations', 'drinkPref',
                                'menu', 'drinks', 'meals', 'nights', 'sandwich', 'sandwichName',
                                'price', 'status', 'createdAt']) &&
         d.keys().hasAll(['firstName', 'lastName', 'pseudo', 'phone', 'email', 'notes',
+                         'expectations', 'drinkPref',
                          'menu', 'drinks', 'meals', 'nights', 'sandwich', 'sandwichName',
                          'price', 'status', 'createdAt']) &&
         str(d.firstName, 1, 60) && str(d.lastName, 1, 60) && str(d.pseudo, 0, 40) &&
         str(d.phone, 0, 30) && str(d.email, 0, 120) && str(d.notes, 0, 1000) &&
+        str(d.expectations, 0, 1000) && str(d.drinkPref, 0, 200) &&
         (d.email == '' || d.email.matches('[^@ ]+@[^@ ]+')) &&
         d.menu in ['vegan', 'vegetarien', 'viande'] &&
         d.drinks in ['sans', 'biere_vin', 'fort'] &&

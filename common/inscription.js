@@ -37,24 +37,33 @@ const INSCRIPTION_STATUS = ['Intéressé', 'Inscrit', 'Confirmé', 'Annulé'];
 const STATUS_NEW       = 'Inscrit';   // le seul statut qu'un participant peut ecrire
 const STATUS_CANCELLED = 'Annulé';    // exclu de l'export et de la creation des joueurs
 
-/* Repas et nuits : fixes, car ce sont des colonnes du classeur. */
+/* Repas et nuits : fixes, car ce sont des colonnes du classeur.
+   label = libelle complet (console, classeur) ; short = libelle dans la
+   ligne de son jour, sur le formulaire. */
 const MEALS = [
-  { id: 'friDinner',    label: 'Ven dîner' },
-  { id: 'satBreakfast', label: 'Sam petit-déj' },
-  { id: 'satLunch',     label: 'Sam déjeuner' },   // le repas du sandwich
-  { id: 'satDinner',    label: 'Sam dîner' },
-  { id: 'sunBrunch',    label: 'Dim brunch' }
+  { id: 'friDinner',    label: 'Ven dîner',     short: 'Dîner' },
+  { id: 'satBreakfast', label: 'Sam petit-déj', short: 'Petit-déj' },
+  { id: 'satLunch',     label: 'Sam déjeuner',  short: 'Déjeuner' },   // le repas du sandwich
+  { id: 'satDinner',    label: 'Sam dîner',     short: 'Dîner' },
+  { id: 'sunBrunch',    label: 'Dim brunch',    short: 'Brunch' }
 ];
 const NIGHTS = [
-  { id: 'fri', label: 'Nuit ven' },
-  { id: 'sat', label: 'Nuit sam' }
+  { id: 'fri', label: 'Nuit ven', short: 'Nuit' },
+  { id: 'sat', label: 'Nuit sam', short: 'Nuit' }
+];
+/* Le formulaire range repas et nuits par jour, une ligne chacun. */
+const DAYS = [
+  { label: 'Vendredi', meals: ['friDinner'],                            night: 'fri' },
+  { label: 'Samedi',   meals: ['satBreakfast', 'satLunch', 'satDinner'], night: 'sat' },
+  { label: 'Dimanche', meals: ['sunBrunch'],                            night: null }
 ];
 /** Le repas ou l'on sert le sandwich. */
 const SANDWICH_MEAL = 'satLunch';
 
 /* Longueurs maximales : les memes que dans firestore.rules. */
 const INSCRIPTION_MAX = {
-  firstName: 60, lastName: 60, pseudo: 40, phone: 30, email: 120, notes: 1000
+  firstName: 60, lastName: 60, pseudo: 40, phone: 30, email: 120, notes: 1000,
+  drinkPref: 200, expectations: 1000
 };
 
 /* ---------- Reglages ---------- */
@@ -117,6 +126,14 @@ function euros(n){
   return (Number.isInteger(v) ? String(v) : v.toFixed(2).replace('.', ',')) + ' €';
 }
 
+/** Un supplement de boissons : « + 10 € », « − 5 € » (reduction) ou « inclus ». */
+function extraLabel(n){
+  const v = Number(n) || 0;
+  if (v > 0) return '+ ' + euros(v);
+  if (v < 0) return '− ' + euros(-v);
+  return 'inclus';
+}
+
 /** « Viande · alcool fort » : la combinaison, telle que le classeur l'attend. */
 function packLabel(menuId, drinksId){
   return (SHEET_MENU[menuId] || menuId || '?') + ' · ' +
@@ -157,8 +174,8 @@ function frDateTime(ms){
 
 /* ============================================================
    EXPORT VERS LE CLASSEUR
-   Colonnes dans l'ordre EXACT de l'onglet Participants (A -> AC), puis deux
-   colonnes en plus (AD, AE). Les colonnes V -> AC sont des formules ou des
+   Colonnes dans l'ordre EXACT de l'onglet Participants (A -> AC), puis quatre
+   colonnes en plus (AD -> AG). Les colonnes V -> AC sont des formules ou des
    saisies du classeur : on les laisse VIDES pour ne rien ecraser au collage.
    ============================================================ */
 const CSV_HEADERS = [
@@ -169,7 +186,7 @@ const CSV_HEADERS = [
   'Couchage', 'Prix pack (€)', 'Ajustement',                                // S-U
   'Total dû', 'Payé', 'Reste', 'Statut paiement', 'Moyen paiement',         // V-Z
   'Date paiement', 'Encaissé par', 'Actif',                                 // AA-AC
-  'Boissons', 'Inscrit le'                                                  // AD-AE (en plus)
+  'Boissons', 'Inscrit le', 'Préférence boissons', 'Attentes'               // AD-AG (en plus)
 ];
 
 /** Excel francais : point-virgule, guillemets si le champ en contient un, ou un saut de ligne. */
@@ -218,7 +235,9 @@ function inscriptionRow(cfg, ins){
     '',                                   // U Ajustement
     '', '', '', '', '', '', '', '',       // V -> AC : formules et saisies du classeur
     drinks ? drinks.label : (ins.drinks || ''),
-    frDateTime(tsMs(ins.createdAt))
+    frDateTime(tsMs(ins.createdAt)),
+    csvText(ins.drinkPref),
+    csvText(ins.expectations)
   ];
 }
 
@@ -241,8 +260,8 @@ function inscriptionsCsv(list, cfg){
 if (typeof module !== 'undefined' && module.exports){
   module.exports = {
     DIET_RANK, SHEET_MENU, SHEET_DRINKS_SHORT, STRONG_DRINKS, INSCRIPTION_STATUS,
-    STATUS_NEW, STATUS_CANCELLED, MEALS, NIGHTS, SANDWICH_MEAL, INSCRIPTION_MAX, CSV_HEADERS,
-    inscriptionConfig, inscriptionPrice, sandwichesFor, sandwichAllowed, euros, packLabel,
+    STATUS_NEW, STATUS_CANCELLED, MEALS, NIGHTS, DAYS, SANDWICH_MEAL, INSCRIPTION_MAX, CSV_HEADERS,
+    inscriptionConfig, inscriptionPrice, sandwichesFor, sandwichAllowed, euros, extraLabel, packLabel,
     inscriptionPlayerName, inscriptionSandwichName, tsMs, frDateTime,
     csvCell, csvText, inscriptionRow, inscriptionsCsv
   };

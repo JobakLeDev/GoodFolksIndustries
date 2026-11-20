@@ -41,6 +41,22 @@
     font-weight:700;margin:2px 0 8px}
   .sub + .ticks{margin-bottom:14px}
 
+  /* Présence : une ligne par jour, le nom du jour puis ses cases */
+  .day{display:grid;grid-template-columns:84px 1fr;gap:8px;align-items:center;margin:0 0 8px}
+  .day-n{font-family:var(--fd);font-weight:600;color:var(--navy);font-size:.95rem}
+  .day .ticks{display:flex;gap:6px}
+  .day .tick{flex:1 1 0;min-width:0;max-width:160px}
+  .tick.night{border-style:dashed}
+  @media (max-width:420px){
+    /* Petit écran : le jour au-dessus, ses cases sur UNE ligne. La case à
+       cocher reste dans la page (clavier, lecteur d'écran) mais ne prend plus
+       de place : une pastille décochée est grisée et barrée. */
+    .day{grid-template-columns:1fr;gap:4px;margin-bottom:12px}
+    .day .tick{justify-content:center;padding:10px 4px;font-size:.84rem;max-width:none;position:relative}
+    .day .tick input{position:absolute;opacity:0;width:1px;height:1px}
+    .day .tick:has(input:not(:checked)){color:var(--tf);text-decoration:line-through;background:#f7f9fa}
+  }
+
   .total{font-family:var(--fd);font-size:1.6rem!important;color:var(--navy)}
   footer{text-align:center;padding:22px 16px 34px;color:var(--tf);font-size:11.5px}
 </style>
@@ -79,8 +95,10 @@
           <div class="field"><label for="f-last">Nom <span class="req">*</span></label>
             <input id="f-last" autocomplete="family-name" autocapitalize="words" maxlength="60" required></div>
         </div>
-        <div class="field"><label for="f-pseudo">Pseudo (facultatif) &mdash; ton nom dans le jeu</label>
-          <input id="f-pseudo" autocomplete="nickname" maxlength="40"></div>
+        <div class="field"><label for="f-pseudo">Pseudo (facultatif) &mdash; ton identifiant de connexion</label>
+          <input id="f-pseudo" autocomplete="nickname" maxlength="40">
+          <p class="mini" style="margin:4px 0 0">C&rsquo;est le nom que tu taperas pour te connecter au jeu.
+            Sans pseudo, ce sera &laquo;&nbsp;Pr&eacute;nom Nom&nbsp;&raquo;.</p></div>
         <div class="row">
           <div class="field"><label for="f-phone">T&eacute;l&eacute;phone</label>
             <input id="f-phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="30"></div>
@@ -90,6 +108,9 @@
         <div class="field"><label for="f-notes">Allergies / remarques</label>
           <textarea id="f-notes" maxlength="1000" style="min-height:70px"
             placeholder="Allergies, intol&eacute;rances, contraintes&hellip;"></textarea></div>
+        <div class="field"><label for="f-expect">Tes attentes pour ce week-end</label>
+          <textarea id="f-expect" maxlength="1000" style="min-height:70px"
+            placeholder="Ce que tu esp&egrave;res y trouver, ce qui te ferait plaisir&hellip;"></textarea></div>
       </div>
     </div>
 
@@ -103,16 +124,19 @@
 
     <div class="pnl">
       <div class="pnl-h"><span class="ic">&#127867;</span> Boissons</div>
-      <div class="pnl-b"><div id="drinks"></div></div>
+      <div class="pnl-b">
+        <div id="drinks"></div>
+        <div class="field" style="margin:12px 0 0"><label for="f-drinkpref">Ma pr&eacute;f&eacute;rence &agrave; moi</label>
+          <input id="f-drinkpref" maxlength="200"
+            placeholder="Ex. : IPA, ros&eacute;, rhum, kombucha&hellip;"></div>
+          <p class="mini" style="margin:4px 0 0">Ce que tu aimes boire pr&eacute;cis&eacute;ment&nbsp;: l&rsquo;orga en tient compte pour les courses.</p>
+      </div>
     </div>
 
     <div class="pnl">
       <div class="pnl-h"><span class="ic">&#128197;</span> Pr&eacute;sence</div>
       <div class="pnl-b">
-        <div class="sub">Repas</div>
-        <div class="ticks" id="meals"></div>
-        <div class="sub">Nuits</div>
-        <div class="ticks" id="nights"></div>
+        <div id="days"></div>
         <p class="mini">D&eacute;coche ce que tu rates. &Ccedil;a aide l&rsquo;orga &agrave; pr&eacute;voir les quantit&eacute;s ;
           le prix ne change pas.</p>
       </div>
@@ -155,9 +179,9 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="common/config.js?v=ab4013ff"></script>
+<script src="common/config.js?v=4fd517c8"></script>
 <script src="common/app.js?v=a74c2736"></script>
-<script src="common/inscription.js?v=978d98b2"></script>
+<script src="common/inscription.js?v=fd2eaf3a"></script>
 <script>
 /* ============================================================
    inscription.html — formulaire public, sans connexion.
@@ -185,10 +209,20 @@ function optCard(group, value, title, desc, price, checked){
   '</label>';
 }
 
-/** Une case à cocher de présence, cochée par défaut. */
+/** Une case à cocher de présence, cochée par défaut (libellé court : le jour est en tête de ligne). */
 const tickBox = (group, item) =>
-  '<label class="tick"><input type="checkbox" data-' + group + '="' + esc(item.id) + '" checked>' +
-  esc(item.label) + '</label>';
+  '<label class="tick' + (group === 'night' ? ' night' : '') + '">' +
+  '<input type="checkbox" data-' + group + '="' + esc(item.id) + '" checked>' +
+  esc(item.short || item.label) + '</label>';
+
+/** Présence : une ligne par jour, ses repas puis sa nuit. */
+function renderDays(){
+  $('days').innerHTML = DAYS.map(day =>
+    '<div class="day"><div class="day-n">' + esc(day.label) + '</div><div class="ticks">' +
+      day.meals.map(id => tickBox('meal', MEALS.find(m => m.id === id))).join('') +
+      (day.night ? tickBox('night', NIGHTS.find(n => n.id === day.night)) : '') +
+    '</div></div>').join('');
+}
 
 function renderMenus(){
   $('menu-note').textContent = CFG.menuNote || '';
@@ -198,8 +232,7 @@ function renderMenus(){
 
 function renderDrinks(){
   $('drinks').innerHTML = CFG.drinks.map(d =>
-    optCard('drinks', d.id, d.label, d.desc,
-      Number(d.extra) ? '+ ' + euros(d.extra) : 'inclus', pickState.drinks === d.id)).join('');
+    optCard('drinks', d.id, d.label, d.desc, extraLabel(d.extra), pickState.drinks === d.id)).join('');
 }
 
 /** Le panneau sandwich : visible si présent samedi midi, filtré par le menu. */
@@ -235,7 +268,7 @@ function recapHtml(){
   const row = (k, v, cls) => '<div class="as-row"><span>' + k + '</span><b class="' + (cls||'') + '">' + v + '</b></div>';
   const soft = '<span style="color:var(--tf);font-weight:500;font-family:var(--ff);font-size:.9rem">à choisir</span>';
   return row('Menu', m ? esc(m.label) + ' <span class="lst-s">' + esc(euros(m.price)) + '</span>' : soft) +
-    row('Boissons', d ? esc(d.label) + (Number(d.extra) ? ' <span class="lst-s">+ ' + esc(euros(d.extra)) + '</span>' : '') : soft) +
+    row('Boissons', d ? esc(d.label) + (Number(d.extra) ? ' <span class="lst-s">' + esc(extraLabel(d.extra)) + '</span>' : '') : soft) +
     row('Sandwich du samedi', atLunch ? (s ? esc(s.name) : soft) : '<span class="lst-s">absent samedi midi</span>') +
     '<div class="as-note" style="display:flex;justify-content:space-between;align-items:baseline">' +
       '<span>Prix total</span><b class="total">' + (price === null ? '&mdash;' : esc(euros(price))) + '</b></div>';
@@ -305,6 +338,8 @@ function collect(){
     phone:     tidyPhone(val('f-phone')).slice(0, INSCRIPTION_MAX.phone),
     email:     val('f-email').slice(0, INSCRIPTION_MAX.email),
     notes:     $('f-notes').value.trim().slice(0, INSCRIPTION_MAX.notes),
+    expectations: $('f-expect').value.trim().slice(0, INSCRIPTION_MAX.expectations),
+    drinkPref: val('f-drinkpref').slice(0, INSCRIPTION_MAX.drinkPref),
     menu:      pickState.menu,
     drinks:    pickState.drinks,
     meals, nights,
@@ -373,8 +408,7 @@ $('form').addEventListener('submit', async ev => {
   $('h-intro').textContent = CFG.intro || '';
   if (!CFG.open){ $('closed').hidden = false; return; }
 
-  $('meals').innerHTML  = MEALS.map(m => tickBox('meal', m)).join('');
-  $('nights').innerHTML = NIGHTS.map(n => tickBox('night', n)).join('');
+  renderDays();
   renderMenus(); renderDrinks(); renderSandwiches(); renderRecap();
   $('form').hidden = false;
 })();

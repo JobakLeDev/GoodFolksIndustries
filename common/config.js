@@ -62,8 +62,9 @@ window.GPC_INSCRIPTION_DEFAULTS = {
   ],
 
   drinks: [
-    { id: "sans",      label: "Sans alcool",              extra: 0,
-      desc: "Softs, jus, sirops." },
+    /* extra négatif = réduction : les softs seuls coûtent moins cher */
+    { id: "sans",      label: "Sans alcool",              extra: -5,
+      desc: "Softs uniquement : jus, sirops, sodas. Moins cher." },
     { id: "biere_vin", label: "Bière & vin",              extra: 0,
       desc: "Bière et vin à volonté." },
     { id: "fort",      label: "Bière, vin & alcool fort", extra: 10,
@@ -77,7 +78,7 @@ window.GPC_INSCRIPTION_DEFAULTS = {
     { id: "mozza",         name: "Mozza tomate pesto",        diet: "vegetarien",
       desc: "Mozzarella, tomate, pesto, roquette" },
     { id: "jambon-beurre", name: "Jambon beurre",             diet: "viande",
-      desc: "Jambon, beurre, cornichons" },
+      desc: "Jambon, beurre, salade, cornichons" },
     { id: "poulet-curry",  name: "Poulet curry",              diet: "viande",
       desc: "Poulet, sauce curry, crudités" }
   ]
