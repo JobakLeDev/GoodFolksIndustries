@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1b3a57">
+<title>Inscription au week-end — Goodfolks Industries</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap">
+<link rel="icon" href="img/favicon.png?v=8d9ee157" type="image/png">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png?v=daf01749">
+<link rel="stylesheet" href="common/style.css?v=a42b8bc3">
+<style>
+  [hidden]{display:none!important}
+  .hero{text-align:center;padding:30px 16px 20px}
+  .hero .logo-full{width:min(320px,80%);margin-bottom:18px}
+  .hero h1{font-size:1.6rem;margin-bottom:6px;color:var(--navy)}
+  .hero p{color:var(--td);max-width:470px;margin:0 auto;white-space:pre-wrap}
+  .req{color:var(--red)}
+
+  /* Un choix = une carte cliquable (même allure que les options du vote).
+     Le vrai bouton radio reste dans la page, invisible mais accessible au clavier. */
+  .opt{position:relative}
+  .opt input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+  .opt:focus-within{border-color:var(--teal);box-shadow:0 0 0 3px rgba(56,117,137,.18)}
+  .opt .opt-b{flex:1;min-width:0}
+  .opt .opt-p{flex:none;font-family:var(--fd);font-weight:600;color:var(--navy);
+    font-variant-numeric:tabular-nums;white-space:nowrap}
+  .opt.on .opt-p{color:var(--teal)}
+
+  /* Cases de présence : des pastilles qu'on coche */
+  .ticks{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+  .tick{display:flex;align-items:center;gap:9px;margin:0;padding:11px 12px;cursor:pointer;
+    background:#fff;border:1.5px solid var(--b2);border-radius:var(--r-sm);
+    font-size:.92rem;font-weight:600;color:var(--t)}
+  .tick input{width:18px;height:18px;margin:0;flex:none;accent-color:var(--teal)}
+  .tick:has(input:checked){border-color:var(--teal);background:#f0f6f8}
+  .tick:focus-within{box-shadow:0 0 0 3px rgba(56,117,137,.18)}
+  .sub{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--td);
+    font-weight:700;margin:2px 0 8px}
+  .sub + .ticks{margin-bottom:14px}
+
+  .total{font-family:var(--fd);font-size:1.6rem!important;color:var(--navy)}
+  footer{text-align:center;padding:22px 16px 34px;color:var(--tf);font-size:11.5px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="hero">
+    <img class="logo-full" src="img/goodfolks-logo.png?v=d0d5c26a" width="760" height="269"
+         alt="Goodfolks Industries &mdash; so much better together">
+    <h1>Inscription au week-end</h1>
+    <p id="h-intro"></p>
+  </div>
+
+  <div id="loading" class="empty">Chargement&hellip;</div>
+
+  <!-- ---------- Inscriptions fermées ---------- -->
+  <div class="pnl" id="closed" hidden>
+    <div class="pnl-h"><span class="ic">&#128274;</span> Inscriptions ferm&eacute;es</div>
+    <div class="pnl-b">
+      <p style="margin:0;color:var(--td)">Les inscriptions au week-end sont ferm&eacute;es pour le moment.
+        Pour toute question, contacte l&rsquo;orga.</p>
+    </div>
+  </div>
+
+  <!-- ---------- Le formulaire ---------- -->
+  <form id="form" novalidate hidden>
+
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#128100;</span> Toi</div>
+      <div class="pnl-b">
+        <div class="row">
+          <div class="field"><label for="f-first">Pr&eacute;nom <span class="req">*</span></label>
+            <input id="f-first" autocomplete="given-name" autocapitalize="words" maxlength="60" required></div>
+          <div class="field"><label for="f-last">Nom <span class="req">*</span></label>
+            <input id="f-last" autocomplete="family-name" autocapitalize="words" maxlength="60" required></div>
+        </div>
+        <div class="field"><label for="f-pseudo">Pseudo (facultatif) &mdash; ton nom dans le jeu</label>
+          <input id="f-pseudo" autocomplete="nickname" maxlength="40"></div>
+        <div class="row">
+          <div class="field"><label for="f-phone">T&eacute;l&eacute;phone</label>
+            <input id="f-phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="30"></div>
+          <div class="field"><label for="f-email">Email</label>
+            <input id="f-email" type="email" autocomplete="email" inputmode="email" maxlength="120"></div>
+        </div>
+        <div class="field"><label for="f-notes">Allergies / remarques</label>
+          <textarea id="f-notes" maxlength="1000" style="min-height:70px"
+            placeholder="Allergies, intol&eacute;rances, contraintes&hellip;"></textarea></div>
+      </div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#127869;</span> Ton menu</div>
+      <div class="pnl-b">
+        <p class="mini" id="menu-note" style="margin:0 0 12px"></p>
+        <div id="menus"></div>
+      </div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#127867;</span> Boissons</div>
+      <div class="pnl-b"><div id="drinks"></div></div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#128197;</span> Pr&eacute;sence</div>
+      <div class="pnl-b">
+        <div class="sub">Repas</div>
+        <div class="ticks" id="meals"></div>
+        <div class="sub">Nuits</div>
+        <div class="ticks" id="nights"></div>
+        <p class="mini">D&eacute;coche ce que tu rates. &Ccedil;a aide l&rsquo;orga &agrave; pr&eacute;voir les quantit&eacute;s ;
+          le prix ne change pas.</p>
+      </div>
+    </div>
+
+    <div class="pnl" id="sandwich-pnl">
+      <div class="pnl-h"><span class="ic">&#129386;</span> Sandwich du samedi midi</div>
+      <div class="pnl-b">
+        <div id="sandwiches"></div>
+      </div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#129534;</span> R&eacute;capitulatif</div>
+      <div class="pnl-b">
+        <div class="alloc-sum" id="recap" style="margin:0 0 14px"></div>
+        <div id="msg"></div>
+        <button class="btn btn-pri btn-blk" id="go" type="submit">Envoyer mon inscription</button>
+        <p class="mini">Une fois envoy&eacute;e, ton inscription ne se modifie plus en ligne&nbsp;:
+          pour la changer, contacte l&rsquo;orga.</p>
+      </div>
+    </div>
+  </form>
+
+  <!-- ---------- Confirmation ---------- -->
+  <div class="pnl" id="done" hidden>
+    <div class="pnl-h"><span class="ic">&#9989;</span> C&rsquo;est not&eacute;&nbsp;!</div>
+    <div class="pnl-b">
+      <p style="margin:0 0 12px;color:var(--td)" id="done-hello"></p>
+      <div class="alloc-sum" id="done-recap" style="margin:0 0 12px"></div>
+      <p class="mini">Pour modifier ton inscription, contacte l&rsquo;orga.</p>
+    </div>
+  </div>
+
+  <footer>
+    Goodfolks Industries &mdash; inscription au week-end.<br>
+    <a href="index.html">Acc&egrave;s actionnaire</a>
+  </footer>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="common/config.js?v=ab4013ff"></script>
+<script src="common/app.js?v=a74c2736"></script>
+<script src="common/inscription.js?v=978d98b2"></script>
+<script>
+/* ============================================================
+   inscription.html — formulaire public, sans connexion.
+
+   Le participant ne peut QU'ÉCRIRE : les règles Firestore lui interdisent
+   de relire son inscription (elle contient téléphone et email), et
+   n'acceptent qu'un document au format exact attendu. Pas de modification
+   après envoi : il n'a pas de compte, c'est l'orga qui corrige.
+   ============================================================ */
+let CFG = inscriptionConfig(null, window.GPC_INSCRIPTION_DEFAULTS);
+
+/* Les choix en cours. */
+const pickState = { menu: null, drinks: null, sandwich: '' };
+
+const $ = id => document.getElementById(id);
+
+/** Une carte de choix (radio) : libellé, description, prix à droite. */
+function optCard(group, value, title, desc, price, checked){
+  return '<label class="vote-opt opt' + (checked ? ' on' : '') + '">' +
+    '<input type="radio" name="' + group + '" value="' + esc(value) + '"' + (checked ? ' checked' : '') + '>' +
+    '<span class="vo-k">' + (checked ? '&#10003;' : '') + '</span>' +
+    '<span class="opt-b"><span class="vo-t" style="display:block">' + esc(title) + '</span>' +
+      (desc ? '<span class="vo-d" style="display:block">' + esc(desc) + '</span>' : '') + '</span>' +
+    (price ? '<span class="opt-p">' + esc(price) + '</span>' : '') +
+  '</label>';
+}
+
+/** Une case à cocher de présence, cochée par défaut. */
+const tickBox = (group, item) =>
+  '<label class="tick"><input type="checkbox" data-' + group + '="' + esc(item.id) + '" checked>' +
+  esc(item.label) + '</label>';
+
+function renderMenus(){
+  $('menu-note').textContent = CFG.menuNote || '';
+  $('menus').innerHTML = CFG.menus.map(m =>
+    optCard('menu', m.id, m.label, m.desc, euros(m.price), pickState.menu === m.id)).join('');
+}
+
+function renderDrinks(){
+  $('drinks').innerHTML = CFG.drinks.map(d =>
+    optCard('drinks', d.id, d.label, d.desc,
+      Number(d.extra) ? '+ ' + euros(d.extra) : 'inclus', pickState.drinks === d.id)).join('');
+}
+
+/** Le panneau sandwich : visible si présent samedi midi, filtré par le menu. */
+function renderSandwiches(){
+  const atLunch = mealChecked(SANDWICH_MEAL);
+  $('sandwich-pnl').hidden = !atLunch;
+  const box = $('sandwiches');
+  if (!pickState.menu){
+    box.innerHTML = '<p class="mini" style="margin:0">Choisis d&rsquo;abord ton menu&nbsp;: ' +
+      'on ne te propose que les sandwiches qui lui correspondent.</p>';
+    return;
+  }
+  const list = sandwichesFor(CFG, pickState.menu);
+  if (!list.length){
+    box.innerHTML = '<p class="mini" style="margin:0">Aucun sandwich pr&eacute;vu pour ce menu&nbsp;: ' +
+      'contacte l&rsquo;orga.</p>';
+    return;
+  }
+  box.innerHTML = list.map(s =>
+    optCard('sandwich', s.id, s.name, s.desc, '', pickState.sandwich === s.id)).join('');
+}
+
+const mealChecked  = id => { const c = document.querySelector('[data-meal="' + id + '"]');  return !!(c && c.checked); };
+const nightChecked = id => { const c = document.querySelector('[data-night="' + id + '"]'); return !!(c && c.checked); };
+
+/** Les lignes du récapitulatif, communes au formulaire et à la confirmation. */
+function recapHtml(){
+  const m = CFG.menus.find(x => x.id === pickState.menu);
+  const d = CFG.drinks.find(x => x.id === pickState.drinks);
+  const s = CFG.sandwiches.find(x => x.id === pickState.sandwich);
+  const price = inscriptionPrice(CFG, pickState.menu, pickState.drinks);
+  const atLunch = mealChecked(SANDWICH_MEAL);
+  const row = (k, v, cls) => '<div class="as-row"><span>' + k + '</span><b class="' + (cls||'') + '">' + v + '</b></div>';
+  const soft = '<span style="color:var(--tf);font-weight:500;font-family:var(--ff);font-size:.9rem">à choisir</span>';
+  return row('Menu', m ? esc(m.label) + ' <span class="lst-s">' + esc(euros(m.price)) + '</span>' : soft) +
+    row('Boissons', d ? esc(d.label) + (Number(d.extra) ? ' <span class="lst-s">+ ' + esc(euros(d.extra)) + '</span>' : '') : soft) +
+    row('Sandwich du samedi', atLunch ? (s ? esc(s.name) : soft) : '<span class="lst-s">absent samedi midi</span>') +
+    '<div class="as-note" style="display:flex;justify-content:space-between;align-items:baseline">' +
+      '<span>Prix total</span><b class="total">' + (price === null ? '&mdash;' : esc(euros(price))) + '</b></div>';
+}
+
+function renderRecap(){ $('recap').innerHTML = recapHtml(); }
+
+/* ---------- Interactions ---------- */
+document.addEventListener('change', ev => {
+  const t = ev.target;
+  if (t.name === 'menu'){
+    pickState.menu = t.value;
+    // un sandwich devenu incompatible avec le nouveau menu est oublié
+    if (pickState.sandwich && !sandwichAllowed(CFG, pickState.menu, pickState.sandwich))
+      pickState.sandwich = '';
+    renderMenus(); renderSandwiches();
+  } else if (t.name === 'drinks'){
+    pickState.drinks = t.value; renderDrinks();
+  } else if (t.name === 'sandwich'){
+    pickState.sandwich = t.value; renderSandwiches();
+  } else if (t.dataset && t.dataset.meal === SANDWICH_MEAL){
+    renderSandwiches();
+  }
+  // le rendu reconstruit les cartes : on rend le focus au bouton choisi
+  if (t.type === 'radio'){
+    const again = document.querySelector('input[name="' + t.name + '"][value="' + CSS.escape(t.value) + '"]');
+    if (again) again.focus();
+  }
+  renderRecap();
+});
+
+/** « 0612345678 » -> « 06 12 34 56 78 » (et le classeur n'en fait pas un nombre). */
+function tidyPhone(raw){
+  const s = String(raw || '').trim();
+  const digits = s.replace(/[\s.\-]/g, '');
+  return /^0\d{9}$/.test(digits) ? digits.replace(/(\d\d)(?=\d)/g, '$1 ') : s;
+}
+
+/** Ce qui manque ou cloche, ou null si tout va bien. Les champs fautifs sont signalés. */
+function validate(v){
+  if (!v.firstName) return { msg:'Indique ton prénom.', focus:'f-first' };
+  if (!v.lastName)  return { msg:'Indique ton nom.', focus:'f-last' };
+  if (v.email && !/^[^@\s]+@[^@\s]+$/.test(v.email))
+    return { msg:'Cette adresse email n’a pas l’air valide.', focus:'f-email' };
+  if (!v.menu)   return { msg:'Choisis ton menu.', focus:'menus' };
+  if (!v.drinks) return { msg:'Choisis ton niveau de boissons.', focus:'drinks' };
+  if (v.meals[SANDWICH_MEAL]){
+    if (!v.sandwich) return { msg:'Choisis ton sandwich du samedi midi.', focus:'sandwiches' };
+    if (!sandwichAllowed(CFG, v.menu, v.sandwich))
+      return { msg:'Ce sandwich ne correspond pas à ton menu.', focus:'sandwiches' };
+  }
+  return null;
+}
+
+/** Le document envoyé : exactement les champs que les règles acceptent. */
+function collect(){
+  const val = id => $(id).value.trim();
+  const meals = {}, nights = {};
+  MEALS.forEach(m => { meals[m.id] = mealChecked(m.id); });
+  NIGHTS.forEach(n => { nights[n.id] = nightChecked(n.id); });
+  const atLunch = meals[SANDWICH_MEAL];
+  const sw = atLunch ? CFG.sandwiches.find(x => x.id === pickState.sandwich) : null;
+  return {
+    firstName: val('f-first').slice(0, INSCRIPTION_MAX.firstName),
+    lastName:  val('f-last').slice(0, INSCRIPTION_MAX.lastName),
+    pseudo:    val('f-pseudo').slice(0, INSCRIPTION_MAX.pseudo),
+    phone:     tidyPhone(val('f-phone')).slice(0, INSCRIPTION_MAX.phone),
+    email:     val('f-email').slice(0, INSCRIPTION_MAX.email),
+    notes:     $('f-notes').value.trim().slice(0, INSCRIPTION_MAX.notes),
+    menu:      pickState.menu,
+    drinks:    pickState.drinks,
+    meals, nights,
+    sandwich:     sw ? sw.id : '',
+    sandwichName: sw ? String(sw.name || '').slice(0, 80) : '',
+    price:     inscriptionPrice(CFG, pickState.menu, pickState.drinks),
+    status:    STATUS_NEW
+  };
+}
+
+$('form').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  say('msg', '');
+  const v = collect();
+  const bad = validate(v);
+  if (bad){
+    say('msg', bad.msg, 'err');
+    const f = $(bad.focus);
+    if (f){
+      f.scrollIntoView({ behavior:'smooth', block:'center' });
+      const input = f.matches('input,textarea') ? f : f.querySelector('input');
+      if (input) input.focus({ preventScroll:true });
+    }
+    return;
+  }
+
+  const btn = $('go');
+  btn.disabled = true; btn.textContent = 'Envoi…';
+  // réseau à la peine : on le dit, sans abandonner l'envoi en cours
+  const slow = setTimeout(() => say('msg',
+    'L’envoi prend du temps… vérifie ta connexion. Ne recharge pas la page.', 'err'), 12000);
+  try{
+    await db.collection('inscriptions').add(Object.assign({}, v,
+      { createdAt: firebase.firestore.FieldValue.serverTimestamp() }));
+  }catch(e){
+    clearTimeout(slow);
+    console.error('[inscription]', e);
+    const why = (e && e.code === 'permission-denied')
+      ? 'Le serveur a refusé l’inscription.'
+      : 'L’envoi a échoué.';
+    say('msg', why + ' Réessaie dans un instant ; si ça continue, contacte l’orga. ' +
+      '(détail : ' + ((e && (e.code || e.message)) || 'inconnu') + ')', 'err');
+    btn.disabled = false; btn.textContent = 'Envoyer mon inscription';
+    return;
+  }
+  clearTimeout(slow);
+
+  // Confirmation : le récapitulatif reste celui que le participant a vu.
+  $('done-recap').innerHTML = recapHtml();
+  $('done-hello').innerHTML = 'Merci <strong>' + esc(v.firstName) + '</strong>, ton inscription est enregistr&eacute;e.';
+  $('form').hidden = true;
+  $('done').hidden = false;
+  $('done').scrollIntoView({ behavior:'smooth', block:'start' });
+});
+
+/* ---------- Démarrage ---------- */
+(async function(){
+  try{
+    const s = await db.collection(COL.config).doc('inscription').get();
+    if (s.exists) CFG = inscriptionConfig(s.data(), window.GPC_INSCRIPTION_DEFAULTS);
+  }catch(e){
+    // réglages illisibles : on garde ceux de config.js plutôt que de bloquer l'inscription
+    console.warn('config/inscription indisponible', e);
+  }
+  $('loading').hidden = true;
+  $('h-intro').textContent = CFG.intro || '';
+  if (!CFG.open){ $('closed').hidden = false; return; }
+
+  $('meals').innerHTML  = MEALS.map(m => tickBox('meal', m)).join('');
+  $('nights').innerHTML = NIGHTS.map(n => tickBox('night', n)).join('');
+  renderMenus(); renderDrinks(); renderSandwiches(); renderRecap();
+  $('form').hidden = false;
+})();
+</script>
+</body>
+</html>

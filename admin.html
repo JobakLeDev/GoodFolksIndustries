@@ -50,6 +50,7 @@
     <button data-sec="guichet" class="on">&#127974; Guichet<span class="n" id="n-req" style="display:none">0</span></button>
     <button data-sec="equipes">&#129309; &Eacute;quipes<span class="n" id="n-mot" style="display:none">0</span></button>
     <button data-sec="joueurs">&#128101; Joueurs</button>
+    <button data-sec="inscriptions">&#128221; Inscriptions<span class="n" id="n-ins" style="display:none">0</span></button>
     <button data-sec="shop">&#128722; Shop</button>
     <button data-sec="commandes">&#128230; Commandes<span class="n" id="n-ord" style="display:none">0</span></button>
     <button data-sec="fil">&#128197; Fil</button>
@@ -180,6 +181,76 @@
         <span class="bdg" id="p-count">0</span>
         <button class="btn btn-sm" id="p-print">&#128424; Codes</button></div>
       <div class="pnl-b" id="p-list"><div class="empty">Chargement&hellip;</div></div>
+    </div>
+  </section>
+
+  <!-- ---------- INSCRIPTIONS ---------- -->
+  <section class="sec" id="sec-inscriptions">
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#128274;</span> Acc&egrave;s aux inscriptions</div>
+      <div class="pnl-b">
+        <div id="ins-auth"><div class="empty">Chargement&hellip;</div></div>
+        <p class="mini">Les inscriptions contiennent les vrais t&eacute;l&eacute;phones et emails des
+          participants&nbsp;: elles demandent une connexion Google en plus du code de la console.
+          Formulaire public&nbsp;: <a id="ins-link" href="inscription.html" target="_blank" rel="noopener">inscription.html</a></p>
+      </div>
+    </div>
+
+    <div id="ins-body" style="display:none">
+      <div class="pnl">
+        <div class="pnl-h"><span class="ic">&#128221;</span> Inscriptions au week-end <span class="sp"></span>
+          <span class="bdg" id="ins-count">0</span>
+          <button class="btn btn-sm" id="ins-export">&#11015; Export classeur (CSV)</button></div>
+        <div class="pnl-b">
+          <div class="stat-grid" id="ins-stats"></div>
+          <div id="ins-sw" class="mini" style="margin:10px 0 0"></div>
+          <hr class="hr">
+          <div id="ins-msg"></div>
+          <div class="row" style="align-items:flex-end;margin:0 0 6px">
+            <button class="btn btn-sec" id="ins-mkall" style="flex:0 0 auto">&#128101; Cr&eacute;er tous les joueurs manquants</button>
+          </div>
+          <p class="mini" style="margin:0 0 12px">Cr&eacute;e un joueur pour chaque inscription
+            &laquo;&nbsp;Inscrit&nbsp;&raquo; ou &laquo;&nbsp;Confirm&eacute;&nbsp;&raquo; qui n&rsquo;en a pas encore,
+            avec le nom et l&rsquo;&eacute;quipe choisis sur sa ligne. Code tir&eacute; au hasard, dotation
+            de d&eacute;part. Un nom d&eacute;j&agrave; pris n&rsquo;est jamais &eacute;cras&eacute;.</p>
+          <div id="ins-out"></div>
+          <div id="ins-list"><div class="empty">Aucune inscription.</div></div>
+          <p class="mini">L&rsquo;export contient une ligne par inscription non annul&eacute;e, colonnes dans
+            l&rsquo;ordre de l&rsquo;onglet Participants (A &rarr; AC), puis Boissons et Inscrit le.
+            Les colonnes de paiement (V &rarr; AC) sont laiss&eacute;es vides&nbsp;: ce sont des formules
+            et des saisies du classeur.</p>
+        </div>
+      </div>
+
+      <div class="pnl">
+        <div class="pnl-h"><span class="ic">&#9881;</span> R&eacute;glages du formulaire</div>
+        <div class="pnl-b">
+          <div id="ic-msg"></div>
+          <label style="display:flex;align-items:center;gap:9px;font-size:.95rem;color:var(--t);margin:0 0 12px">
+            <input id="ic-open" type="checkbox" style="width:18px;height:18px;margin:0;flex:none">
+            Inscriptions ouvertes</label>
+          <div class="field"><label>Texte d&rsquo;accueil (facultatif)</label>
+            <textarea id="ic-intro" style="min-height:60px"></textarea></div>
+          <div class="field"><label>Phrase d&rsquo;explication des menus</label>
+            <input id="ic-note"></div>
+          <h3>Menus <span class="mini">(prix en &euro;)</span></h3>
+          <div id="ic-menus"></div>
+          <h3>Boissons <span class="mini">(suppl&eacute;ment en &euro;)</span></h3>
+          <div id="ic-drinks"></div>
+          <h3>Sandwiches du samedi midi</h3>
+          <div class="field">
+            <label>Un par ligne&nbsp;: <span class="mono">Nom;r&eacute;gime;description</span>
+              &mdash; r&eacute;gime = <span class="mono">vegan</span>, <span class="mono">v&eacute;g&eacute;tarien</span>
+              ou <span class="mono">viande</span></label>
+            <textarea id="ic-sw" style="min-height:110px"></textarea></div>
+          <button class="btn btn-pri" id="ic-go">Enregistrer les r&eacute;glages</button>
+          <p class="mini">Prix d&rsquo;une inscription = prix du menu + suppl&eacute;ment des boissons.
+            Un sandwich n&rsquo;est propos&eacute; qu&rsquo;aux menus qui l&rsquo;autorisent (vegan &lt; v&eacute;g&eacute;tarien
+            &lt; viande). Le classeur re&ccedil;oit toujours Vegan / V&eacute;g&eacute;tarien / Viande, quels que
+            soient les libell&eacute;s choisis ici. Renommer un sandwich garde l&rsquo;ancien nom pour les
+            inscriptions d&eacute;j&agrave; faites.</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -410,8 +481,9 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="common/config.js?v=a4393781"></script>
+<script src="common/config.js?v=ab4013ff"></script>
 <script src="common/app.js?v=a74c2736"></script>
+<script src="common/inscription.js?v=978d98b2"></script>
 <script>
 /* ============================================================
    admin.html — console orga.
@@ -454,6 +526,9 @@ document.getElementById('atabs').addEventListener('click', ev => {
   document.querySelectorAll('.sec').forEach(s => s.classList.toggle('on', s.id === 'sec-' + b.dataset.sec));
   document.querySelectorAll('#atabs button').forEach(x => x.classList.toggle('on', x === b));
   if (b.dataset.sec === 'carte') initMap();
+  if (b.dataset.sec === 'inscriptions'){
+    try{ insStart(); }catch(e){ insShowError('Onglet Inscriptions indisponible', e); }
+  }
 });
 
 /* ============================================================
@@ -472,12 +547,14 @@ async function boot(){
       .sort((a,b) => String(a.pseudo||a.id).localeCompare(String(b.pseudo||b.id),'fr'));
     document.getElementById('p-count').textContent = PLAYERS.length;
     renderPlayers(); renderSelects(); renderTreasury(); renderTeams(); renderVoteAdmin();
+    if (INSCRIPTIONS.length) renderInscriptions();   // le joueur rattaché à chaque inscription
   });
   watch(db.collection(COL.teams), 'équipes', qs => {
     TEAMS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()))
       .sort((a,b) => (a.order||0) - (b.order||0) ||
                      String(a.name||'').localeCompare(String(b.name||''),'fr'));
     renderTeams(); renderPlayers(); renderUrns(); renderTreasury(); renderVoteAdmin();
+    if (INSCRIPTIONS.length) renderInscriptions();   // les équipes proposées à la création
   });
   watch(db.collection(COL.motions), 'motions', qs => {
     MOTIONS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()))
@@ -533,6 +610,11 @@ async function boot(){
   sweepMotions();
   setInterval(sweepSignups, 15000);
   sweepSignups();
+
+  // L'onglet Inscriptions a sa propre connexion (Google), chargée seulement
+  // quand on l'ouvre (insStart). Une panne de ce côté-là s'affiche dans
+  // l'onglet ; elle ne doit jamais bloquer le reste.
+  try{ insBoot(); }catch(e){ insShowError('Onglet Inscriptions indisponible', e); }
 }
 
 /* ============================================================
@@ -1453,6 +1535,428 @@ document.getElementById('m-list').addEventListener('click', async ev => {
   try{ await db.collection(COL.map).doc('data')
     .set({ pois: POIS.filter(p => p.id !== b.dataset.pdel) }, { merge:true }); }
   catch(e){ alert(e.message); }
+});
+
+/* ============================================================
+   Inscriptions au week-end
+
+   La seule partie de la console qui exige un vrai compte : les inscriptions
+   portent téléphone et email, et les règles Firestore n'en permettent la
+   lecture qu'à un compte Google listé dans /orga/{uid}. Le code d'accès de
+   la console, lui, ne protège rien côté serveur.
+
+   Tout ce qui se passe ici reste dans l'onglet : Auth absente, règles pas
+   publiées, compte non autorisé — on l'explique sur place, sans casser le
+   reste de la console.
+   ============================================================ */
+const INS_COL = 'inscriptions';
+const ORGA_COL = 'orga';
+let INS_AUTH = null;          // firebase.auth(), ou null si le module manque
+let INS_UNSUBS = [];          // listeners actifs (arrêtés à la déconnexion)
+let INSCRIPTIONS = [];
+let INS_CFG = inscriptionConfig(null, window.GPC_INSCRIPTION_DEFAULTS);
+let INS_CFG_FILLED = false;   // le formulaire des réglages n'est rempli qu'une fois : on n'écrase pas une saisie
+let INS_DRAFT = {};           // { idInscription: { name, team } } — saisies en cours, survivent au rendu
+
+const insBox = () => document.getElementById('ins-auth');
+const insBody = show => { document.getElementById('ins-body').style.display = show ? '' : 'none'; };
+
+/** Une erreur de l'onglet : dans l'onglet, et en console. */
+function insShowError(title, err){
+  console.error('[inscriptions]', err);
+  insBody(false);
+  insBox().innerHTML = '<div class="msg msg-err"><strong>' + esc(title) + '</strong><br>' +
+    esc((err && (err.message || err.code)) || String(err || 'erreur inconnue')) + '</div>';
+}
+
+/* Le module Auth n'est chargé qu'à la première ouverture de l'onglet : chargé
+   d'office, il fait redémarrer les flux d'écoute de Firestore à son
+   initialisation (erreurs 400 dans la console à chaque chargement), et le
+   reste de la console n'en a pas besoin. Firestore accepte un Auth arrivé
+   après lui et lui emprunte son jeton dès qu'il est là. */
+const AUTH_SDK_URL = 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js';
+let INS_STARTED = false;
+
+function insBoot(){
+  // lien complet vers le formulaire, à copier pour les invitations
+  const link = document.getElementById('ins-link');
+  link.textContent = new URL('inscription.html', location.href).href;
+}
+
+/** Première ouverture de l'onglet : charge Auth, puis suit la connexion. */
+function insStart(){
+  if (INS_STARTED) return;
+  INS_STARTED = true;
+  const ready = () => {
+    try{
+      INS_AUTH = firebase.auth();
+      INS_AUTH.onAuthStateChanged(insOnUser, err => insShowError('Connexion Google impossible', err));
+    }catch(e){ insShowError('Firebase Auth indisponible', e); }
+  };
+  if (typeof firebase.auth === 'function'){ ready(); return; }
+  const s = document.createElement('script');
+  s.src = AUTH_SDK_URL;
+  s.onload = ready;
+  s.onerror = () => {
+    INS_STARTED = false;   // on retentera à la prochaine ouverture de l'onglet
+    insShowError('Firebase Auth n’a pas pu être chargé',
+      'Le script firebase-auth-compat.js n’a pas été téléchargé. Vérifie la connexion, puis rouvre l’onglet.');
+  };
+  document.head.appendChild(s);
+}
+
+/** Arrête les listeners de l'onglet (déconnexion, changement de compte). */
+function insStop(){
+  INS_UNSUBS.forEach(u => { try{ u(); }catch(e){} });
+  INS_UNSUBS = [];
+  INSCRIPTIONS = [];
+  insBadge();
+}
+
+/** Traduit les erreurs de connexion Google les plus probables. */
+function insAuthError(e){
+  const code = (e && e.code) || '';
+  const known = {
+    'auth/operation-not-allowed':
+      'La connexion Google n’est pas activée. Console Firebase → Authentication → Sign-in method → Google → Activer.',
+    'auth/unauthorized-domain':
+      'Ce domaine n’est pas autorisé. Console Firebase → Authentication → Settings → Authorized domains → ajouter ' +
+      location.hostname + '.',
+    'auth/configuration-not-found':
+      'Authentication n’est pas initialisé dans ce projet Firebase. Console Firebase → Authentication → Commencer.',
+    'auth/popup-blocked': 'Le navigateur a bloqué la fenêtre de connexion. Autorise les pop-ups pour ce site.',
+    'auth/popup-closed-by-user': 'Fenêtre de connexion fermée avant la fin.',
+    'auth/cancelled-popup-request': 'Connexion annulée.',
+    'auth/network-request-failed': 'Réseau indisponible.'
+  };
+  return known[code] || ((e && e.message) || 'Connexion impossible.');
+}
+
+async function insOnUser(user){
+  insStop();
+  const box = insBox();
+  if (!user){
+    insBody(false);
+    box.innerHTML = '<div id="ins-amsg"></div>' +
+      '<button class="btn btn-pri" data-ins="login">Se connecter avec Google</button>';
+    return;
+  }
+  const who = '<p style="margin:0 0 10px;color:var(--td)">Connecté&nbsp;: <strong>' +
+    esc(user.email || user.displayName || 'compte Google') + '</strong> ' +
+    '<button class="btn btn-sm" data-ins="logout">Se déconnecter</button></p>';
+  box.innerHTML = who + '<div class="empty">Vérification des droits&hellip;</div>';
+
+  let isOrga = false, why = null;
+  try{
+    isOrga = (await db.collection(ORGA_COL).doc(user.uid).get()).exists;
+  }catch(e){ why = e; }
+
+  if (!isOrga){
+    insBody(false);
+    box.innerHTML = who +
+      (why ? '<div class="msg msg-err">Lecture de <span class="mono">/orga</span> refusée (' +
+              esc(why.code || why.message) + '). Les nouvelles règles Firestore sont-elles publiées&nbsp;?</div>' : '') +
+      '<div class="msg msg-err">Ce compte n’est pas (encore) autorisé à lire les inscriptions.</div>' +
+      '<p style="margin:0 0 6px;color:var(--td)">Ton identifiant (uid)&nbsp;:</p>' +
+      '<div class="row" style="align-items:center;margin:0 0 10px">' +
+        '<input class="mono" id="ins-uid" readonly value="' + esc(user.uid) + '">' +
+        '<button class="btn btn-sm" data-ins="copy" style="flex:0 0 auto">Copier</button></div>' +
+      '<p class="mini">Pour t’autoriser&nbsp;: console Firebase → Firestore Database → ' +
+        '<strong>Démarrer une collection</strong> <span class="mono">orga</span> (ou l’ouvrir si elle existe) → ' +
+        'ajouter un document dont l’<strong>ID</strong> est cet uid (un champ quelconque, ex. ' +
+        '<span class="mono">nom</span>). Puis recharge cette page.</p>';
+    return;
+  }
+
+  box.innerHTML = who;
+  insBody(true);
+  INS_UNSUBS.push(watch(db.collection(INS_COL), 'inscriptions au week-end', qs => {
+    INSCRIPTIONS = qs.docs.map(d => Object.assign({ id:d.id }, d.data()))
+      .sort((a,b) => tsMs(b.createdAt) - tsMs(a.createdAt));
+    renderInscriptions();
+  }, err => say('ins-msg', 'Lecture des inscriptions impossible : ' + (err.code || err.message), 'err')));
+  INS_UNSUBS.push(watch(db.collection(COL.config).doc('inscription'), 'réglages d’inscription', s => {
+    INS_CFG = inscriptionConfig(s.exists ? s.data() : null, window.GPC_INSCRIPTION_DEFAULTS);
+    if (!INS_CFG_FILLED){ fillInsCfg(); INS_CFG_FILLED = true; }
+    renderInscriptions();
+  }));
+}
+
+insBox().addEventListener('click', async ev => {
+  const b = ev.target.closest('button[data-ins]'); if (!b || !INS_AUTH) return;
+  if (b.dataset.ins === 'login'){
+    b.disabled = true;
+    try{ await INS_AUTH.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+    catch(e){ console.warn('[inscriptions] connexion', e); say('ins-amsg', insAuthError(e), 'err'); b.disabled = false; }
+  } else if (b.dataset.ins === 'logout'){
+    try{ await INS_AUTH.signOut(); }catch(e){ alert(e.message); }
+  } else if (b.dataset.ins === 'copy'){
+    const f = document.getElementById('ins-uid');
+    try{ await navigator.clipboard.writeText(f.value); b.textContent = 'Copié ✓'; }
+    catch(e){ f.select(); document.execCommand('copy'); b.textContent = 'Copié ✓'; }
+  }
+});
+
+/** Pastille de l'onglet : les inscriptions « Inscrit », pas encore confirmées. */
+function insBadge(){
+  const n = INSCRIPTIONS.filter(i => i.status === STATUS_NEW).length;
+  const el = document.getElementById('n-ins');
+  el.textContent = n; el.style.display = n ? '' : 'none';
+}
+
+const insLabel = (list, id) => { const x = list.find(o => o.id === id); return x ? (x.label || id) : (id || '?'); };
+const insFullName = i => (String(i.firstName||'') + ' ' + String(i.lastName||'')).trim();
+
+function renderInscriptions(){
+  insBadge();
+  const live = INSCRIPTIONS.filter(i => i.status !== STATUS_CANCELLED);
+  document.getElementById('ins-count').textContent = live.length;
+
+  // ---- compteurs ----
+  const count = f => live.filter(f).length;
+  const cells = [
+    ['Inscrits', num(live.length), 'plain'],
+    ['Confirmés', num(count(i => i.status === 'Confirmé')), 'plain']
+  ].concat(INS_CFG.menus.map(m => [m.label, num(count(i => i.menu === m.id)), 'vio']))
+   .concat([
+    ['Alcool fort', num(count(i => i.drinks === STRONG_DRINKS)), 'gold'],
+    ['Total attendu', num(live.reduce((s,i) => s + (Number(i.price)||0), 0)) + ' €', 'plain']
+  ]);
+  document.getElementById('ins-stats').innerHTML = cells.map(c =>
+    '<div class="stat"><div class="stat-v sm ' + c[2] + '">' + esc(c[1]) +
+    '</div><div class="stat-l">' + esc(c[0]) + '</div></div>').join('');
+
+  // sandwiches à commander : ceux qui sont là samedi midi
+  const sw = {};
+  live.filter(i => (i.meals||{})[SANDWICH_MEAL] && i.sandwich).forEach(i => {
+    const n = inscriptionSandwichName(INS_CFG, i) || i.sandwich;
+    sw[n] = (sw[n]||0) + 1;
+  });
+  const swKeys = Object.keys(sw).sort((a,b) => sw[b] - sw[a]);
+  document.getElementById('ins-sw').innerHTML = swKeys.length
+    ? '<strong>Sandwiches du samedi&nbsp;:</strong> ' +
+      swKeys.map(k => esc(k) + ' &times;&nbsp;' + sw[k]).join(' &middot; ')
+    : '';
+
+  // ---- la liste ----
+  const box = document.getElementById('ins-list');
+  if (!INSCRIPTIONS.length){ box.innerHTML = '<div class="empty">Aucune inscription.</div>'; return; }
+  const teamOpts = sel => '<option value="">— sans équipe —</option>' + TEAMS.map(t =>
+    '<option value="' + esc(t.id) + '"' + (sel === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>').join('');
+  const stOpts = cur => INSCRIPTION_STATUS.map(s =>
+    '<option' + (s === cur ? ' selected' : '') + '>' + esc(s) + '</option>').join('');
+
+  box.innerHTML = INSCRIPTIONS.map(i => {
+    const meals = i.meals || {}, nights = i.nights || {};
+    const missed = MEALS.filter(m => !meals[m.id]).map(m => m.label)
+      .concat(NIGHTS.filter(n => !nights[n.id]).map(n => n.label));
+    const priceNow = inscriptionPrice(INS_CFG, i.menu, i.drinks);
+    const cancelled = i.status === STATUS_CANCELLED;
+    const stCls = { 'Confirmé':'bdg-ok', 'Inscrit':'bdg-warn', 'Annulé':'bdg-dng' }[i.status] || '';
+    const d = INS_DRAFT[i.id] || {};
+    let player;
+    if (i.playerId){
+      const p = PLAYERS.find(x => x.id === i.playerId);
+      player = '<p class="mini" style="margin:0">&#127918; Joueur&nbsp;: ' + (p
+        ? '<strong>' + esc(p.pseudo || p.id) + '</strong> · code <span class="mono">' + esc(p.code||'?') + '</span>' +
+          (p.team ? ' · ' + esc(teamName(p.team)) : '')
+        : '<span class="mono">' + esc(i.playerId) + '</span> (introuvable : supprimé depuis ?)') + '</p>';
+    } else if (cancelled){
+      player = '';
+    } else {
+      player = '<div class="row" style="align-items:flex-end">' +
+        '<div class="field" style="margin:0"><label>Nom de joueur</label>' +
+          '<input class="f-pname" maxlength="60" value="' +
+            esc(d.name !== undefined ? d.name : inscriptionPlayerName(i)) + '"></div>' +
+        '<div class="field" style="margin:0"><label>&Eacute;quipe</label>' +
+          '<select class="f-pteam">' + teamOpts(d.team || '') + '</select></div>' +
+        '<button class="btn btn-sm btn-sec" data-mk="1" style="flex:0 0 auto">Cr&eacute;er le joueur</button></div>';
+    }
+    return '<div class="ed" data-iid="' + esc(i.id) + '"' + (cancelled ? ' style="opacity:.55"' : '') + '>' +
+      '<div class="ed-h"><div class="lst-main">' +
+        '<div class="lst-t">' + esc(insFullName(i) || '?') +
+          (i.pseudo ? ' <span class="lst-s">« ' + esc(i.pseudo) + ' »</span>' : '') +
+          ' <span class="bdg ' + stCls + '">' + esc(i.status || '?') + '</span></div>' +
+        '<div class="lst-s">' + esc(insLabel(INS_CFG.menus, i.menu)) + ' · ' +
+          esc(insLabel(INS_CFG.drinks, i.drinks)) +
+          ((meals[SANDWICH_MEAL] && i.sandwich) ? ' · &#129386; ' + esc(inscriptionSandwichName(INS_CFG, i)) : '') +
+          ' · ' + esc(when(tsMs(i.createdAt))) + '</div>' +
+        '<div class="lst-s mono" style="letter-spacing:0">' +
+          esc([i.phone, i.email].filter(Boolean).join(' · ') || 'pas de contact') + '</div>' +
+      '</div>' +
+      '<div class="lst-amt">' + esc(euros(i.price)) +
+        (priceNow !== null && priceNow !== Number(i.price)
+          ? '<div class="lst-s" title="Prix avec les réglages actuels">actuel ' + esc(euros(priceNow)) + '</div>' : '') +
+      '</div></div>' +
+      (i.notes ? '<p class="mini" style="margin:0 0 8px;white-space:pre-wrap;color:var(--td)">&#9888; ' + esc(i.notes) + '</p>' : '') +
+      '<p class="mini" style="margin:0 0 8px">' +
+        (missed.length ? 'Absent&nbsp;: ' + esc(missed.join(', ')) : 'Présent à tout') + '</p>' +
+      '<div class="row" style="align-items:flex-end;margin:0 0 8px">' +
+        '<div class="field" style="margin:0;flex:0 0 160px"><label>Statut</label>' +
+          '<select class="f-ist">' + stOpts(i.status) + '</select></div></div>' +
+      player +
+    '</div>';
+  }).join('');
+}
+
+/* Saisies en cours (nom, équipe) : gardées hors du DOM, que le rendu suivant ne les efface pas. */
+document.getElementById('ins-list').addEventListener('input', ev => {
+  const ed = ev.target.closest('.ed'); if (!ed) return;
+  const d = INS_DRAFT[ed.dataset.iid] = INS_DRAFT[ed.dataset.iid] || {};
+  if (ev.target.classList.contains('f-pname')) d.name = ev.target.value;
+});
+document.getElementById('ins-list').addEventListener('change', async ev => {
+  const ed = ev.target.closest('.ed'); if (!ed) return;
+  const id = ed.dataset.iid;
+  if (ev.target.classList.contains('f-pteam')){
+    (INS_DRAFT[id] = INS_DRAFT[id] || {}).team = ev.target.value;
+  } else if (ev.target.classList.contains('f-ist')){
+    ev.target.disabled = true;
+    try{ await db.collection(INS_COL).doc(id).update({ status: ev.target.value, statusAt: Date.now() }); }
+    catch(e){ alert('Statut non enregistré : ' + e.message); renderInscriptions(); }
+  }
+});
+
+/**
+ * Crée le joueur d'une inscription, par le même chemin que la création en
+ * série (createPlayer : code au hasard, dotation par émission — l'invariant
+ * comptable reste juste). Jamais de téléphone ni d'email dans /players.
+ * Un nom déjà pris n'est pas écrasé : createPlayer refuse.
+ */
+async function insCreatePlayer(insId){
+  const ins = INSCRIPTIONS.find(x => x.id === insId);
+  if (!ins) throw new Error('Inscription introuvable.');
+  if (ins.playerId) throw new Error('A déjà un joueur (' + ins.playerId + ').');
+  const d = INS_DRAFT[insId] || {};
+  const name = String(d.name !== undefined ? d.name : inscriptionPlayerName(ins)).trim();
+  if (!slugify(name)) throw new Error('Nom de joueur vide.');
+  const teamId = d.team || null;
+  const code = randCode();
+  const { id } = await createPlayer(name, teamId, code, GAME.startShares);
+  try{
+    await db.collection(INS_COL).doc(insId).update({ playerId: id });
+  }catch(e){
+    throw new Error('joueur « ' + name + ' » créé, mais pas rattaché à l’inscription (' + e.message +
+      ') : ne le recrée pas, il existe.');
+  }
+  delete INS_DRAFT[insId];
+  return { name, code, team: teamId ? teamName(teamId) : '—', shares: GAME.startShares };
+}
+
+/** Tableau des codes à distribuer, comme la création en série. */
+function insShowMade(made, failed){
+  document.getElementById('ins-out').innerHTML =
+    (made.length ? '<h3>Codes à distribuer</h3><div class="scroll-x">' +
+      '<table class="tbl"><tr><th>Nom</th><th>Code</th><th>Équipe</th><th>Parts</th></tr>' +
+      made.map(m => '<tr><td>' + esc(m.name) + '</td><td class="mono">' + esc(m.code) +
+        '</td><td>' + esc(m.team) + '</td><td>' + num(m.shares) + '</td></tr>').join('') +
+      '</table></div>' : '') +
+    (failed.length ? '<h3 style="color:var(--red)">Échecs</h3><ul>' +
+      failed.map(f => '<li>' + esc(f) + '</li>').join('') + '</ul>' : '') +
+    ((made.length || failed.length) ? '<hr class="hr">' : '');
+}
+
+document.getElementById('ins-list').addEventListener('click', async ev => {
+  const b = ev.target.closest('button[data-mk]'); if (!b) return;
+  const id = b.closest('.ed').dataset.iid;
+  b.disabled = true; say('ins-msg', '');
+  try{
+    const m = await insCreatePlayer(id);
+    say('ins-msg', 'Joueur « ' + m.name + ' » créé, code ' + m.code + '.', 'ok');
+    insShowMade([m], []);
+  }catch(e){ say('ins-msg', e.message, 'err'); b.disabled = false; }
+});
+
+document.getElementById('ins-mkall').addEventListener('click', async () => {
+  const todo = INSCRIPTIONS.filter(i => !i.playerId && (i.status === 'Inscrit' || i.status === 'Confirmé'))
+    .slice().sort((a,b) => tsMs(a.createdAt) - tsMs(b.createdAt));
+  say('ins-msg', '');
+  if (!todo.length){ say('ins-msg', 'Toutes les inscriptions actives ont déjà leur joueur.', 'ok'); return; }
+  if (!confirm('Créer ' + todo.length + ' joueur(s) ?\n\nChacun reçoit un code au hasard et la dotation de départ (' +
+    num(GAME.startShares) + ' ' + (GAME.units||'parts') + ').')) return;
+  const btn = document.getElementById('ins-mkall');
+  btn.disabled = true;
+  const made = [], failed = [];
+  for (const i of todo){
+    try{ made.push(await insCreatePlayer(i.id)); }
+    catch(e){ failed.push(insFullName(i) + ' — ' + e.message); }
+  }
+  btn.disabled = false;
+  say('ins-msg', made.length + ' joueur(s) créé(s)' + (failed.length ? ', ' + failed.length + ' en échec' : '') + '.',
+    failed.length ? 'err' : 'ok');
+  insShowMade(made, failed);
+});
+
+/* ---- export vers le classeur ---- */
+document.getElementById('ins-export').addEventListener('click', () => {
+  const csv = inscriptionsCsv(INSCRIPTIONS, INS_CFG);
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'inscriptions-' + dayKey(Date.now()) + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+
+/* ---- réglages du formulaire : /config/inscription ---- */
+const DIET_BY_WORD = { vegan:'vegan', vegetarien:'vegetarien', vegetarienne:'vegetarien', vege:'vegetarien', viande:'viande' };
+
+function fillInsCfg(){
+  const c = INS_CFG;
+  document.getElementById('ic-open').checked = c.open;
+  document.getElementById('ic-intro').value = c.intro || '';
+  document.getElementById('ic-note').value = c.menuNote || '';
+  const line = (kind, o, priceKey) =>
+    '<div class="row" data-' + kind + '="' + esc(o.id) + '">' +
+      '<div class="field"><label>Libellé <span class="mono">(' + esc(o.id) + ')</span></label>' +
+        '<input class="f-lb" maxlength="60" value="' + esc(o.label || '') + '"></div>' +
+      '<div class="field" style="flex:2 1 220px"><label>Description</label>' +
+        '<input class="f-desc" maxlength="200" value="' + esc(o.desc || '') + '"></div>' +
+      '<div class="field" style="flex:0 0 100px"><label>' + (priceKey === 'price' ? 'Prix' : 'Supplément') + '</label>' +
+        '<input class="f-price" type="number" min="0" step="1" value="' + esc(Number(o[priceKey])||0) + '"></div>' +
+    '</div>';
+  document.getElementById('ic-menus').innerHTML  = c.menus.map(m => line('menu', m, 'price')).join('');
+  document.getElementById('ic-drinks').innerHTML = c.drinks.map(d => line('drink', d, 'extra')).join('');
+  document.getElementById('ic-sw').value = c.sandwiches.map(s =>
+    [s.name, SHEET_MENU[s.diet] || s.diet, s.desc || ''].join(';')).join('\n');
+}
+
+document.getElementById('ic-go').addEventListener('click', async () => {
+  say('ic-msg', '');
+  const read = (kind, priceKey) => [...document.querySelectorAll('[data-' + kind + ']')].map(r => {
+    const o = { id: r.dataset[kind],
+      label: r.querySelector('.f-lb').value.trim(),
+      desc:  r.querySelector('.f-desc').value.trim() };
+    o[priceKey] = Math.max(0, Number(r.querySelector('.f-price').value) || 0);
+    if (!o.label) throw new Error('Libellé vide pour « ' + o.id + ' ».');
+    return o;
+  });
+  try{
+    const menus = read('menu', 'price'), drinks = read('drink', 'extra');
+    const sandwiches = [], seen = {};
+    document.getElementById('ic-sw').value.split('\n').map(l => l.trim()).filter(Boolean).forEach(l => {
+      const [name, dietRaw, ...rest] = l.split(';').map(x => (x||'').trim());
+      const diet = DIET_BY_WORD[slugify(dietRaw).replace(/-/g,'')];
+      if (!name) throw new Error('Sandwich sans nom : « ' + l + ' ».');
+      if (name.length > 80) throw new Error('Nom de sandwich trop long (80 caractères max) : « ' + name + ' ».');
+      if (!diet) throw new Error('Régime inconnu pour « ' + name + ' » : vegan, végétarien ou viande.');
+      // un sandwich déjà connu sous ce nom garde son identifiant (les inscriptions y renvoient)
+      const known = INS_CFG.sandwiches.find(s => s.name === name);
+      const id = known ? known.id : slugify(name).slice(0, 40);
+      if (seen[id]) throw new Error('Deux sandwiches portent le même nom : « ' + name + ' ».');
+      seen[id] = true;
+      sandwiches.push({ id, name, diet, desc: rest.join(';') });
+    });
+    const maxPrice = Math.max(...menus.map(m => m.price)) + Math.max(...drinks.map(d => d.extra));
+    if (maxPrice > 1000) throw new Error('Prix total au-delà de 1000 € : les règles Firestore le refuseraient.');
+    await db.collection(COL.config).doc('inscription').set({
+      open: document.getElementById('ic-open').checked,
+      intro: document.getElementById('ic-intro').value.trim(),
+      menuNote: document.getElementById('ic-note').value.trim(),
+      menus, drinks, sandwiches, updatedAt: Date.now()
+    });
+    say('ic-msg', 'Réglages enregistrés. Le formulaire les prend au prochain chargement.', 'ok');
+  }catch(e){ say('ic-msg', e.message, 'err'); }
 });
 
 /* ============================================================

@@ -22,6 +22,9 @@ rules_version = '2';
 //    · après le week-end, repasse tout en
 //      `allow read, write: if false;` (ou supprime le projet).
 //
+//  SEULE EXCEPTION : /inscriptions (vraies coordonnées des participants),
+//  lisible uniquement par l'orga connectée avec Google. Voir plus bas.
+//
 //  Si tu rejoues ce jeu avec des inconnus : activer Firebase Auth
 //  (anonyme), stocker l'uid dans /players/{id}.uid, et déplacer les
 //  mouvements de parts + le dépouillement dans des Cloud Functions,
@@ -30,6 +33,77 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ---------- Inscriptions au week-end : l'exception ----------
+    //
+    // Tout le reste du jeu est ouvert. Les inscriptions, non : elles portent
+    // un téléphone et un email RÉELS. Un joueur ne doit pas pouvoir les lire.
+    //
+    // L'orga se connecte avec Google (console → onglet Inscriptions). Est
+    // « orga » quiconque a un document /orga/{son uid}, créé À LA MAIN dans
+    // la console Firebase (Firestore → collection `orga` → ID du document =
+    // l'uid affiché dans l'onglet). Aucun uid ni email n'est écrit ici :
+    // le dépôt est public.
+    function isOrga() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/orga/$(request.auth.uid));
+    }
+
+    // Un texte de longueur bornée (min..max caractères).
+    function str(v, min, max) {
+      return v is string && v.size() >= min && v.size() <= max;
+    }
+
+    // Les repas et les nuits : exactement ces cases, toutes booléennes.
+    function validMeals(m) {
+      return m is map &&
+        m.keys().hasOnly(['friDinner', 'satBreakfast', 'satLunch', 'satDinner', 'sunBrunch']) &&
+        m.keys().hasAll(['friDinner', 'satBreakfast', 'satLunch', 'satDinner', 'sunBrunch']) &&
+        m.friDinner is bool && m.satBreakfast is bool && m.satLunch is bool &&
+        m.satDinner is bool && m.sunBrunch is bool;
+    }
+    function validNights(n) {
+      return n is map &&
+        n.keys().hasOnly(['fri', 'sat']) && n.keys().hasAll(['fri', 'sat']) &&
+        n.fri is bool && n.sat is bool;
+    }
+
+    // Ce qu'un participant anonyme a le droit d'envoyer, et rien d'autre.
+    // Les longueurs maximales sont celles de INSCRIPTION_MAX (common/inscription.js).
+    function validInscription(d) {
+      return d.keys().hasOnly(['firstName', 'lastName', 'pseudo', 'phone', 'email', 'notes',
+                               'menu', 'drinks', 'meals', 'nights', 'sandwich', 'sandwichName',
+                               'price', 'status', 'createdAt']) &&
+        d.keys().hasAll(['firstName', 'lastName', 'pseudo', 'phone', 'email', 'notes',
+                         'menu', 'drinks', 'meals', 'nights', 'sandwich', 'sandwichName',
+                         'price', 'status', 'createdAt']) &&
+        str(d.firstName, 1, 60) && str(d.lastName, 1, 60) && str(d.pseudo, 0, 40) &&
+        str(d.phone, 0, 30) && str(d.email, 0, 120) && str(d.notes, 0, 1000) &&
+        (d.email == '' || d.email.matches('[^@ ]+@[^@ ]+')) &&
+        d.menu in ['vegan', 'vegetarien', 'viande'] &&
+        d.drinks in ['sans', 'biere_vin', 'fort'] &&
+        validMeals(d.meals) && validNights(d.nights) &&
+        str(d.sandwich, 0, 40) && str(d.sandwichName, 0, 80) &&
+        // présent au déjeuner du samedi = un sandwich choisi
+        (d.meals.satLunch == false || d.sandwich.size() > 0) &&
+        d.price is number && d.price >= 0 && d.price <= 1000 &&
+        d.status == 'Inscrit' &&
+        d.createdAt == request.time;
+    }
+
+    // Le formulaire public peut CRÉER une inscription valide. Lire, corriger
+    // le statut, rattacher un joueur, supprimer : l'orga seule.
+    match /inscriptions/{inscriptionId} {
+      allow create: if validInscription(request.resource.data);
+      allow read, update, delete: if isOrga();
+    }
+
+    // Liste des orgas. Chacun ne peut lire que SON document (pour savoir
+    // s'il est orga) ; personne n'écrit depuis l'app.
+    match /orga/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
 
     // Comptes actionnaires. `shares` = parts EN BANQUE.
     match /players/{playerId} {
@@ -105,9 +179,14 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
-    // Réglages et trésorerie : /config/game, /config/treasury
+    // Réglages et trésorerie : /config/game, /config/treasury,
+    // /config/inscription (prix et menus du formulaire d'inscription).
+    // Tout le monde lit — le formulaire public en a besoin. Les réglages
+    // d'inscription ne s'écrivent que par l'orga connectée : sinon n'importe
+    // qui pourrait fermer les inscriptions ou changer les prix.
     match /config/{docId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if docId != 'inscription' || isOrga();
     }
 
     // Tout le reste est fermé.
