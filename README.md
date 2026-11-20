@@ -171,6 +171,18 @@ dotation par défaut.
 La page affiche le **tableau des codes à distribuer**, et le bouton **🖨 Codes**
 en ouvre une version imprimable pour les badges.
 
+### 6. Accès orga aux inscriptions (une fois)
+
+Les inscriptions sont protégées par Firebase Auth (voir *Les inscriptions*).
+
+1. **Authentication → Sign-in method → Google → Activer**
+2. **Authentication → Settings → Authorized domains** → ajouter `jobakledev.github.io`
+3. Republier `firestore.rules` (étape 3)
+4. Ouvrir l'onglet **Inscriptions** de la console, **se connecter avec Google**,
+   copier l'**uid** affiché, puis dans Firestore créer la collection `orga`
+   avec un document dont l'**ID est cet uid** (un champ quelconque, ex. `nom`).
+   Recharger : l'onglet est débloqué.
+
 ### Déployer une correction (cache)
 
 Les pages référencent leurs assets avec une empreinte de contenu
@@ -197,9 +209,10 @@ des versions périmées — pratique en hook de pré-commit.
 
 | Fichier | Qui | Quoi |
 |---|---|---|
-| `index.html` | joueurs | Accueil + connexion (nom + code) |
+| `index.html` | joueurs | Accueil + connexion (nom + code), lien « S'inscrire au week-end » |
+| `inscription.html` | public | Formulaire d'inscription au week-end (sans compte) |
 | `perso.html` | joueurs | Le hub, 6 onglets en bas d'écran |
-| `admin.html` | orga | Guichet, équipes, joueurs, shop, commandes, fil, vote, carte, réglages |
+| `admin.html` | orga | Guichet, équipes, joueurs, shop, commandes, fil, vote, carte, inscriptions, réglages |
 
 **Onglets joueur** : **Parts** (solde, guichet, cessions, relevé) · **Équipe**
 (objectif secret, cagnotte, motions, activités, classement) · **Shop** (perso,
@@ -208,6 +221,52 @@ des versions périmées — pratique en hook de pré-commit.
 
 Tout est en temps réel : une prime accordée depuis la console apparaît sur le
 téléphone du joueur sans rechargement.
+
+---
+
+## Les inscriptions
+
+`inscription.html` est public : on s'inscrit au week-end sans compte, depuis
+un téléphone. Côté orga, l'onglet **Inscriptions** de la console liste et gère
+les réponses.
+
+**Prix.** Menu (Vegan / Végétarien / Viande) et boissons (Sans alcool /
+Bière & vin / Bière, vin & alcool fort) sont choisis séparément :
+`prix = prix du menu + supplément boissons`. Défauts 40 / 45 / 50 € et
++0 / +0 / +10 €, ce qui redonne les anciens packs du classeur. Tout est
+réglable dans l'onglet (doc `/config/inscription`) ; les **identifiants** des
+menus et boissons restent fixes (règles Firestore et export s'y appuient).
+
+**Repas.** Base vegan commune, protéines animales servies à part. Le sandwich
+du samedi midi est filtré par le menu, selon l'ordre Vegan < Végétarien <
+Viande (un menu donne droit aux sandwiches de rang inférieur ou égal). Format
+des sandwiches dans les réglages, un par ligne : `Nom;régime;description`.
+
+**Console.**
+
+- compteurs, **statut** (Intéressé / Inscrit / Confirmé / Annulé) ;
+- prix « actuel » affiché à côté du prix envoyé si les réglages ont changé
+  depuis l'inscription ;
+- **export CSV** et **création des joueurs**.
+
+**Export vers le classeur** `Goodfolks_Orga_WE.xlsx`, onglet Participants :
+CSV UTF-8 avec BOM, séparateur `;`, colonnes **A → AC** dans l'ordre du
+classeur, puis **AD** Boissons et **AE** Inscrit le. Les colonnes **S, U et
+V → AC** sont laissées vides (formules et saisies du classeur). Les
+inscriptions annulées sont exclues.
+
+> ⚠️ Coller les lignes dans le classeur **sans écraser les formules** des
+> colonnes V, X, Y et AC : coller par blocs A→U, ou recopier ces formules vers
+> le bas.
+
+Un texte commençant par `=` `+` `-` `@` reçoit une apostrophe pour ne pas
+devenir une formule (les téléphones en `+33` aussi).
+
+**Création des joueurs.** Même chemin que la création en série : code tiré au
+hasard, dotation `startShares` émise (l'invariant comptable est respecté). Nom =
+pseudo, sinon « Prénom Nom » ; un nom déjà pris est refusé. Le `playerId` est
+rattaché à l'inscription. **Téléphone et email ne sont jamais copiés dans
+`/players`.**
 
 ---
 
@@ -311,10 +370,14 @@ bandeau, son liseré dans les listes, sa barre au classement et au dépouillemen
 ```
 bump-cache.js         → anti-cache : ?v=<empreinte> sur les assets locaux
 index.html            → accueil + login
+inscription.html      → formulaire public d'inscription au week-end
 perso.html            → le hub joueur (6 onglets)
 admin.html            → console orga (code: config.js)
 common/
   config.js           → firebaseConfig + code orga + réglages par défaut
+                        (dont GPC_INSCRIPTION_DEFAULTS : menus, boissons, sandwiches)
+  inscription.js      → inscriptions : fonctions pures (prix, sandwiches, CSV),
+                        testables avec node
   app.js              → session, comptabilité des parts, équipes, motions,
                         activités, scrutin
   style.css           → thème clair tiré du logo, mobile-first
@@ -354,6 +417,18 @@ Toutes les opérations sur les parts passent par `db.runTransaction` : deux
 personnes qui cliquent en même temps ne peuvent ni dupliquer ni perdre de parts.
 Chacune écrit une ligne dans `/ledger`, que les règles rendent non
 réinscriptible.
+
+### Fonctions clés de `common/inscription.js`
+
+Pures (ni Firestore ni DOM), vérifiables avec `node -e "const I = require('./common/inscription.js'); ..."`.
+
+| Fonction | Rôle |
+|---|---|
+| `inscriptionConfig(stored, defaults)` | Réglages effectifs : défauts de `config.js` surchargés par `/config/inscription` (libellés, descriptions, prix ; identifiants fixes) |
+| `inscriptionPrice(cfg, menuId, drinksId)` | Prix menu + supplément boissons (`null` si un choix manque) |
+| `sandwichesFor(cfg, menuId)` / `sandwichAllowed` | Sandwiches permis par un menu (ordre Vegan < Végétarien < Viande) |
+| `inscriptionsCsv(list, cfg)` | CSV complet pour le classeur, annulées exclues, plus ancienne en premier (`inscriptionRow` = une ligne, `csvText` = apostrophe anti-formule) |
+| `inscriptionPlayerName(ins)` | Nom du joueur créé : pseudo, sinon « Prénom Nom » |
 
 ---
 
@@ -415,6 +490,20 @@ réinscriptible.
 /map/data            { pois:[{ id, name, desc, lat, lng }] }
 /config/game         { gameName, tagline, unit, units, startShares,
                        registryTop, mapCenter:[lat,lng], mapZoom, rules }
+
+/inscriptions/{auto} { firstName, lastName, pseudo, phone, email, notes,
+                       menu:'vegan'|'vegetarien'|'viande',
+                       drinks:'sans'|'biere_vin'|'fort',
+                       meals:{friDinner,satBreakfast,satLunch,satDinner,sunBrunch: bool},
+                       nights:{fri,sat: bool}, sandwich, sandwichName,
+                       price, status, createdAt, statusAt?, playerId? }
+                     status ∈ Intéressé | Inscrit | Confirmé | Annulé
+                     (le formulaire public n'écrit que « Inscrit »)
+/orga/{uid}          { … }  créé à la main dans la console Firebase, jamais par l'app
+/config/inscription  { open, intro, menuNote,
+                       menus:[{id,label,desc,price}],
+                       drinks:[{id,label,desc,extra}],
+                       sandwiches:[{id,name,diet,desc}], updatedAt }
 ```
 
 ### Invariant comptable
@@ -454,6 +543,22 @@ C'est tenable pour un week-end entre gens consentants, à deux conditions :
 2. **Après le week-end**, repasser les règles en `allow read, write: if false;`
    ou supprimer le projet Firebase.
 
+**Exception : les inscriptions.** Seule donnée protégée par Firebase Auth, et
+seule à contenir de **vraies données personnelles** (téléphone, email).
+
+- Création validée par les règles (champs, longueurs, statut `Inscrit`) ;
+  lecture et modification réservées aux comptes listés dans `/orga` ;
+  `/config/inscription` modifiable par l'orga seule.
+- **Aucun uid ni email dans le dépôt** (public) : la liste `/orga` se tient à
+  la main dans Firestore.
+- À **purger après le week-end** avec le reste.
+- Le **prix envoyé** par le participant n'est pas contrôlé par les règles : la
+  console affiche le prix recalculé quand il diffère.
+- Pas d'anti-spam au-delà de la validation ; **pas de bouton de suppression**
+  (passer par « Annulé » ou par la console Firebase).
+- Firebase Auth n'est chargé qu'à l'ouverture de l'onglet Inscriptions :
+  chargé d'office, il faisait redémarrer les flux Firestore.
+
 Le **grand livre est la garantie pratique** : il n'est pas réinscriptible par
 les règles, donc une part qui apparaît sans ligne de mouvement se repère.
 L'« écart comptable » de la console sert exactement à ça.
@@ -470,6 +575,10 @@ et `/vote`.
 
 - [ ] `common/config.js` rempli (firebaseConfig + code orga changé)
 - [ ] `firestore.rules` publié dans la console Firebase
+- [ ] **Inscriptions** : config Google faite (étape 6) et uid orga ajouté
+- [ ] Une vraie inscription testée depuis un téléphone, sur l'adresse publique
+- [ ] Export CSV testé dans le classeur (formules V, X, Y, AC intactes)
+- [ ] Inscriptions ouvertes / fermées au bon moment (onglet Inscriptions)
 - [ ] `node bump-cache.js` lancé avant le dernier commit — sinon des
       téléphones serviront une version périmée que personne ne pourra vider
 - [ ] GitHub Pages actif, site ouvert depuis un téléphone **en 4G**
