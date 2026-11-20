@@ -32,6 +32,15 @@ const SHEET_DRINKS_SHORT = { sans: 'sans alcool', biere_vin: 'bière & vin', for
 /** Le niveau de boissons qui donne acces a l'alcool fort (colonne « Alcool fort »). */
 const STRONG_DRINKS = 'fort';
 
+/* Les types de boissons compris dans chaque niveau : le formulaire demande
+   une preference par type (softs, biere & vin, alcool fort). */
+const DRINK_TYPES = { sans: ['soft'], biere_vin: ['soft', 'mid'], fort: ['soft', 'mid', 'hard'] };
+
+/** Les types de boissons d'un niveau. Niveau pas encore choisi : les softs seuls. */
+function drinkPrefTypes(drinksId){
+  return DRINK_TYPES[drinksId] || ['soft'];
+}
+
 /* Statuts : les memes libelles que le classeur. */
 const INSCRIPTION_STATUS = ['Intéressé', 'Inscrit', 'Confirmé', 'Annulé'];
 const STATUS_NEW       = 'Inscrit';   // le seul statut qu'un participant peut ecrire
@@ -174,8 +183,8 @@ function frDateTime(ms){
 
 /* ============================================================
    EXPORT VERS LE CLASSEUR
-   Colonnes dans l'ordre EXACT de l'onglet Participants (A -> AC), puis quatre
-   colonnes en plus (AD -> AG). Les colonnes V -> AC sont des formules ou des
+   Colonnes dans l'ordre EXACT de l'onglet Participants (A -> AC), puis six
+   colonnes en plus (AD -> AI). Les colonnes V -> AC sont des formules ou des
    saisies du classeur : on les laisse VIDES pour ne rien ecraser au collage.
    ============================================================ */
 const CSV_HEADERS = [
@@ -186,7 +195,8 @@ const CSV_HEADERS = [
   'Couchage', 'Prix pack (€)', 'Ajustement',                                // S-U
   'Total dû', 'Payé', 'Reste', 'Statut paiement', 'Moyen paiement',         // V-Z
   'Date paiement', 'Encaissé par', 'Actif',                                 // AA-AC
-  'Boissons', 'Inscrit le', 'Préférence boissons', 'Attentes'               // AD-AG (en plus)
+  'Boissons', 'Inscrit le',                                                 // AD-AE (en plus)
+  'Préf. softs', 'Préf. bière & vin', 'Préf. alcool fort', 'Attentes'       // AF-AI (en plus)
 ];
 
 /** Excel francais : point-virgule, guillemets si le champ en contient un, ou un saut de ligne. */
@@ -236,7 +246,7 @@ function inscriptionRow(cfg, ins){
     '', '', '', '', '', '', '', '',       // V -> AC : formules et saisies du classeur
     drinks ? drinks.label : (ins.drinks || ''),
     frDateTime(tsMs(ins.createdAt)),
-    csvText(ins.drinkPref),
+    csvText(ins.drinkSoft), csvText(ins.drinkMid), csvText(ins.drinkHard),
     csvText(ins.expectations)
   ];
 }
@@ -259,7 +269,7 @@ function inscriptionsCsv(list, cfg){
 /* Pour node (verification hors navigateur). Dans le navigateur, tout est global. */
 if (typeof module !== 'undefined' && module.exports){
   module.exports = {
-    DIET_RANK, SHEET_MENU, SHEET_DRINKS_SHORT, STRONG_DRINKS, INSCRIPTION_STATUS,
+    DIET_RANK, SHEET_MENU, SHEET_DRINKS_SHORT, STRONG_DRINKS, DRINK_TYPES, drinkPrefTypes, INSCRIPTION_STATUS,
     STATUS_NEW, STATUS_CANCELLED, MEALS, NIGHTS, DAYS, SANDWICH_MEAL, INSCRIPTION_MAX, CSV_HEADERS,
     inscriptionConfig, inscriptionPrice, sandwichesFor, sandwichAllowed, euros, extraLabel, packLabel,
     inscriptionPlayerName, inscriptionSandwichName, tsMs, frDateTime,

@@ -483,7 +483,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="common/config.js?v=4fd517c8"></script>
 <script src="common/app.js?v=a74c2736"></script>
-<script src="common/inscription.js?v=fd2eaf3a"></script>
+<script src="common/inscription.js?v=eb621c85"></script>
 <script>
 /* ============================================================
    admin.html — console orga.
@@ -1708,6 +1708,9 @@ function insBadge(){
 
 const insLabel = (list, id) => { const x = list.find(o => o.id === id); return x ? (x.label || id) : (id || '?'); };
 const insFullName = i => (String(i.firstName||'') + ' ' + String(i.lastName||'')).trim();
+/** Les préférences boissons d'une inscription, sur une ligne : « Softs : … · Bière & vin : … ». */
+const insDrinkPrefs = i => [['Softs', i.drinkSoft], ['Bière & vin', i.drinkMid], ['Alcool fort', i.drinkHard]]
+  .filter(([, v]) => v).map(([k, v]) => k + ' : ' + v).join(' · ');
 
 function renderInscriptions(){
   insBadge();
@@ -1791,7 +1794,7 @@ function renderInscriptions(){
           ? '<div class="lst-s" title="Prix avec les réglages actuels">actuel ' + esc(euros(priceNow)) + '</div>' : '') +
       '</div></div>' +
       (i.notes ? '<p class="mini" style="margin:0 0 8px;white-space:pre-wrap;color:var(--td)">&#9888; ' + esc(i.notes) + '</p>' : '') +
-      (i.drinkPref ? '<p class="mini" style="margin:0 0 8px;white-space:pre-wrap">&#127867; ' + esc(i.drinkPref) + '</p>' : '') +
+      (insDrinkPrefs(i) ? '<p class="mini" style="margin:0 0 8px;white-space:pre-wrap">&#127867; ' + esc(insDrinkPrefs(i)) + '</p>' : '') +
       (i.expectations ? '<p class="mini" style="margin:0 0 8px;white-space:pre-wrap">&#128172; <i>' + esc(i.expectations) + '</i></p>' : '') +
       '<p class="mini" style="margin:0 0 8px">' +
         (missed.length ? 'Absent&nbsp;: ' + esc(missed.join(', ')) : 'Présent à tout') + '</p>' +

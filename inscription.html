@@ -115,25 +115,6 @@
     </div>
 
     <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#127869;</span> Ton menu</div>
-      <div class="pnl-b">
-        <p class="mini" id="menu-note" style="margin:0 0 12px"></p>
-        <div id="menus"></div>
-      </div>
-    </div>
-
-    <div class="pnl">
-      <div class="pnl-h"><span class="ic">&#127867;</span> Boissons</div>
-      <div class="pnl-b">
-        <div id="drinks"></div>
-        <div class="field" style="margin:12px 0 0"><label for="f-drinkpref">Ma pr&eacute;f&eacute;rence &agrave; moi</label>
-          <input id="f-drinkpref" maxlength="200"
-            placeholder="Ex. : IPA, ros&eacute;, rhum, kombucha&hellip;"></div>
-          <p class="mini" style="margin:4px 0 0">Ce que tu aimes boire pr&eacute;cis&eacute;ment&nbsp;: l&rsquo;orga en tient compte pour les courses.</p>
-      </div>
-    </div>
-
-    <div class="pnl">
       <div class="pnl-h"><span class="ic">&#128197;</span> Pr&eacute;sence</div>
       <div class="pnl-b">
         <div id="days"></div>
@@ -142,10 +123,35 @@
       </div>
     </div>
 
-    <div class="pnl" id="sandwich-pnl">
-      <div class="pnl-h"><span class="ic">&#129386;</span> Sandwich du samedi midi</div>
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#127869;</span> Ton menu</div>
       <div class="pnl-b">
-        <div id="sandwiches"></div>
+        <p class="mini" id="menu-note" style="margin:0 0 12px"></p>
+        <div id="menus"></div>
+        <!-- Section sandwich : n'apparaît qu'une fois le menu choisi,
+             et seulement si on est là au déjeuner du samedi. -->
+        <div id="sandwich-pnl" hidden>
+          <div class="sub" style="margin-top:16px">&#129386; Ton sandwich du samedi midi</div>
+          <div id="sandwiches"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pnl">
+      <div class="pnl-h"><span class="ic">&#127867;</span> Boissons</div>
+      <div class="pnl-b">
+        <div id="drinks"></div>
+        <!-- Une préférence par type de boisson. Seuls les types compris dans
+             le niveau choisi s'affichent : softs toujours, bière & vin à
+             partir de « Bière & vin », alcool fort avec l'alcool fort. -->
+        <div class="sub" style="margin-top:16px">Ma pr&eacute;f&eacute;rence &agrave; moi</div>
+        <p class="mini" style="margin:0 0 10px">Ce que tu aimes boire pr&eacute;cis&eacute;ment&nbsp;: l&rsquo;orga en tient compte pour les courses.</p>
+        <div class="field" data-pref="soft"><label for="f-pref-soft">Softs</label>
+          <input id="f-pref-soft" maxlength="200" placeholder="Ex. : th&eacute; glac&eacute;, kombucha, jus de pomme&hellip;"></div>
+        <div class="field" data-pref="mid" hidden><label for="f-pref-mid">Bi&egrave;re &amp; vin</label>
+          <input id="f-pref-mid" maxlength="200" placeholder="Ex. : IPA, blanche, ros&eacute;&hellip;"></div>
+        <div class="field" data-pref="hard" hidden><label for="f-pref-hard">Alcool fort</label>
+          <input id="f-pref-hard" maxlength="200" placeholder="Ex. : rhum, gin tonic, whisky&hellip;"></div>
       </div>
     </div>
 
@@ -181,7 +187,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="common/config.js?v=4fd517c8"></script>
 <script src="common/app.js?v=a74c2736"></script>
-<script src="common/inscription.js?v=fd2eaf3a"></script>
+<script src="common/inscription.js?v=eb621c85"></script>
 <script>
 /* ============================================================
    inscription.html — formulaire public, sans connexion.
@@ -233,18 +239,18 @@ function renderMenus(){
 function renderDrinks(){
   $('drinks').innerHTML = CFG.drinks.map(d =>
     optCard('drinks', d.id, d.label, d.desc, extraLabel(d.extra), pickState.drinks === d.id)).join('');
+  // une préférence par type de boisson compris dans le niveau choisi
+  const types = drinkPrefTypes(pickState.drinks);
+  document.querySelectorAll('[data-pref]').forEach(f => { f.hidden = !types.includes(f.dataset.pref); });
 }
 
-/** Le panneau sandwich : visible si présent samedi midi, filtré par le menu. */
+/** La section sandwich du menu : visible une fois le menu choisi ET si
+    présent samedi midi ; ne propose que les sandwiches de ce menu. */
 function renderSandwiches(){
   const atLunch = mealChecked(SANDWICH_MEAL);
-  $('sandwich-pnl').hidden = !atLunch;
+  $('sandwich-pnl').hidden = !(atLunch && pickState.menu);
+  if (!pickState.menu) return;
   const box = $('sandwiches');
-  if (!pickState.menu){
-    box.innerHTML = '<p class="mini" style="margin:0">Choisis d&rsquo;abord ton menu&nbsp;: ' +
-      'on ne te propose que les sandwiches qui lui correspondent.</p>';
-    return;
-  }
   const list = sandwichesFor(CFG, pickState.menu);
   if (!list.length){
     box.innerHTML = '<p class="mini" style="margin:0">Aucun sandwich pr&eacute;vu pour ce menu&nbsp;: ' +
@@ -326,6 +332,8 @@ function validate(v){
 /** Le document envoyé : exactement les champs que les règles acceptent. */
 function collect(){
   const val = id => $(id).value.trim();
+  const types = drinkPrefTypes(pickState.drinks);
+  const prefOf = type => types.includes(type) ? val('f-pref-' + type).slice(0, INSCRIPTION_MAX.drinkPref) : '';
   const meals = {}, nights = {};
   MEALS.forEach(m => { meals[m.id] = mealChecked(m.id); });
   NIGHTS.forEach(n => { nights[n.id] = nightChecked(n.id); });
@@ -339,7 +347,10 @@ function collect(){
     email:     val('f-email').slice(0, INSCRIPTION_MAX.email),
     notes:     $('f-notes').value.trim().slice(0, INSCRIPTION_MAX.notes),
     expectations: $('f-expect').value.trim().slice(0, INSCRIPTION_MAX.expectations),
-    drinkPref: val('f-drinkpref').slice(0, INSCRIPTION_MAX.drinkPref),
+    // préférences : seuls les types compris dans le niveau choisi sont envoyés
+    drinkSoft: prefOf('soft'),
+    drinkMid:  prefOf('mid'),
+    drinkHard: prefOf('hard'),
     menu:      pickState.menu,
     drinks:    pickState.drinks,
     meals, nights,
